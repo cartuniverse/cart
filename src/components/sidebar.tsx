@@ -11,6 +11,7 @@ import {
 
 const NAV = [
   { id: "organigrama", icon: Share2, label: "Organigrama" },
+  { id: "proyectos", icon: FolderKanban, label: "Proyectos" },
   { id: "tareas", icon: ListChecks, label: "Tareas" },
 ];
 

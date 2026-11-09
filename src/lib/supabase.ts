@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Client, Person, Task } from "./types";
+import type { Client, Person, Project, Task } from "./types";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -366,5 +366,98 @@ export async function saveNodePositionToDb(id: string, x: number, y: number): Pr
     console.error("Error saving node position:", err);
   }
 }
+
+const DEFAULT_PROJECTS: Project[] = [
+  { id: "proj-orbit", name: "Orbit", description: "Plataforma central y arquitectura base", color: "#6366f1", emoji: "🚀" },
+  { id: "proj-mobile", name: "Mobile App", description: "Aplicación móvil iOS y Android", color: "#10b981", emoji: "📱" },
+  { id: "proj-branding", name: "Branding", description: "Identidad visual, marca y diseño de productos", color: "#f59e0b", emoji: "🎨" },
+  { id: "proj-web", name: "Web Platform", description: "Sitio web y suite de herramientas web", color: "#3b82f6", emoji: "🌐" },
+];
+
+export async function getProjects(): Promise<Project[]> {
+  if (!supabase) {
+    if (typeof window !== "undefined") {
+      const cached = localStorage.getItem("cart_projects");
+      if (cached) return JSON.parse(cached);
+    }
+    return DEFAULT_PROJECTS;
+  }
+  try {
+    const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false });
+    if (error || !data || data.length === 0) {
+      if (typeof window !== "undefined") {
+        const cached = localStorage.getItem("cart_projects");
+        if (cached) return JSON.parse(cached);
+      }
+      return DEFAULT_PROJECTS;
+    }
+    return data.map((d: any) => ({
+      id: d.id,
+      name: d.name,
+      description: d.description || "",
+      color: d.color || "#6366f1",
+      emoji: d.emoji || "📁",
+      createdAt: d.created_at,
+    }));
+  } catch (err) {
+    console.error("Error fetching projects:", err);
+    return DEFAULT_PROJECTS;
+  }
+}
+
+export async function createProjectInDb(project: Omit<Project, "id"> & { id?: string }): Promise<Project | null> {
+  const newProj: Project = {
+    id: project.id || `proj-${Date.now().toString(36)}`,
+    name: project.name,
+    description: project.description || "",
+    color: project.color || "#6366f1",
+    emoji: project.emoji || "📁",
+    createdAt: new Date().toISOString(),
+  };
+
+  if (typeof window !== "undefined") {
+    const cached = localStorage.getItem("cart_projects");
+    const list: Project[] = cached ? JSON.parse(cached) : [...DEFAULT_PROJECTS];
+    list.unshift(newProj);
+    localStorage.setItem("cart_projects", JSON.stringify(list));
+  }
+
+  if (supabase) {
+    try {
+      await supabase.from("projects").insert({
+        id: newProj.id,
+        name: newProj.name,
+        description: newProj.description,
+        color: newProj.color,
+        emoji: newProj.emoji,
+      });
+    } catch (e) {
+      console.error("Error inserting project in supabase:", e);
+    }
+  }
+
+  return newProj;
+}
+
+export async function deleteProjectFromDb(id: string): Promise<boolean> {
+  if (typeof window !== "undefined") {
+    const cached = localStorage.getItem("cart_projects");
+    if (cached) {
+      const list: Project[] = JSON.parse(cached);
+      localStorage.setItem("cart_projects", JSON.stringify(list.filter((p) => p.id !== id)));
+    }
+  }
+
+  if (supabase) {
+    try {
+      await supabase.from("projects").delete().eq("id", id);
+    } catch (e) {
+      console.error("Error deleting project in supabase:", e);
+    }
+  }
+
+  return true;
+}
+
 
 

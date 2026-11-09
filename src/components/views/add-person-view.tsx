@@ -17,7 +17,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { createPersonInDb, getPeople, uploadAvatarToStorage } from "@/lib/supabase";
+import { createPersonInDb, getPeople, getProjects, uploadAvatarToStorage } from "@/lib/supabase";
 import { PHASE_COLORS, type Person, type Phase } from "@/lib/types";
 
 interface AddPersonViewProps {
@@ -64,7 +64,7 @@ export function AddPersonView({ onBack, onPersonCreated }: AddPersonViewProps) {
   const [interestInput, setInterestInput] = useState("");
 
   // Proyectos asignados
-  const ALL_PROJECTS = ["Orbit", "Mobile App", "Branding", "Web Platform"];
+  const [allProjects, setAllProjects] = useState<string[]>(["Orbit", "Mobile App", "Branding", "Web Platform"]);
   const [selectedProjects, setSelectedProjects] = useState<string[]>(["Orbit"]);
 
   // Foto / Avatar
@@ -88,6 +88,12 @@ export function AddPersonView({ onBack, onPersonCreated }: AddPersonViewProps) {
       if (res.length > 0 && !reportsTo) {
         const ceoOrFirst = res.find((p) => p.isCeo) || res[0];
         setReportsTo(ceoOrFirst.id);
+      }
+    });
+
+    getProjects().then((projs) => {
+      if (projs.length > 0) {
+        setAllProjects(projs.map((p) => p.name));
       }
     });
   }, []);
@@ -614,7 +620,7 @@ export function AddPersonView({ onBack, onPersonCreated }: AddPersonViewProps) {
                 📁 Proyectos asignados
               </h2>
               <div className="flex flex-wrap gap-2">
-                {ALL_PROJECTS.map((proj) => {
+                {allProjects.map((proj) => {
                   const isSelected = selectedProjects.includes(proj);
                   return (
                     <button

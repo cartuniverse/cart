@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Camera, Loader2, UserCheck, X } from "lucide-react";
-import { updatePersonInDb, uploadAvatarToStorage } from "@/lib/supabase";
+import { getProjects, updatePersonInDb, uploadAvatarToStorage } from "@/lib/supabase";
 import type { Person, Phase } from "@/lib/types";
 
 interface EditPersonModalProps {
@@ -38,8 +38,16 @@ export function EditPersonModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Proyectos
-  const ALL_PROJECTS = ["Orbit", "Mobile App", "Branding", "Web Platform"];
+  const [allProjects, setAllProjects] = useState<string[]>(["Orbit", "Mobile App", "Branding", "Web Platform"]);
   const [selectedProjects, setSelectedProjects] = useState<string[]>(person.projects ?? []);
+
+  useEffect(() => {
+    getProjects().then((projs) => {
+      if (projs.length > 0) {
+        setAllProjects(projs.map((p) => p.name));
+      }
+    });
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -402,7 +410,7 @@ export function EditPersonModal({
                   📁 Proyectos asignados
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {ALL_PROJECTS.map((proj) => {
+                  {allProjects.map((proj) => {
                     const isSelected = selectedProjects.includes(proj);
                     return (
                       <button

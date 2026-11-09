@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/navbar";
 import { OrgCanvas } from "@/components/org-canvas";
 import { Sidebar } from "@/components/sidebar";
@@ -10,13 +10,21 @@ import { GridView } from "@/components/views/grid-view";
 import { AddPersonView } from "@/components/views/add-person-view";
 import { FullProfileView } from "@/components/views/full-profile-view";
 import { AllTasksView } from "@/components/views/all-tasks-view";
-import type { Person } from "@/lib/types";
+import { ProjectsView } from "@/components/views/projects-view";
+import { ProjectDetailView } from "@/components/views/project-detail-view";
+import { getPeople, getProjects } from "@/lib/supabase";
+import type { Person, Project } from "@/lib/types";
 
 export default function Home() {
   const [activeNav, setActiveNav] = useState<string>("organigrama");
   const [currentTab, setCurrentTab] = useState<"grafo" | "cuadricula">("grafo");
   const [isAddingPerson, setIsAddingPerson] = useState(false);
   const [selectedProfilePerson, setSelectedProfilePerson] = useState<Person | null>(null);
+
+  // Proyecto seleccionado para ver en detalle
+  const [selectedProjectDetail, setSelectedProjectDetail] = useState<Project | null>(null);
+  const [allPeople, setAllPeople] = useState<Person[]>([]);
+  const [availableProjects, setAvailableProjects] = useState<string[]>(["Orbit", "Mobile App", "Branding", "Web Platform"]);
 
   // Status Emoji toggle (true = on, false = off)
   const [showStatusEmoji, setShowStatusEmoji] = useState(true);
@@ -27,6 +35,15 @@ export default function Home() {
   // Key para forzar recarga del canvas cuando se agrega o actualiza alguien
   const [refreshKey, setRefreshKey] = useState(0);
 
+  useEffect(() => {
+    getPeople().then((res) => setAllPeople(res));
+    getProjects().then((projs) => {
+      if (projs.length > 0) {
+        setAvailableProjects(projs.map((p) => p.name));
+      }
+    });
+  }, [refreshKey]);
+
   const handleToggleStatusEmoji = () => {
     setShowStatusEmoji((prev) => !prev);
   };
@@ -35,6 +52,7 @@ export default function Home() {
     setActiveNav(navId);
     setIsAddingPerson(false);
     setSelectedProfilePerson(null);
+    setSelectedProjectDetail(null);
   };
 
   const handleTabChange = (tab: "grafo" | "cuadricula") => {
@@ -88,6 +106,7 @@ export default function Home() {
                 onToggleStatusEmoji={handleToggleStatusEmoji}
                 selectedProject={selectedProject}
                 onSelectProject={setSelectedProject}
+                availableProjects={availableProjects}
               />
               <AddPersonView
                 onBack={() => setIsAddingPerson(false)}
@@ -97,6 +116,20 @@ export default function Home() {
           ) : activeNav === "tareas" ? (
             /* Vista de todas las tareas asignadas agrupadas por persona */
             <AllTasksView onSelectPerson={handleSelectGridPerson} />
+          ) : activeNav === "proyectos" ? (
+            /* Vista de proyectos o detalle de un proyecto */
+            selectedProjectDetail ? (
+              <ProjectDetailView
+                project={selectedProjectDetail}
+                allPeople={allPeople}
+                onBack={() => setSelectedProjectDetail(null)}
+                onSelectPerson={handleSelectGridPerson}
+              />
+            ) : (
+              <ProjectsView
+                onSelectProject={(proj) => setSelectedProjectDetail(proj)}
+              />
+            )
           ) : (
             /* Vista estándar de Organigrama: Grafo o Cuadrícula */
             <div className="flex-1 flex flex-col min-h-0">
@@ -108,6 +141,7 @@ export default function Home() {
                 onToggleStatusEmoji={handleToggleStatusEmoji}
                 selectedProject={selectedProject}
                 onSelectProject={setSelectedProject}
+                availableProjects={availableProjects}
               />
               <div className="flex-1 min-h-0 relative">
                 {currentTab === "grafo" ? (

@@ -36,6 +36,15 @@ export type Client = {
   status: "activo" | "pausado";
 };
 
+export type Project = {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  emoji: string;
+  createdAt?: string;
+};
+
 export const PHASE_COLORS: Record<
   Phase,
   { color: string; soft: string; label: string }
