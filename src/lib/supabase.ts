@@ -32,7 +32,7 @@ export async function getPeople(): Promise<Person[]> {
       });
     });
 
-    return peopleData.map((p: any) => ({
+    const mappedPeople: Person[] = peopleData.map((p: any) => ({
       id: p.id,
       name: p.name,
       initials: p.initials,
@@ -54,6 +54,15 @@ export async function getPeople(): Promise<Person[]> {
       isCeo: p.is_ceo ?? false,
       avatarUrl: p.avatar_url ?? undefined,
     }));
+
+    // Cristian (o CEO) siempre debe aparecer de primero
+    return mappedPeople.sort((a, b) => {
+      const isA = a.isCeo || a.name.toLowerCase().includes("cristian");
+      const isB = b.isCeo || b.name.toLowerCase().includes("cristian");
+      if (isA && !isB) return -1;
+      if (!isA && isB) return 1;
+      return 0;
+    });
   } catch (err) {
     console.error("Error fetching people from Supabase:", err);
     return [];

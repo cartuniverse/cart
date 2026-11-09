@@ -34,7 +34,15 @@ export function AllTasksView({ onSelectPerson }: { onSelectPerson?: (person: Per
 
   const loadData = async () => {
     const res = await getPeople();
-    setPeople(res);
+    // Cristian (o CEO) siempre de primeras
+    const sorted = [...res].sort((a, b) => {
+      const isA = a.isCeo || a.name.toLowerCase().includes("cristian");
+      const isB = b.isCeo || b.name.toLowerCase().includes("cristian");
+      if (isA && !isB) return -1;
+      if (!isA && isB) return 1;
+      return 0;
+    });
+    setPeople(sorted);
     setIsLoading(false);
   };
 

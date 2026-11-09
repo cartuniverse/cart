@@ -17,7 +17,15 @@ export function GridView({ onSelectPerson, onAddPerson }: GridViewProps) {
 
   useEffect(() => {
     getPeople().then((res) => {
-      setPeople(res);
+      // Garantizar que Cristian (o CEO) siempre esté de primeras
+      const sorted = [...res].sort((a, b) => {
+        const isA = a.isCeo || a.name.toLowerCase().includes("cristian");
+        const isB = b.isCeo || b.name.toLowerCase().includes("cristian");
+        if (isA && !isB) return -1;
+        if (!isA && isB) return 1;
+        return 0;
+      });
+      setPeople(sorted);
       setIsLoading(false);
     });
   }, []);
