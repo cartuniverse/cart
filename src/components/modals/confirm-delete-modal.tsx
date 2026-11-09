@@ -6,7 +6,7 @@ import { AlertTriangle, Loader2 } from "lucide-react";
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
   name: string;
-  type: "person" | "client" | "task";
+  type: "person" | "client" | "task" | "project";
   isLoading: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -49,7 +49,7 @@ export function ConfirmDeleteModal({
 
             <div className="flex flex-col gap-1.5">
               <h3 className="text-[17px] font-bold text-text-primary">
-                ¿Eliminar {type === "person" ? "persona" : type === "client" ? "cliente" : "tarea"}?
+                ¿Eliminar {type === "person" ? "persona" : type === "client" ? "cliente" : type === "project" ? "proyecto" : "tarea"}?
               </h3>
               <p className="text-[13px] text-text-secondary leading-relaxed">
                 {type === "task" ? (
@@ -57,6 +57,12 @@ export function ConfirmDeleteModal({
                     ¿Estás seguro de que deseas eliminar la tarea{" "}
                     <strong className="text-text-primary font-semibold">"{name}"</strong>?{" "}
                     Esta acción se sincronizará con la base de datos de Supabase y no se podrá recuperar.
+                  </>
+                ) : type === "project" ? (
+                  <>
+                    ¿Estás seguro de que deseas eliminar el proyecto{" "}
+                    <strong className="text-text-primary font-semibold">"{name}"</strong>?{" "}
+                    Esta acción se sincronizará con la base de datos de Supabase y removerá la vinculación de este proyecto en el equipo.
                   </>
                 ) : (
                   <>

@@ -124,6 +124,10 @@ export default function Home() {
                 allPeople={allPeople}
                 onBack={() => setSelectedProjectDetail(null)}
                 onSelectPerson={handleSelectGridPerson}
+                onProjectDeleted={() => {
+                  setSelectedProjectDetail(null);
+                  setRefreshKey((k) => k + 1);
+                }}
               />
             ) : (
               <ProjectsView

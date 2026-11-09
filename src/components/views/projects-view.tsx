@@ -13,6 +13,7 @@ import {
 import { deleteProjectFromDb, getPeople, getProjects } from "@/lib/supabase";
 import type { Person, Project } from "@/lib/types";
 import { CreateProjectModal } from "@/components/modals/create-project-modal";
+import { ConfirmDeleteModal } from "@/components/modals/confirm-delete-modal";
 
 interface ProjectsViewProps {
   onSelectProject: (project: Project) => void;
@@ -23,6 +24,10 @@ export function ProjectsView({ onSelectProject }: ProjectsViewProps) {
   const [people, setPeople] = useState<Person[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Modal de confirmación para eliminar proyecto con animación suave
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -40,11 +45,23 @@ export function ProjectsView({ onSelectProject }: ProjectsViewProps) {
     setProjects((prev) => [newProject, ...prev]);
   };
 
-  const handleDeleteProject = async (e: React.MouseEvent, projectId: string) => {
+  const handleRequestDelete = (e: React.MouseEvent, project: Project) => {
     e.stopPropagation();
-    if (!confirm("¿Deseas eliminar este proyecto?")) return;
-    setProjects((prev) => prev.filter((p) => p.id !== projectId));
-    await deleteProjectFromDb(projectId);
+    setProjectToDelete(project);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!projectToDelete) return;
+    setIsDeleting(true);
+    try {
+      setProjects((prev) => prev.filter((p) => p.id !== projectToDelete.id));
+      await deleteProjectFromDb(projectToDelete.id);
+      setProjectToDelete(null);
+    } catch (err) {
+      console.error("Error deleting project:", err);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -145,9 +162,9 @@ export function ProjectsView({ onSelectProject }: ProjectsViewProps) {
 
                     <button
                       type="button"
-                      onClick={(e) => handleDeleteProject(e, project.id)}
+                      onClick={(e) => handleRequestDelete(e, project)}
                       title="Eliminar proyecto"
-                      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-text-tertiary hover:text-accent-red hover:bg-surface-2 transition cursor-pointer"
+                      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-text-tertiary hover:text-[var(--accent-red,#ef4444)] hover:bg-surface-2 transition cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -199,6 +216,17 @@ export function ProjectsView({ onSelectProject }: ProjectsViewProps) {
         onClose={() => setIsCreateModalOpen(false)}
         onProjectCreated={handleProjectCreated}
       />
+
+      {/* Modal de confirmación para eliminar proyecto con animación suave */}
+      <ConfirmDeleteModal
+        isOpen={Boolean(projectToDelete)}
+        name={projectToDelete?.name || ""}
+        type="project"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setProjectToDelete(null)}
+      />
     </div>
   );
 }
+

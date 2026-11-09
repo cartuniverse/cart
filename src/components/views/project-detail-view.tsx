@@ -17,13 +17,15 @@ import {
 import type { Person, Project, Task } from "@/lib/types";
 import { PHASE_COLORS } from "@/lib/types";
 import { CreateTaskModal } from "@/components/modals/create-task-modal";
-import { updateTaskStatusInDb, deleteTaskFromDb } from "@/lib/supabase";
+import { ConfirmDeleteModal } from "@/components/modals/confirm-delete-modal";
+import { updateTaskStatusInDb, deleteTaskFromDb, deleteProjectFromDb } from "@/lib/supabase";
 
 interface ProjectDetailViewProps {
   project: Project;
   allPeople: Person[];
   onBack: () => void;
   onSelectPerson: (person: Person) => void;
+  onProjectDeleted?: (projectId: string) => void;
 }
 
 export function ProjectDetailView({
@@ -31,6 +33,7 @@ export function ProjectDetailView({
   allPeople,
   onBack,
   onSelectPerson,
+  onProjectDeleted,
 }: ProjectDetailViewProps) {
   // Cristian (CEO) SIEMPRE ESTÁ EN TODOS LOS PROYECTOS
   const associatedPeople = allPeople.filter((p) => {
@@ -42,6 +45,12 @@ export function ProjectDetailView({
   const [peopleState, setPeopleState] = useState<Person[]>(allPeople);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [selectedAssignee, setSelectedAssignee] = useState<Person | null>(null);
+
+  // Estados para confirmación de eliminación con animación suave
+  const [taskToDelete, setTaskToDelete] = useState<{ id: string; title: string; personId: string } | null>(null);
+  const [isDeletingTask, setIsDeletingTask] = useState(false);
+  const [isConfirmingDeleteProject, setIsConfirmingDeleteProject] = useState(false);
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
 
   useEffect(() => {
     setPeopleState(allPeople);
@@ -75,6 +84,42 @@ export function ProjectDetailView({
     await updateTaskStatusInDb(task.id, newStatus);
   };
 
+  const handleConfirmDeleteTask = async () => {
+    if (!taskToDelete) return;
+    setIsDeletingTask(true);
+    try {
+      setPeopleState((prev) =>
+        prev.map((p) => {
+          if (p.id !== taskToDelete.personId) return p;
+          return {
+            ...p,
+            tasks: p.tasks.filter((t) => t.id !== taskToDelete.id),
+          };
+        })
+      );
+      await deleteTaskFromDb(taskToDelete.id);
+      setTaskToDelete(null);
+    } catch (err) {
+      console.error("Error deleting task:", err);
+    } finally {
+      setIsDeletingTask(false);
+    }
+  };
+
+  const handleConfirmDeleteProject = async () => {
+    setIsDeletingProject(true);
+    try {
+      await deleteProjectFromDb(project.id);
+      setIsConfirmingDeleteProject(false);
+      onProjectDeleted?.(project.id);
+      onBack();
+    } catch (err) {
+      console.error("Error deleting project:", err);
+    } finally {
+      setIsDeletingProject(false);
+    }
+  };
+
   return (
     <div className="flex-1 h-full overflow-y-auto bg-bg p-8">
       <div className="max-w-[1100px] mx-auto flex flex-col gap-6">
@@ -86,6 +131,14 @@ export function ProjectDetailView({
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Volver a proyectos</span>
+          </button>
+
+          <button
+            onClick={() => setIsConfirmingDeleteProject(true)}
+            className="h-8 px-3 rounded-lg border border-[var(--border)] text-[12px] font-semibold text-[var(--accent-red,#ef4444)] hover:bg-red-50 hover:border-red-200 transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Eliminar proyecto</span>
           </button>
         </div>
 
@@ -239,18 +292,16 @@ export function ProjectDetailView({
                       <button
                         type="button"
                         onClick={() => handleToggleTask(t.personId, t as any)}
-                        className={`w-5 h-5 rounded-md flex items-center justify-center border transition cursor-pointer ${
-                          isDone
+                        className={`w-5 h-5 rounded-md flex items-center justify-center border transition cursor-pointer ${isDone
                             ? "bg-accent-green text-white border-accent-green"
                             : "border-[var(--border-strong)] bg-surface hover:border-accent"
-                        }`}
+                          }`}
                       >
                         {isDone && <CheckCircle2 className="w-3.5 h-3.5" />}
                       </button>
                       <span
-                        className={`text-[13px] ${
-                          isDone ? "line-through text-text-tertiary" : "text-text-primary font-medium"
-                        }`}
+                        className={`text-[13px] ${isDone ? "line-through text-text-tertiary" : "text-text-primary font-medium"
+                          }`}
                       >
                         {t.title}
                       </span>
@@ -267,6 +318,14 @@ export function ProjectDetailView({
                           <span>{t.due}</span>
                         </div>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => setTaskToDelete({ id: t.id, title: t.title, personId: t.personId })}
+                        title="Eliminar tarea"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-text-tertiary hover:text-[var(--accent-red,#ef4444)] hover:bg-surface-2 transition cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 );
@@ -295,6 +354,26 @@ export function ProjectDetailView({
           }}
         />
       )}
+
+      {/* Modal de confirmación para eliminar tarea con animación suave */}
+      <ConfirmDeleteModal
+        isOpen={Boolean(taskToDelete)}
+        name={taskToDelete?.title || ""}
+        type="task"
+        isLoading={isDeletingTask}
+        onConfirm={handleConfirmDeleteTask}
+        onCancel={() => setTaskToDelete(null)}
+      />
+
+      {/* Modal de confirmación para eliminar proyecto con animación suave */}
+      <ConfirmDeleteModal
+        isOpen={isConfirmingDeleteProject}
+        name={project.name}
+        type="project"
+        isLoading={isDeletingProject}
+        onConfirm={handleConfirmDeleteProject}
+        onCancel={() => setIsConfirmingDeleteProject(false)}
+      />
     </div>
   );
 }
