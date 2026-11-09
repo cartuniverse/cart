@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import { Plus, Trash2 } from "lucide-react";
 import type { Person } from "@/lib/types";
@@ -52,6 +53,22 @@ export function PersonNode({
 
   const wrapperHeight = outerSize + (isCeo ? 60 : 54);
   const minLabelWidth = isCeo ? 130 : 110;
+
+  // Working hours status: 8:00 AM to 8:00 PM (8:00 - 20:00)
+  const [isWorkingHours, setIsWorkingHours] = useState(true);
+
+  useEffect(() => {
+    const checkHours = () => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      // Active between 8:00 (8) and 19:59 (< 20)
+      setIsWorkingHours(currentHour >= 8 && currentHour < 20);
+    };
+
+    checkHours();
+    const interval = setInterval(checkHours, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div
@@ -164,6 +181,24 @@ export function PersonNode({
             pointerEvents: "none",
           }}
         />
+
+        {/* Status badge on top of avatar (8am - 8pm: 🧑🏻‍💻, outside: 💤) */}
+        <div
+          title={isWorkingHours ? "En horario laboral (8:00 AM - 8:00 PM)" : "Fuera de horario (Descanso)"}
+          className="absolute select-none pointer-events-none flex items-center justify-center rounded-full bg-surface border shadow-xs transition-transform group-hover:scale-110"
+          style={{
+            width: isCeo ? 22 : 18,
+            height: isCeo ? 22 : 18,
+            top: isCeo ? -6 : -5,
+            right: isCeo ? (data.pendingTasks > 0 ? 14 : -4) : (data.pendingTasks > 0 ? 12 : -3),
+            borderColor: "var(--border)",
+            fontSize: isCeo ? 11 : 9,
+            lineHeight: 1,
+            zIndex: 10,
+          }}
+        >
+          <span>{isWorkingHours ? "🧑🏻‍💻" : "💤"}</span>
+        </div>
 
         {/* Source handle (+ icon) */}
         <Handle
