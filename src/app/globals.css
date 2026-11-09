@@ -1,26 +1,86 @@
 @import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f5f5f7;
+  --border: #ececef;
+  --border-strong: #d7d7dc;
+  --text-primary: #111113;
+  --text-secondary: #6b6b70;
+  --text-tertiary: #9a9aa0;
+
+  --accent: #27272a;
+  --accent-soft: #f4f4f5;
+  --accent-pink: #f472b6;
+  --accent-pink-soft: #fde7f3;
+  --accent-green: #10b981;
+  --accent-green-soft: #dff7ec;
+  --accent-orange: #f59e0b;
+  --accent-orange-soft: #fff3dc;
+  --accent-blue: #3b82f6;
+  --accent-blue-soft: #e0ecff;
+  --accent-red: #ef4444;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border-token: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-pink: var(--accent-pink);
+  --color-accent-pink-soft: var(--accent-pink-soft);
+  --color-accent-green: var(--accent-green);
+  --color-accent-green-soft: var(--accent-green-soft);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-orange-soft: var(--accent-orange-soft);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-blue-soft: var(--accent-blue-soft);
+  --color-accent-red: var(--accent-red);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* React Flow tweaks to match our minimal white canvas */
+.react-flow {
+  background: var(--bg);
+}
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__edge-path {
+  stroke-linecap: round;
+}
+
+/* Smooth floating movement — the node trails the cursor with soft inertia.
+   React Flow applies positions via translate(); animating the translate property
+   makes the movement feel elastic. */
+.react-flow__node {
+  transition:
+    translate 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  will-change: translate, transform;
+}
+.react-flow__node:hover {
+  z-index: 5;
+}
+.react-flow__node.selected,
+.react-flow__node.dragging {
+  z-index: 10;
 }
