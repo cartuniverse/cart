@@ -25,8 +25,8 @@ export function Sidebar({
     <aside className="w-[260px] shrink-0 h-full bg-surface border-r border-[var(--border)] flex flex-col px-5 py-6 gap-6">
       {/* Brand */}
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-[10px] bg-accent flex items-center justify-center">
-          <GitBranch className="w-4 h-4 text-white" />
+        <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-black border border-border shadow-xs">
+          <img src="/cart-logo.png" alt="Cart Logo" className="w-full h-full object-cover" />
         </div>
         <div className="leading-tight">
           <div className="text-[15px] font-bold text-text-primary">Cart</div>
