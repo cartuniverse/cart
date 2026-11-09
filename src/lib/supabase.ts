@@ -50,6 +50,7 @@ export async function getPeople(): Promise<Person[]> {
       functions: Array.isArray(p.functions) ? p.functions : [],
       interests: Array.isArray(p.interests) ? p.interests : [],
       tasks: tasksByPerson[p.id] ?? [],
+      projects: Array.isArray(p.projects) ? p.projects : (p.projects ? JSON.parse(p.projects) : []),
       reportsTo: p.reports_to ?? undefined,
       isCeo: p.is_ceo ?? false,
       avatarUrl: p.avatar_url ?? undefined,
@@ -150,6 +151,7 @@ export async function createPersonInDb(
       discomforts: person.discomforts,
       functions: person.functions,
       interests: person.interests,
+      projects: person.projects ?? [],
       reports_to: person.reportsTo || null,
       is_ceo: person.isCeo || false,
       avatar_url: person.avatarUrl || null,
@@ -183,6 +185,7 @@ export async function createPersonInDb(
       discomforts: data.discomforts ?? [],
       functions: data.functions ?? [],
       interests: data.interests ?? [],
+      projects: Array.isArray(data.projects) ? data.projects : [],
       tasks: [],
       reportsTo: data.reports_to ?? undefined,
       isCeo: data.is_ceo ?? false,
@@ -215,6 +218,7 @@ export async function updatePersonInDb(
     if (updates.discomforts !== undefined) dbPayload.discomforts = updates.discomforts;
     if (updates.functions !== undefined) dbPayload.functions = updates.functions;
     if (updates.interests !== undefined) dbPayload.interests = updates.interests;
+    if (updates.projects !== undefined) dbPayload.projects = updates.projects;
     if (updates.reportsTo !== undefined) dbPayload.reports_to = updates.reportsTo || null;
     if (updates.isCeo !== undefined) dbPayload.is_ceo = updates.isCeo;
     if (updates.avatarUrl !== undefined) dbPayload.avatar_url = updates.avatarUrl || null;

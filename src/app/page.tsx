@@ -18,8 +18,18 @@ export default function Home() {
   const [isAddingPerson, setIsAddingPerson] = useState(false);
   const [selectedProfilePerson, setSelectedProfilePerson] = useState<Person | null>(null);
 
+  // Status Emoji toggle (true = on, false = off)
+  const [showStatusEmoji, setShowStatusEmoji] = useState(true);
+
+  // Filtro de proyectos en el Navbar
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+
   // Key para forzar recarga del canvas cuando se agrega o actualiza alguien
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleToggleStatusEmoji = () => {
+    setShowStatusEmoji((prev) => !prev);
+  };
 
   const handleSelectNav = (navId: string) => {
     setActiveNav(navId);
@@ -74,6 +84,10 @@ export default function Home() {
                 currentTab={currentTab}
                 onTabChange={handleTabChange}
                 onAddPerson={handleOpenAddPerson}
+                showStatusEmoji={showStatusEmoji}
+                onToggleStatusEmoji={handleToggleStatusEmoji}
+                selectedProject={selectedProject}
+                onSelectProject={setSelectedProject}
               />
               <AddPersonView
                 onBack={() => setIsAddingPerson(false)}
@@ -90,13 +104,21 @@ export default function Home() {
                 currentTab={currentTab}
                 onTabChange={handleTabChange}
                 onAddPerson={handleOpenAddPerson}
+                showStatusEmoji={showStatusEmoji}
+                onToggleStatusEmoji={handleToggleStatusEmoji}
+                selectedProject={selectedProject}
+                onSelectProject={setSelectedProject}
               />
               <div className="flex-1 min-h-0 relative">
                 {currentTab === "grafo" ? (
-                  <OrgCanvas key={refreshKey} />
+                  <OrgCanvas
+                    key={`${refreshKey}-${selectedProject}-${showStatusEmoji}`}
+                    selectedProject={selectedProject}
+                    showStatusEmoji={showStatusEmoji}
+                  />
                 ) : (
                   <GridView
-                    key={refreshKey}
+                    key={`${refreshKey}-${selectedProject}`}
                     onSelectPerson={handleSelectGridPerson}
                     onAddPerson={handleOpenAddPerson}
                   />

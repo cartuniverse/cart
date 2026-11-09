@@ -8,6 +8,7 @@ import { PHASE_COLORS } from "@/lib/types";
 
 export type PersonNodeData = Person & {
   pendingTasks: number;
+  showStatusEmoji?: boolean;
   onRequestDelete?: (node: { id: string; name: string; type: "person" | "client" }) => void;
   onOpenPanel?: (person: Person) => void;
 };
@@ -183,22 +184,24 @@ export function PersonNode({
         />
 
         {/* Status badge on top of avatar (8am - 8pm: 🧑🏻‍💻, outside: 💤) */}
-        <div
-          title={isWorkingHours ? "En horario laboral (8:00 AM - 8:00 PM)" : "Fuera de horario (Descanso)"}
-          className="absolute select-none pointer-events-none flex items-center justify-center rounded-full bg-surface border shadow-xs transition-transform group-hover:scale-110"
-          style={{
-            width: isCeo ? 22 : 18,
-            height: isCeo ? 22 : 18,
-            top: isCeo ? -6 : -5,
-            right: isCeo ? (data.pendingTasks > 0 ? 14 : -4) : (data.pendingTasks > 0 ? 12 : -3),
-            borderColor: "var(--border)",
-            fontSize: isCeo ? 11 : 9,
-            lineHeight: 1,
-            zIndex: 10,
-          }}
-        >
-          <span>{isWorkingHours ? "🧑🏻‍💻" : "💤"}</span>
-        </div>
+        {data.showStatusEmoji !== false && (
+          <div
+            title={isWorkingHours ? "En horario laboral (8:00 AM - 8:00 PM)" : "Fuera de horario (Descanso)"}
+            className="absolute select-none pointer-events-none flex items-center justify-center rounded-full bg-surface border shadow-xs transition-transform group-hover:scale-110"
+            style={{
+              width: isCeo ? 22 : 18,
+              height: isCeo ? 22 : 18,
+              top: isCeo ? -6 : -5,
+              right: isCeo ? (data.pendingTasks > 0 ? 14 : -4) : (data.pendingTasks > 0 ? 12 : -3),
+              borderColor: "var(--border)",
+              fontSize: isCeo ? 11 : 9,
+              lineHeight: 1,
+              zIndex: 10,
+            }}
+          >
+            <span>{isWorkingHours ? "🧑🏻‍💻" : "💤"}</span>
+          </div>
+        )}
 
         {/* Source handle (+ icon) */}
         <Handle

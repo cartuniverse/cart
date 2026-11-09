@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS people (
   discomforts JSONB NOT NULL DEFAULT '[]'::jsonb,
   functions JSONB NOT NULL DEFAULT '[]'::jsonb,
   interests JSONB NOT NULL DEFAULT '[]'::jsonb,
+  projects JSONB NOT NULL DEFAULT '[]'::jsonb,
   reports_to TEXT REFERENCES people(id) ON DELETE SET NULL,
   is_ceo BOOLEAN NOT NULL DEFAULT FALSE,
   avatar_url TEXT,

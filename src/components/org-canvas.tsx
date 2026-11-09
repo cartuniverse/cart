@@ -69,6 +69,8 @@ function buildGraphFromData(
   onRequestDelete?: (node: { id: string; name: string; type: "person" | "client" }) => void,
   customPositions?: Record<string, { x: number; y: number }>,
   onOpenPanel?: (person: Person) => void,
+  selectedProject?: string | null,
+  showStatusEmoji?: boolean,
 ) {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -76,9 +78,18 @@ function buildGraphFromData(
   const pendingFor = (tasks: { status: string }[]) =>
     tasks.filter((t) => t.status !== "hecho").length;
 
-  const ceo = allPeople.find((p) => p.isCeo) ?? allPeople[0];
+  const ceo = allPeople.find((p) => p.isCeo || p.name.toLowerCase().includes("cristian")) ?? allPeople[0];
   if (!ceo) return { nodes, edges };
-  const team = allPeople.filter((p) => p.id !== ceo.id);
+
+  // Filtrar personas por proyecto seleccionado.
+  // CRISTIAN (CEO) SIEMPRE ESTARÁ EN TODOS LOS PROYECTOS.
+  const filteredPeople = allPeople.filter((p) => {
+    if (p.id === ceo.id || p.isCeo || p.name.toLowerCase().includes("cristian")) return true;
+    if (!selectedProject) return true;
+    return p.projects && p.projects.includes(selectedProject);
+  });
+
+  const team = filteredPeople.filter((p) => p.id !== ceo.id);
 
   const ceoPos = customPositions?.[ceo.id] ?? { x: CENTER_X - 36, y: CENTER_Y - 36 };
 
@@ -89,6 +100,7 @@ function buildGraphFromData(
     data: {
       ...ceo,
       pendingTasks: pendingFor(ceo.tasks || []),
+      showStatusEmoji,
       onRequestDelete,
       onOpenPanel,
     },
@@ -107,12 +119,15 @@ function buildGraphFromData(
       data: {
         ...member,
         pendingTasks: pendingFor(member.tasks || []),
+        showStatusEmoji,
         onRequestDelete,
         onOpenPanel,
       },
     });
 
-    const managerId = member.reportsTo || ceo.id;
+    // Conectar si el manager está en el grafo, sino conectar al CEO
+    const managerInGraph = filteredPeople.some((p) => p.id === member.reportsTo);
+    const managerId = (managerInGraph && member.reportsTo) ? member.reportsTo : ceo.id;
     edges.push({
       id: `e-${managerId}-${member.id}`,
       source: managerId,
@@ -122,11 +137,13 @@ function buildGraphFromData(
     });
   });
 
+  // Los clientes solo se muestran si no hay filtro de proyecto o si se desea
+  const clientsToShow = selectedProject ? [] : allClients;
   const CLIENT_X = CENTER_X + 500;
   const CLIENT_START_Y = 80;
   const CLIENT_GAP = 160;
 
-  allClients.forEach((client, i) => {
+  clientsToShow.forEach((client, i) => {
     const defaultPos = { x: CLIENT_X - 30, y: CLIENT_START_Y + i * CLIENT_GAP };
     const clientPos = customPositions?.[client.id] ?? defaultPos;
 
@@ -152,7 +169,12 @@ function buildGraphFromData(
   return { nodes, edges };
 }
 
-export function OrgCanvas() {
+interface OrgCanvasProps {
+  selectedProject?: string | null;
+  showStatusEmoji?: boolean;
+}
+
+export function OrgCanvas({ selectedProject = null, showStatusEmoji = true }: OrgCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
@@ -218,12 +240,20 @@ export function OrgCanvas() {
       ]);
 
       const mergedPositions = { ...localPositions, ...dbPositions };
-      const graph = buildGraphFromData(peopleData, clientsData, onRequestDelete, mergedPositions, onOpenPanel);
+      const graph = buildGraphFromData(
+        peopleData,
+        clientsData,
+        onRequestDelete,
+        mergedPositions,
+        onOpenPanel,
+        selectedProject,
+        showStatusEmoji
+      );
       setNodes(graph.nodes);
       setEdges(graph.edges);
     }
     loadData();
-  }, [setNodes, setEdges, onRequestDelete, onOpenPanel]);
+  }, [setNodes, setEdges, onRequestDelete, onOpenPanel, selectedProject, showStatusEmoji]);
 
   // Previous position of the node being dragged — used to compute per-tick deltas.
   const dragPrev = useRef<{ id: string; x: number; y: number } | null>(null);

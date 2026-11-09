@@ -63,6 +63,10 @@ export function AddPersonView({ onBack, onPersonCreated }: AddPersonViewProps) {
   const [interestsList, setInterestsList] = useState<string[]>(["Fotografía", "Running"]);
   const [interestInput, setInterestInput] = useState("");
 
+  // Proyectos asignados
+  const ALL_PROJECTS = ["Orbit", "Mobile App", "Branding", "Web Platform"];
+  const [selectedProjects, setSelectedProjects] = useState<string[]>(["Orbit"]);
+
   // Foto / Avatar
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -156,6 +160,7 @@ export function AddPersonView({ onBack, onPersonCreated }: AddPersonViewProps) {
         .filter(Boolean),
       functions: functionsList,
       interests: interestsList,
+      projects: selectedProjects,
       reportsTo: reportsTo || undefined,
       isCeo: false,
       avatarUrl,
@@ -600,6 +605,39 @@ export function AddPersonView({ onBack, onPersonCreated }: AddPersonViewProps) {
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Sección: Proyectos asignados */}
+            <div className="flex flex-col gap-3">
+              <h2 className="text-[13px] font-bold text-text-secondary tracking-wide">
+                📁 Proyectos asignados
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {ALL_PROJECTS.map((proj) => {
+                  const isSelected = selectedProjects.includes(proj);
+                  return (
+                    <button
+                      type="button"
+                      key={proj}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedProjects(selectedProjects.filter((p) => p !== proj));
+                        } else {
+                          setSelectedProjects([...selectedProjects, proj]);
+                        }
+                      }}
+                      className={`h-8 px-3 rounded-lg text-[12px] font-medium border flex items-center gap-1.5 transition cursor-pointer ${
+                        isSelected
+                          ? "bg-text-primary text-white border-text-primary shadow-xs"
+                          : "bg-surface-2 text-text-secondary border-border hover:border-text-tertiary"
+                      }`}
+                    >
+                      <span>{proj}</span>
+                      {isSelected ? <span>✓</span> : <span>+</span>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

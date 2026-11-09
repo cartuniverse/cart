@@ -37,6 +37,10 @@ export function EditPersonModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Proyectos
+  const ALL_PROJECTS = ["Orbit", "Mobile App", "Branding", "Web Platform"];
+  const [selectedProjects, setSelectedProjects] = useState<string[]>(person.projects ?? []);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -92,6 +96,7 @@ export function EditPersonModal({
       discomforts: parsedDiscomforts,
       functions: parsedFunctions,
       interests: parsedInterests,
+      projects: selectedProjects,
       avatarUrl: finalAvatarUrl,
     };
 
@@ -389,6 +394,39 @@ export function EditPersonModal({
                   className="h-9 px-3 text-[13px] rounded-xl border bg-surface-2 text-text-primary focus:outline-none focus:border-accent"
                   style={{ borderColor: "var(--border)" }}
                 />
+              </div>
+
+              {/* Proyectos asignados */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[12px] font-semibold text-text-secondary">
+                  📁 Proyectos asignados
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {ALL_PROJECTS.map((proj) => {
+                    const isSelected = selectedProjects.includes(proj);
+                    return (
+                      <button
+                        type="button"
+                        key={proj}
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedProjects(selectedProjects.filter((p) => p !== proj));
+                          } else {
+                            setSelectedProjects([...selectedProjects, proj]);
+                          }
+                        }}
+                        className={`h-8 px-3 rounded-lg text-[12px] font-medium border flex items-center gap-1.5 transition cursor-pointer ${
+                          isSelected
+                            ? "bg-text-primary text-white border-text-primary shadow-xs"
+                            : "bg-surface-2 text-text-secondary border-border hover:border-text-tertiary"
+                        }`}
+                      >
+                        <span>{proj}</span>
+                        {isSelected ? <span>✓</span> : <span>+</span>}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </form>
 

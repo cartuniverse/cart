@@ -15,6 +15,7 @@ export type Person = {
   functions: string[];
   interests: string[];
   tasks: Task[];
+  projects?: string[];
   reportsTo?: string;
   isCeo?: boolean;
   avatarUrl?: string;
