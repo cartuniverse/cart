@@ -3,12 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
-  Calendar,
-  CheckCircle2,
-  ChevronRight,
-  Clapperboard,
   HelpCircle,
-  TrendingUp,
   Video,
 } from "lucide-react";
 import { getAllVideoLogs, getWeeklyVideoLogs } from "@/lib/supabase";
@@ -65,21 +60,24 @@ export function AudiovisualDashboardView({
     });
   }, [currentProjectName, weekISODates]);
 
-  // Cálculos métricos para "Videos hoy", "Esta semana" y "Avance"
-  const todayIso = "2026-11-10"; // Fecha de hoy en la interfaz
-  const todayLog = weeklyLogs[todayIso] || allLogs.find((l) => l.date === todayIso);
+  // Fecha de hoy fija (concordar con la vista diaria)
+  const todayIso = useMemo(() => toISODate(referenceDate), [referenceDate]);
 
-  const videosHoy = todayLog
-    ? todayLog.formatDisneySub30 +
-      todayLog.formatDisneyGala +
-      todayLog.formatMovimiento +
-      todayLog.formatAvatarYapping
-    : 2; // Default de la imagen si no hay registro aún
+  // Videos hoy — datos reales únicamente
+  const videosHoy = useMemo(() => {
+    const log = weeklyLogs[todayIso] || allLogs.find((l) => l.date === todayIso);
+    if (!log) return 0;
+    return (
+      log.formatDisneySub30 +
+      log.formatDisneyGala +
+      log.formatMovimiento +
+      log.formatAvatarYapping
+    );
+  }, [weeklyLogs, allLogs, todayIso]);
 
-  // Acumulado de la semana (L a V)
+  // Acumulado de la semana (L a V) — datos reales únicamente
   const estaSemana = useMemo(() => {
     let sum = 0;
-    let hasEntries = false;
     weekISODates.slice(0, 5).forEach((d) => {
       const l = weeklyLogs[d];
       if (l) {
@@ -88,18 +86,15 @@ export function AudiovisualDashboardView({
           l.formatDisneyGala +
           l.formatMovimiento +
           l.formatAvatarYapping;
-        hasEntries = true;
       }
     });
-
-    // Si aún no tiene suficientes registros en base de datos, usamos los valores base de la captura (8)
-    return hasEntries && sum > 0 ? sum : 8;
+    return sum;
   }, [weekISODates, weeklyLogs]);
 
   const metaSemanal = 15;
-  const avancePct = Math.round((estaSemana / metaSemanal) * 100);
+  const avancePct = metaSemanal > 0 ? Math.round((estaSemana / metaSemanal) * 100) : 0;
 
-  // Acumulado de los últimos 30 días por formato
+  // Acumulado de los últimos 30 días por formato — datos reales únicamente
   const formatTotals = useMemo(() => {
     let sub30 = 0;
     let gala = 0;
@@ -113,61 +108,29 @@ export function AudiovisualDashboardView({
       yap += l.formatAvatarYapping;
     });
 
-    // Totales calculados (con base mínima de la captura si la base de datos está fresca)
-    const finalSub30 = sub30 > 0 ? sub30 : 14;
-    const finalGala = gala > 0 ? gala : 9;
-    const finalMov = mov > 0 ? mov : 7;
-    const finalYap = yap > 0 ? yap : 4;
-    const totalEntregados = finalSub30 + finalGala + finalMov + finalYap; // 34
-
     return {
-      sub30: finalSub30,
-      gala: finalGala,
-      mov: finalMov,
-      yap: finalYap,
-      total: totalEntregados,
+      sub30,
+      gala,
+      mov,
+      yap,
+      total: sub30 + gala + mov + yap,
     };
   }, [allLogs]);
 
-  // Datos para la gráfica de línea "Progreso semanal" (L, M, M, J, V, S, D)
-  // Calculamos los puntos SVG para los 7 días
-  const chartPoints = useMemo(() => {
-    // Valores acumulados o por día para los 7 días (Lunes a Domingo)
-    // Valores representados en la captura: [1, 2.2, 1.8, 3.2, 4.5, 4.1, 5.2]
-    return [
-      { day: "L", value: 1.2 },
-      { day: "M", value: 2.2 },
-      { day: "M", value: 1.7 },
-      { day: "J", value: 3.1 },
-      { day: "V", value: 4.4 },
-      { day: "S", value: 4.0 },
-      { day: "D", value: 5.3 },
-    ];
-  }, []);
-
-  // Coordenadas normalizadas para el SVG (viewBox 0 0 320 120)
-  const svgPathData = useMemo(() => {
-    const minVal = 0;
-    const maxVal = 6;
-    const width = 320;
-    const height = 110;
-    const paddingX = 20;
-    const usableWidth = width - paddingX * 2;
-    const stepX = usableWidth / (chartPoints.length - 1);
-
-    const points = chartPoints.map((pt, i) => {
-      const x = paddingX + i * stepX;
-      // Invertir Y porque en SVG 0 está arriba
-      const y = height - (pt.value / maxVal) * (height - 25) - 10;
-      return { x, y };
+  // Datos por día para la gráfica de barras "Progreso semanal" (L–V)
+  const DAY_LABELS = ["L", "M", "M", "J", "V"];
+  const weekBarData = useMemo(() => {
+    return weekISODates.slice(0, 5).map((d, i) => {
+      const log = weeklyLogs[d];
+      const total = log
+        ? log.formatDisneySub30 +
+          log.formatDisneyGala +
+          log.formatMovimiento +
+          log.formatAvatarYapping
+        : 0;
+      return { day: DAY_LABELS[i], value: total, iso: d };
     });
-
-    const d = points.reduce((acc, curr, i) => {
-      return i === 0 ? `M ${curr.x} ${curr.y}` : `${acc} L ${curr.x} ${curr.y}`;
-    }, "");
-
-    return { path: d, points };
-  }, [chartPoints]);
+  }, [weekISODates, weeklyLogs]);
 
   return (
     <div className="flex-1 h-full flex flex-col min-w-0 bg-[#f8f9fa] overflow-y-auto">
@@ -346,44 +309,43 @@ export function AudiovisualDashboardView({
                 </span>
               </div>
 
-              {/* Gráfica de línea en contenedor gris neutro suave */}
+              {/* Gráfica de barras alimentada de weeklyLogs */}
               <div className="rounded-xl bg-surface-2/60 border border-[var(--border)] p-4 flex flex-col justify-between h-[170px]">
-                <div className="flex-1 w-full flex items-center justify-center">
-                  <svg
-                    viewBox="0 0 320 110"
-                    className="w-full h-full overflow-visible"
-                    preserveAspectRatio="none"
-                  >
-                    {/* Línea de trazo suave */}
-                    <path
-                      d={svgPathData.path}
-                      fill="none"
-                      stroke="#6366f1"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-
-                    {/* Puntos en cada día con borde */}
-                    {svgPathData.points.map((pt, i) => (
-                      <circle
-                        key={i}
-                        cx={pt.x}
-                        cy={pt.y}
-                        r="4"
-                        fill="#ffffff"
-                        stroke="#6366f1"
-                        strokeWidth="2"
-                      />
-                    ))}
-                  </svg>
+                <div className="flex-1 flex items-end gap-2 pb-1">
+                  {weekBarData.map((bar, idx) => {
+                    const isToday = bar.iso === todayIso;
+                    const maxVal = Math.max(...weekBarData.map((b) => b.value), 1);
+                    const heightPct = Math.max((bar.value / maxVal) * 100, 4);
+                    return (
+                      <div
+                        key={idx}
+                        className="flex-1 flex flex-col items-center justify-end gap-1"
+                      >
+                        {bar.value > 0 && (
+                          <span className="text-[9px] font-bold text-text-tertiary">
+                            {bar.value}
+                          </span>
+                        )}
+                        <div
+                          className="w-full rounded-t-md transition-all duration-500"
+                          style={{
+                            height: `${heightPct}%`,
+                            backgroundColor: isToday ? "#6366f1" : "#e5e7eb",
+                            minHeight: bar.value > 0 ? "8px" : "3px",
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
-
-                {/* Eje X de días (L, M, M, J, V, S, D) */}
-                <div className="flex justify-between px-3 pt-2 text-[10px] font-bold text-text-tertiary">
-                  {chartPoints.map((pt, idx) => (
-                    <span key={idx} className="w-5 text-center">
-                      {pt.day}
+                {/* Eje X (L, M, M, J, V) */}
+                <div className="flex justify-between pt-2 text-[10px] font-bold text-text-tertiary">
+                  {weekBarData.map((bar, idx) => (
+                    <span
+                      key={idx}
+                      className={`flex-1 text-center ${bar.iso === todayIso ? "text-[#6366f1]" : ""}`}
+                    >
+                      {bar.day}
                     </span>
                   ))}
                 </div>
@@ -395,3 +357,4 @@ export function AudiovisualDashboardView({
     </div>
   );
 }
+
