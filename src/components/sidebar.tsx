@@ -10,6 +10,7 @@ import {
   Video,
   Calendar,
   Sparkles,
+  LayoutDashboard,
 } from "lucide-react";
 
 const NAV = [
@@ -77,11 +78,25 @@ export function Sidebar({
             </div>
           </div>
 
-          {/* Sección: MI DÍA */}
+          {/* Sección: ESPACIO */}
           <div className="flex flex-col gap-1">
             <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              MI DÍA
+              ESPACIO
             </div>
+            {/* Botón Dashboard */}
+            <button
+              onClick={() => onSelectNav?.("dashboard")}
+              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
+                activeNav === "dashboard"
+                  ? "bg-accent-soft text-text-primary font-bold shadow-xs"
+                  : "text-text-secondary font-medium hover:bg-surface-2"
+              }`}
+            >
+              <LayoutDashboard className="w-[18px] h-[18px]" />
+              <span className="text-[13px] flex-1">Dashboard</span>
+            </button>
+
+            {/* Botón Diario de hoy */}
             <button
               onClick={() => onSelectNav?.("diario_hoy")}
               className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
@@ -94,8 +109,8 @@ export function Sidebar({
                 <Calendar className="w-[18px] h-[18px]" />
                 <span className="text-[13px]">Diario de hoy</span>
               </div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#eef2ff] text-[#4f46e5]">
-                3/3
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-2 text-text-secondary border border-border">
+                2/3
               </span>
             </button>
           </div>

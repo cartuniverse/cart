@@ -660,6 +660,65 @@ export async function getWeeklyVideoLogs(
   return result;
 }
 
+export async function getAllVideoLogs(
+  projectName = "Casa Luifer",
+  creatorId = "andres-m"
+): Promise<DailyVideoLog[]> {
+  const localList: DailyVideoLog[] = [];
+  if (typeof window !== "undefined") {
+    const indexKey = "cart_videolog_index";
+    const keys: string[] = JSON.parse(localStorage.getItem(indexKey) || "[]");
+    keys.forEach((k) => {
+      const stored = localStorage.getItem(k);
+      if (stored) {
+        try {
+          localList.push(JSON.parse(stored));
+        } catch (e) {}
+      }
+    });
+  }
+
+  if (!supabase) return localList;
+
+  try {
+    const { data, error } = await supabase
+      .from("daily_video_logs")
+      .select("*")
+      .eq("project_name", projectName)
+      .eq("creator_id", creatorId)
+      .order("date", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching all video logs:", error);
+      return localList;
+    }
+
+    if (data && data.length > 0) {
+      return data.map((d: any) => ({
+        id: d.id,
+        date: d.date,
+        creatorId: d.creator_id,
+        creatorName: d.creator_name,
+        projectName: d.project_name,
+        formatDisneySub30: d.format_disney_sub30,
+        formatDisneyGala: d.format_disney_gala,
+        formatMovimiento: d.format_movimiento,
+        formatAvatarYapping: d.format_avatar_yapping,
+        notesDisneySub30: d.notes_disney_sub30 || "",
+        notesDisneyGala: d.notes_disney_gala || "",
+        notesMovimiento: d.notes_movimiento || "",
+        notesAvatarYapping: d.notes_avatar_yapping || "",
+        updatedAt: d.updated_at,
+      }));
+    }
+  } catch (err) {
+    console.error("Error in getAllVideoLogs:", err);
+  }
+
+  return localList;
+}
+
+
 
 
 

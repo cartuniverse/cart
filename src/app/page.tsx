@@ -13,11 +13,12 @@ import { AllTasksView } from "@/components/views/all-tasks-view";
 import { ProjectsView } from "@/components/views/projects-view";
 import { ProjectDetailView } from "@/components/views/project-detail-view";
 import { AudiovisualDailyView } from "@/components/views/audiovisual-daily-view";
+import { AudiovisualDashboardView } from "@/components/views/audiovisual-dashboard-view";
 import { getPeople, getProjects } from "@/lib/supabase";
 import type { Person, Project } from "@/lib/types";
 
 export default function Home() {
-  const [activeNav, setActiveNav] = useState<string>("organigrama");
+  const [activeNav, setActiveNav] = useState<string>("dashboard");
   const [currentTab, setCurrentTab] = useState<"grafo" | "cuadricula">("grafo");
   const [isAddingPerson, setIsAddingPerson] = useState(false);
   const [selectedProfilePerson, setSelectedProfilePerson] = useState<Person | null>(null);
@@ -97,7 +98,7 @@ export default function Home() {
           onSwitchRoleView={(role) => {
             setCurrentRoleView(role);
             if (role === "audiovisual") {
-              setActiveNav("diario_hoy");
+              setActiveNav("dashboard");
             } else {
               setActiveNav("organigrama");
             }
@@ -109,7 +110,14 @@ export default function Home() {
         <main className="flex-1 flex flex-col min-w-0 bg-bg">
           {/* Si estamos en la vista de Creador Audiovisual AI */}
           {currentRoleView === "audiovisual" ? (
-            <AudiovisualDailyView currentProjectName={activeProjectName} />
+            activeNav === "dashboard" ? (
+              <AudiovisualDashboardView
+                currentProjectName={activeProjectName}
+                onGoToDailyView={() => setActiveNav("diario_hoy")}
+              />
+            ) : (
+              <AudiovisualDailyView currentProjectName={activeProjectName} />
+            )
           ) : selectedProfilePerson ? (
             <FullProfileView
               person={selectedProfilePerson}
