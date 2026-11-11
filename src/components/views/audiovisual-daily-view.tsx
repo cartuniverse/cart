@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { fadeInUp, popIn, staggerContainer } from "@/lib/motion-variants";
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -416,38 +418,72 @@ export function AudiovisualDailyView({
           </button>
 
           {/* Botón Guardar Día */}
-          <button
+          <motion.button
             onClick={handleSaveDay}
             disabled={isSaving}
-            className="h-9 px-4 rounded-xl bg-[#111113] text-white text-[12.5px] font-semibold flex items-center gap-1.5 hover:opacity-90 active:scale-95 transition shadow-sm cursor-pointer disabled:opacity-50"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.95 }}
+            animate={showSavedFeedback ? { scale: [1, 1.08, 1] } : {}}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="h-9 px-4 rounded-xl bg-[#111113] text-white text-[12.5px] font-semibold flex items-center gap-1.5 hover:opacity-90 transition shadow-sm cursor-pointer disabled:opacity-50"
           >
-            {isSaving ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Guardando...</span>
-              </>
-            ) : showSavedFeedback ? (
-              <>
-                <span className="text-emerald-400">✓</span>
-                <span>¡Guardado!</span>
-              </>
-            ) : (
-              <>
-                <span>✓</span>
-                <span>Guardar día</span>
-              </>
-            )}
-          </button>
+            <AnimatePresence mode="wait" initial={false}>
+              {isSaving ? (
+                <motion.span
+                  key="saving"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="flex items-center gap-1.5"
+                >
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Guardando...</span>
+                </motion.span>
+              ) : showSavedFeedback ? (
+                <motion.span
+                  key="saved"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                  className="flex items-center gap-1.5"
+                >
+                  <span className="text-emerald-400">✓</span>
+                  <span>¡Guardado!</span>
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="idle"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="flex items-center gap-1.5"
+                >
+                  <span>✓</span>
+                  <span>Guardar día</span>
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
         </div>
       </header>
 
       {/* Contenido principal con 2 columnas (Cards de vídeos + Sidebar 'Esta semana') */}
       <div className="flex-1 overflow-y-auto p-8">
-        <div className="max-w-[1360px] mx-auto flex flex-col lg:flex-row gap-6 items-start">
+        <motion.div
+          key={currentIso}
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          className="max-w-[1360px] mx-auto flex flex-col lg:flex-row gap-6 items-start"
+        >
           {/* Columna Izquierda: Banner superior + 4 Cards de formatos */}
           <div className="flex-1 flex flex-col gap-6 w-full">
             {/* Banner: Videos que te tocan hoy */}
-            <div className="rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+            <motion.div
+              variants={fadeInUp}
+              className="rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs"
+            >
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <h2 className="text-[17px] font-bold text-text-primary">
@@ -492,10 +528,10 @@ export function AudiovisualDailyView({
                   </span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Grid 2x2 con las 4 tarjetas de creación */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <motion.div variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {FORMATS_BASE.map((fmt) => {
                 const Icon = fmt.icon;
                 const count = counts[fmt.key];
@@ -519,8 +555,11 @@ export function AudiovisualDailyView({
                 }
 
                 return (
-                  <div
+                  <motion.div
                     key={fmt.key}
+                    variants={popIn}
+                    whileHover={isEnabled ? { y: -3 } : {}}
+                    transition={{ type: "spring", stiffness: 300, damping: 24 }}
                     className={`rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col gap-5 shadow-2xs transition ${
                       !isEnabled ? "opacity-60 bg-gray-50/70" : "hover:shadow-xs"
                     }`}
@@ -575,32 +614,42 @@ export function AudiovisualDailyView({
                         Cuántas creaste
                       </span>
                       <div className="h-12 rounded-xl bg-surface-2/60 border border-[var(--border)] px-2.5 flex items-center justify-between">
-                        <button
+                        <motion.button
                           type="button"
                           onClick={() => updateCount(fmt.key, -1)}
                           disabled={!isEnabled || count <= 0}
-                          className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-text-secondary hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer active:scale-95 shadow-2xs"
+                          whileHover={isEnabled && count > 0 ? { scale: 1.08 } : {}}
+                          whileTap={isEnabled && count > 0 ? { scale: 0.9 } : {}}
+                          className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-text-secondary hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer shadow-2xs"
                         >
                           <Minus className="w-3.5 h-3.5" />
-                        </button>
+                        </motion.button>
 
                         <div className="flex items-baseline gap-1.5">
-                          <span className={`text-[20px] font-bold ${isEnabled ? "text-text-primary" : "text-gray-400"}`}>
+                          <motion.span
+                            key={count}
+                            initial={{ scale: 1.3, opacity: 0.6 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                            className={`text-[20px] font-bold ${isEnabled ? "text-text-primary" : "text-gray-400"}`}
+                          >
                             {count}
-                          </span>
+                          </motion.span>
                           <span className="text-[11px] font-medium text-text-tertiary">
                             creadas
                           </span>
                         </div>
 
-                        <button
+                        <motion.button
                           type="button"
                           onClick={() => updateCount(fmt.key, 1)}
                           disabled={!isEnabled}
-                          className="w-8 h-8 rounded-lg bg-[#111113] text-white flex items-center justify-center hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer active:scale-95 shadow-2xs"
+                          whileHover={isEnabled ? { scale: 1.08 } : {}}
+                          whileTap={isEnabled ? { scale: 0.9 } : {}}
+                          className="w-8 h-8 rounded-lg bg-[#111113] text-white flex items-center justify-center hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer shadow-2xs"
                         >
                           <Plus className="w-3.5 h-3.5" />
-                        </button>
+                        </motion.button>
                       </div>
                     </div>
 
@@ -625,14 +674,14 @@ export function AudiovisualDailyView({
                         style={{ borderColor: "var(--border)" }}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           </div>
 
           {/* Columna Derecha: Tarjeta reactiva 'ESTA SEMANA' */}
-          <div className="w-full lg:w-[350px] shrink-0 flex flex-col gap-4">
+          <motion.div variants={fadeInUp} className="w-full lg:w-[350px] shrink-0 flex flex-col gap-4">
             {/* Widget principal: ESTA SEMANA */}
             <div className="rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col gap-6 shadow-2xs">
               {/* Header */}
@@ -702,10 +751,14 @@ export function AudiovisualDailyView({
                   }
 
                   return (
-                    <button
+                    <motion.button
                       key={dayOffset}
                       type="button"
                       onClick={() => setSelectedDate(dayDate)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      animate={isCurrentSelected ? { scale: [1, 1.06, 1] } : {}}
+                      transition={{ duration: 0.3 }}
                       className={`h-[68px] rounded-xl flex flex-col items-center justify-center gap-1 transition cursor-pointer border ${
                         isCurrentSelected
                           ? "bg-[#eef2ff] border-[#c7d2fe] text-[#4f46e5]"
@@ -722,7 +775,7 @@ export function AudiovisualDailyView({
                       >
                         {dayCount}/{target}
                       </span>
-                    </button>
+                    </motion.button>
                   );
                 })}
               </div>
@@ -839,8 +892,8 @@ export function AudiovisualDailyView({
                 </p>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

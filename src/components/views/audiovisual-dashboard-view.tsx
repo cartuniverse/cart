@@ -8,6 +8,7 @@ import {
   Video,
 } from "lucide-react";
 import { getAllVideoLogs, getWeeklyVideoLogs } from "@/lib/supabase";
+import { fadeInUp, popIn, staggerContainer } from "@/lib/motion-variants";
 import type { DailyVideoLog } from "@/lib/types";
 
 interface AudiovisualDashboardViewProps {
@@ -165,9 +166,17 @@ export function AudiovisualDashboardView({
       </header>
 
       {/* Contenido Principal del Dashboard */}
-      <div className="p-8 max-w-[1360px] mx-auto w-full flex flex-col gap-6">
+      <motion.div
+        className="p-8 max-w-[1360px] mx-auto w-full flex flex-col gap-6"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+      >
         {/* Banner Hero Superior (Fondo Gris Neutro Muy Suave, No Azul) */}
-        <div className="rounded-2xl bg-surface-2/70 border border-[var(--border)] p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xs">
+        <motion.div
+          variants={fadeInUp}
+          className="rounded-2xl bg-surface-2/70 border border-[var(--border)] p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xs"
+        >
           <div className="flex flex-col gap-2.5 max-w-[560px]">
             <motion.div
               className="flex items-center gap-2.5"
@@ -202,40 +211,64 @@ export function AudiovisualDashboardView({
           </div>
 
           {/* 3 Tarjetas de Resumen en Hero (Fondo blanco limpio) */}
-          <div className="flex items-center gap-3 shrink-0 self-stretch md:self-auto justify-end">
-            <div className="w-[100px] h-[80px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs">
+          <motion.div
+            className="flex items-center gap-3 shrink-0 self-stretch md:self-auto justify-end"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.div
+              variants={popIn}
+              whileHover={{ y: -3, scale: 1.03 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="w-[100px] h-[80px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs"
+            >
               <span className="text-[26px] font-bold text-text-primary leading-tight">
                 {videosHoy}
               </span>
               <span className="text-[11px] font-medium text-text-tertiary">
                 Videos hoy
               </span>
-            </div>
+            </motion.div>
 
-            <div className="w-[100px] h-[80px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs">
+            <motion.div
+              variants={popIn}
+              whileHover={{ y: -3, scale: 1.03 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="w-[100px] h-[80px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs"
+            >
               <span className="text-[26px] font-bold text-[#4f46e5] leading-tight">
                 {estaSemana}
               </span>
               <span className="text-[11px] font-medium text-text-tertiary">
                 Esta semana
               </span>
-            </div>
+            </motion.div>
 
-            <div className="w-[100px] h-[80px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs">
+            <motion.div
+              variants={popIn}
+              whileHover={{ y: -3, scale: 1.03 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="w-[100px] h-[80px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs"
+            >
               <span className="text-[26px] font-bold text-[#10b981] leading-tight">
                 {avancePct}%
               </span>
               <span className="text-[11px] font-medium text-text-tertiary">
                 Avance
               </span>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
 
         {/* Sección de 2 Columnas de Gráficas: "Videos por formato" (Izquierda) + "Progreso semanal" (Derecha) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <motion.div variants={fadeInUp} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Card Izquierda: Videos por formato (ocupa 7 u 8 cols) */}
-          <div className="lg:col-span-8 rounded-2xl bg-white border border-[var(--border)] p-7 flex flex-col justify-between gap-6 shadow-2xs">
+          <motion.div
+            whileHover={{ y: -2 }}
+            transition={{ type: "spring", stiffness: 300, damping: 24 }}
+            className="lg:col-span-8 rounded-2xl bg-white border border-[var(--border)] p-7 flex flex-col justify-between gap-6 shadow-2xs"
+          >
             <div>
               {/* Header de la card */}
               <div className="flex items-center justify-between mb-4">
@@ -269,9 +302,11 @@ export function AudiovisualDashboardView({
                     <span className="font-bold text-pink-500">{formatTotals.sub30}</span>
                   </div>
                   <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#ec4899] rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(100, (formatTotals.sub30 / 30) * 100)}%` }}
+                    <motion.div
+                      className="h-full bg-[#ec4899] rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (formatTotals.sub30 / 30) * 100)}%` }}
+                      transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
                     />
                   </div>
                 </div>
@@ -283,9 +318,11 @@ export function AudiovisualDashboardView({
                     <span className="font-bold text-violet-500">{formatTotals.gala}</span>
                   </div>
                   <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#6366f1] rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(100, (formatTotals.gala / 30) * 100)}%` }}
+                    <motion.div
+                      className="h-full bg-[#6366f1] rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (formatTotals.gala / 30) * 100)}%` }}
+                      transition={{ duration: 0.7, ease: "easeOut", delay: 0.18 }}
                     />
                   </div>
                 </div>
@@ -297,9 +334,11 @@ export function AudiovisualDashboardView({
                     <span className="font-bold text-blue-500">{formatTotals.mov}</span>
                   </div>
                   <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#3b82f6] rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(100, (formatTotals.mov / 30) * 100)}%` }}
+                    <motion.div
+                      className="h-full bg-[#3b82f6] rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (formatTotals.mov / 30) * 100)}%` }}
+                      transition={{ duration: 0.7, ease: "easeOut", delay: 0.26 }}
                     />
                   </div>
                 </div>
@@ -311,18 +350,24 @@ export function AudiovisualDashboardView({
                     <span className="font-bold text-emerald-500">{formatTotals.yap}</span>
                   </div>
                   <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#10b981] rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(100, (formatTotals.yap / 30) * 100)}%` }}
+                    <motion.div
+                      className="h-full bg-[#10b981] rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (formatTotals.yap / 30) * 100)}%` }}
+                      transition={{ duration: 0.7, ease: "easeOut", delay: 0.34 }}
                     />
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Card Derecha: Progreso semanal con gráfica de línea (ocupa 4 o 5 cols) */}
-          <div className="lg:col-span-4 rounded-2xl bg-white border border-[var(--border)] p-7 flex flex-col justify-between gap-5 shadow-2xs">
+          <motion.div
+            whileHover={{ y: -2 }}
+            transition={{ type: "spring", stiffness: 300, damping: 24 }}
+            className="lg:col-span-4 rounded-2xl bg-white border border-[var(--border)] p-7 flex flex-col justify-between gap-5 shadow-2xs"
+          >
             <div>
               {/* Header */}
               <div className="flex items-center gap-2 mb-2 text-text-tertiary">
@@ -359,13 +404,15 @@ export function AudiovisualDashboardView({
                             {bar.value}
                           </span>
                         )}
-                        <div
-                          className="w-full rounded-t-md transition-all duration-500"
-                          style={{
+                        <motion.div
+                          className="w-full rounded-t-md"
+                          initial={{ height: 0 }}
+                          animate={{
                             height: `${heightPct}%`,
                             backgroundColor: isToday ? "#6366f1" : "#e5e7eb",
-                            minHeight: bar.value > 0 ? "8px" : "3px",
                           }}
+                          transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 + idx * 0.06 }}
+                          style={{ minHeight: bar.value > 0 ? "8px" : "3px" }}
                         />
                       </div>
                     );
@@ -384,9 +431,9 @@ export function AudiovisualDashboardView({
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

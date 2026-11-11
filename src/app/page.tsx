@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
+import { pageTransition } from "@/lib/motion-variants";
 import { Navbar } from "@/components/navbar";
 import { OrgCanvas } from "@/components/org-canvas";
 import { Sidebar } from "@/components/sidebar";
@@ -147,7 +149,13 @@ export default function Home() {
           onSelectProjectName={isAudiovisualRole ? undefined : (proj) => setActiveProjectName(proj)}
         />
 
-        <main className="flex-1 flex flex-col min-w-0 bg-bg">
+        <main className="flex-1 flex flex-col min-w-0 bg-bg overflow-hidden">
+          <AnimatePresence mode="wait">
+          <motion.div
+            key={`${currentRoleView}-${activeNav}-${selectedProfilePerson?.id ?? ""}-${isAddingPerson}-${selectedProjectDetail?.id ?? ""}`}
+            {...pageTransition}
+            className="flex-1 flex flex-col min-h-0 min-w-0"
+          >
           {/* Si estamos en la vista de Creador Audiovisual AI */}
           {currentRoleView === "audiovisual" ? (
             activeNav === "dashboard" ? (
@@ -234,6 +242,8 @@ export default function Home() {
               </div>
             </div>
           )}
+          </motion.div>
+          </AnimatePresence>
         </main>
 
         {/* Panel lateral deslizable para el grafo */}
