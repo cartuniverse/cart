@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Client, DailyCommunityLog, DailyVideoLog, Person, Project, Task } from "./types";
+import type { Client, DailyCommunityLog, DailyDesignLog, DailyVideoLog, Person, Project, Task } from "./types";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -998,7 +998,194 @@ export async function getAllCommunityLogs(
   return localList;
 }
 
+// ==========================================
+// REGISTROS DIARIOS DEL DISEÑADOR AI · PLAN DE DESATRASO
+// Alcance: Casa Luifer + Montana (una sola tabla por día/diseñador)
+// Tabla Supabase: daily_design_logs
+// Clave de conflicto: (date, designer_id)
+// ==========================================
 
+export async function getDailyDesignLog(
+  date: string,
+  designerId = "daniela-s"
+): Promise<DailyDesignLog | null> {
+  const localKey = `cart_designlog_${date}_${designerId}`;
 
+  if (!supabase) {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(localKey);
+      if (stored) return JSON.parse(stored);
+    }
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("daily_design_logs")
+      .select("*")
+      .eq("date", date)
+      .eq("designer_id", designerId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching daily design log:", error);
+    }
+
+    if (data) {
+      const log: DailyDesignLog = {
+        id: data.id,
+        date: data.date,
+        designerId: data.designer_id,
+        designerName: data.designer_name,
+        formatClHistorias: data.format_cl_historias ?? 0,
+        formatClMovimiento: data.format_cl_movimiento ?? 0,
+        formatMtHistorias: data.format_mt_historias ?? 0,
+        formatMtCarruseles: data.format_mt_carruseles ?? 0,
+        notesClHistorias: data.notes_cl_historias || "",
+        notesClMovimiento: data.notes_cl_movimiento || "",
+        notesMtHistorias: data.notes_mt_historias || "",
+        notesMtCarruseles: data.notes_mt_carruseles || "",
+        updatedAt: data.updated_at,
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(localKey, JSON.stringify(log));
+      }
+      return log;
+    }
+  } catch (err) {
+    console.error("Error in getDailyDesignLog:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(localKey);
+    if (stored) return JSON.parse(stored);
+  }
+
+  return null;
+}
+
+export async function saveDailyDesignLog(
+  log: Omit<DailyDesignLog, "id" | "updatedAt"> & { id?: string }
+): Promise<DailyDesignLog> {
+  const finalId = log.id || `dlog-${log.date}-${log.designerId}`;
+  const now = new Date().toISOString();
+
+  const finalLog: DailyDesignLog = {
+    id: finalId,
+    date: log.date,
+    designerId: log.designerId,
+    designerName: log.designerName,
+    formatClHistorias: log.formatClHistorias,
+    formatClMovimiento: log.formatClMovimiento,
+    formatMtHistorias: log.formatMtHistorias,
+    formatMtCarruseles: log.formatMtCarruseles,
+    notesClHistorias: log.notesClHistorias || "",
+    notesClMovimiento: log.notesClMovimiento || "",
+    notesMtHistorias: log.notesMtHistorias || "",
+    notesMtCarruseles: log.notesMtCarruseles || "",
+    updatedAt: now,
+  };
+
+  const localKey = `cart_designlog_${log.date}_${log.designerId}`;
+  if (typeof window !== "undefined") {
+    localStorage.setItem(localKey, JSON.stringify(finalLog));
+
+    const indexKey = "cart_designlog_index";
+    const existingIndex: string[] = JSON.parse(localStorage.getItem(indexKey) || "[]");
+    if (!existingIndex.includes(localKey)) {
+      existingIndex.push(localKey);
+      localStorage.setItem(indexKey, JSON.stringify(existingIndex));
+    }
+  }
+
+  if (supabase) {
+    try {
+      await supabase.from("daily_design_logs").upsert(
+        {
+          id: finalId,
+          date: log.date,
+          designer_id: log.designerId,
+          designer_name: log.designerName,
+          format_cl_historias: log.formatClHistorias,
+          format_cl_movimiento: log.formatClMovimiento,
+          format_mt_historias: log.formatMtHistorias,
+          format_mt_carruseles: log.formatMtCarruseles,
+          notes_cl_historias: log.notesClHistorias || "",
+          notes_cl_movimiento: log.notesClMovimiento || "",
+          notes_mt_historias: log.notesMtHistorias || "",
+          notes_mt_carruseles: log.notesMtCarruseles || "",
+          updated_at: now,
+        },
+        { onConflict: "date,designer_id" }
+      );
+    } catch (err) {
+      console.error("Error upserting daily design log in supabase:", err);
+    }
+  }
+
+  return finalLog;
+}
+
+export async function getWeeklyDesignLogs(
+  weekDates: string[], // L..V (YYYY-MM-DD)
+  designerId = "daniela-s"
+): Promise<Record<string, DailyDesignLog>> {
+  const result: Record<string, DailyDesignLog> = {};
+
+  if (!supabase) {
+    if (typeof window !== "undefined") {
+      weekDates.forEach((d) => {
+        const localKey = `cart_designlog_${d}_${designerId}`;
+        const stored = localStorage.getItem(localKey);
+        if (stored) result[d] = JSON.parse(stored);
+      });
+    }
+    return result;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("daily_design_logs")
+      .select("*")
+      .in("date", weekDates)
+      .eq("designer_id", designerId);
+
+    if (error) {
+      console.error("Error fetching weekly design logs:", error);
+    } else if (data) {
+      data.forEach((d: any) => {
+        result[d.date] = {
+          id: d.id,
+          date: d.date,
+          designerId: d.designer_id,
+          designerName: d.designer_name,
+          formatClHistorias: d.format_cl_historias ?? 0,
+          formatClMovimiento: d.format_cl_movimiento ?? 0,
+          formatMtHistorias: d.format_mt_historias ?? 0,
+          formatMtCarruseles: d.format_mt_carruseles ?? 0,
+          notesClHistorias: d.notes_cl_historias || "",
+          notesClMovimiento: d.notes_cl_movimiento || "",
+          notesMtHistorias: d.notes_mt_historias || "",
+          notesMtCarruseles: d.notes_mt_carruseles || "",
+          updatedAt: d.updated_at,
+        };
+      });
+    }
+  } catch (err) {
+    console.error("Error in getWeeklyDesignLogs:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    weekDates.forEach((d) => {
+      if (!result[d]) {
+        const localKey = `cart_designlog_${d}_${designerId}`;
+        const stored = localStorage.getItem(localKey);
+        if (stored) result[d] = JSON.parse(stored);
+      }
+    });
+  }
+
+  return result;
+}
 
 

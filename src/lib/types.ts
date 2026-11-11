@@ -104,6 +104,28 @@ export type DailyCommunityLog = {
   updatedAt?: string;
 };
 
+export type DesignerFormatKey =
+  | "clHistorias"
+  | "clMovimiento"
+  | "mtHistorias"
+  | "mtCarruseles";
+
+export type DailyDesignLog = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  designerId: string;
+  designerName: string;
+  formatClHistorias: number;
+  formatClMovimiento: number;
+  formatMtHistorias: number;
+  formatMtCarruseles: number;
+  notesClHistorias: string;
+  notesClMovimiento: string;
+  notesMtHistorias: string;
+  notesMtCarruseles: string;
+  updatedAt?: string;
+};
+
 export const PHASE_COLORS: Record<
   Phase,
   { color: string; soft: string; label: string }

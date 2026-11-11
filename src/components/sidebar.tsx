@@ -37,7 +37,8 @@ function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
 }
 import { useEffect, useState } from "react";
 import { useTheme } from "@/lib/use-theme";
-import { getDailyCommunityLog, getDailyVideoLog } from "@/lib/supabase";
+import { Flame, Palette } from "lucide-react";
+import { getDailyCommunityLog, getDailyDesignLog, getDailyVideoLog } from "@/lib/supabase";
 import type { Profile } from "@/lib/types";
 
 const NAV = [
@@ -57,7 +58,7 @@ const ROLE_LABELS: Record<string, string> = {
 interface SidebarProps {
   activeNav?: string;
   onSelectNav?: (navId: string) => void;
-  currentRoleView?: "admin" | "audiovisual" | "community";
+  currentRoleView?: "admin" | "audiovisual" | "community" | "designer";
   profile?: Profile | null;
   onLogout?: () => void;
   activeProjectName?: string;
@@ -75,12 +76,14 @@ export function Sidebar({
 }: SidebarProps) {
   const isAudiovisual = currentRoleView === "audiovisual";
   const isCommunity = currentRoleView === "community";
+  const isDesigner = currentRoleView === "designer";
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
 
   // Conteos diarios reales para el badge de "Diario de hoy"
   const [cmTodayCount, setCmTodayCount] = useState<number>(0);
   const [avTodayCount, setAvTodayCount] = useState<number>(0);
+  const [designerTodayCount, setDesignerTodayCount] = useState<number>(0);
 
   useEffect(() => {
     let active = true;
@@ -119,6 +122,20 @@ export function Sidebar({
             setAvTodayCount(0);
           }
         });
+      } else if (isDesigner) {
+        getDailyDesignLog(todayIso).then((log) => {
+          if (!active) return;
+          if (log) {
+            const total =
+              (log.formatClHistorias ?? 0) +
+              (log.formatClMovimiento ?? 0) +
+              (log.formatMtHistorias ?? 0) +
+              (log.formatMtCarruseles ?? 0);
+            setDesignerTodayCount(total);
+          } else {
+            setDesignerTodayCount(0);
+          }
+        });
       }
     };
 
@@ -135,7 +152,7 @@ export function Sidebar({
     return () => {
       active = false;
     };
-  }, [isCommunity, isAudiovisual, activeProjectName, activeNav]);
+  }, [isCommunity, isAudiovisual, isDesigner, activeProjectName, activeNav]);
 
   // Metas diarias sugeridas para cada marca
   const cmDailyTarget = activeProjectName === "Montana" ? 8 : 11;
@@ -145,15 +162,19 @@ export function Sidebar({
     ? "Valentina C."
     : isAudiovisual
       ? "Andrés M."
-      : profile?.name ?? "Cristian A.";
+      : isDesigner
+        ? "Daniela S."
+        : profile?.name ?? "Cristian A.";
 
   const roleLabel = isCommunity
     ? "Community Manager"
     : isAudiovisual
       ? "Creador Audiovisual AI"
-      : profile
-        ? ROLE_LABELS[profile.role] ?? profile.role
-        : "Administrador";
+      : isDesigner
+        ? "Diseñador AI"
+        : profile
+          ? ROLE_LABELS[profile.role] ?? profile.role
+          : "Administrador";
 
   const initials = displayName
     .split(" ")
@@ -171,7 +192,7 @@ export function Sidebar({
             <img src="/cart-logo.png" alt="Cart Logo" className="w-full h-full object-cover" />
           </div>
           <div className="leading-tight">
-            <div className="text-[15px] font-bold text-text-primary">Orbit</div>
+            <div className="text-[15px] font-bold text-text-primary">Cart</div>
             <div className="text-[11px] font-medium text-text-tertiary">
               {isAudiovisual || isCommunity ? "Mi diario" : "Mi equipo"}
             </div>
@@ -269,6 +290,87 @@ export function Sidebar({
                 </button>
               );
             })}
+          </div>
+        </div>
+      ) : isDesigner ? (
+        <div className="flex flex-col gap-6 flex-1">
+          {/* Tarjeta de usuario destacada de Daniela S. */}
+          <div className="rounded-2xl bg-violet-50/70 border border-violet-100 p-3 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center text-white shadow-2xs shrink-0">
+              <Palette className="w-5 h-5" />
+            </div>
+            <div className="leading-tight min-w-0">
+              <div className="text-[13.5px] font-bold text-text-primary truncate">
+                Daniela S.
+              </div>
+              <div className="text-[11px] font-semibold text-violet-600 truncate">
+                Diseñador AI
+              </div>
+            </div>
+          </div>
+
+          {/* MI DÍA */}
+          <div className="flex flex-col gap-1">
+            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
+              MI DÍA
+            </div>
+            {/* Dashboard */}
+            <button
+              onClick={() => onSelectNav?.("dashboard")}
+              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
+                activeNav === "dashboard"
+                  ? "bg-violet-50 text-violet-700 font-bold border border-violet-200/60 shadow-xs"
+                  : "text-text-secondary font-medium hover:bg-surface-2"
+              }`}
+            >
+              <LayoutDashboard className="w-[18px] h-[18px] text-violet-500" />
+              <span className="text-[13px] flex-1">Dashboard</span>
+            </button>
+
+            {/* Plan de desatraso */}
+            <button
+              onClick={() => onSelectNav?.("plan_desatraso")}
+              className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
+                activeNav === "plan_desatraso"
+                  ? "bg-violet-50 text-violet-700 font-bold border border-violet-200/60 shadow-xs"
+                  : "text-text-secondary font-medium hover:bg-surface-2"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Flame className="w-[18px] h-[18px] text-amber-500" />
+                <span className="text-[13px]">Plan de desatraso</span>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-700 border border-amber-200/50">
+                {designerTodayCount}/7
+              </span>
+            </button>
+          </div>
+
+          {/* MARCAS DEL PLAN */}
+          <div className="flex flex-col gap-1">
+            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
+              MARCAS DEL PLAN
+            </div>
+            {[
+              { name: "Casa Luifer", perWeek: "20 / sem", color: "#ec4899" },
+              { name: "Montana", perWeek: "15 / sem", color: "#3b82f6" },
+            ].map((brand) => (
+              <div
+                key={brand.name}
+                className="h-10 rounded-[10px] flex items-center justify-between px-3 text-left text-[12.5px] text-text-secondary"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: brand.color }}
+                  />
+                  <span className="truncate font-medium">{brand.name}</span>
+                </div>
+                <span className="text-[11px] text-text-tertiary font-medium">
+                  {brand.perWeek}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       ) : isAudiovisual ? (
@@ -385,12 +487,15 @@ export function Sidebar({
       <div className="h-14 rounded-xl bg-surface-2 flex items-center justify-between px-3 shrink-0 border border-transparent hover:border-border transition">
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div
-            className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-[12px] shrink-0 ${isCommunity
-              ? "bg-pink-500"
-              : isAudiovisual
-                ? "bg-[#4f46e5]"
-                : "bg-accent"
-              }`}
+            className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-[12px] shrink-0 ${
+              isCommunity
+                ? "bg-pink-500"
+                : isAudiovisual
+                  ? "bg-[#4f46e5]"
+                  : isDesigner
+                    ? "bg-violet-600"
+                    : "bg-accent"
+            }`}
           >
             {initials}
           </div>

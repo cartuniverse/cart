@@ -19,6 +19,7 @@ import { AudiovisualDailyView } from "@/components/views/audiovisual-daily-view"
 import { AudiovisualDashboardView } from "@/components/views/audiovisual-dashboard-view";
 import { CommunityDailyView } from "@/components/views/community-daily-view";
 import { CommunityDashboardView } from "@/components/views/community-dashboard-view";
+import { DesignerDailyView } from "@/components/views/designer-daily-view";
 import { getPeople, getProjects } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { getCurrentProfile, signOut } from "@/lib/auth";
@@ -35,11 +36,13 @@ export default function Home() {
   const [selectedProfilePerson, setSelectedProfilePerson] = useState<Person | null>(null);
 
   // Vista derivada estrictamente del rol del usuario autenticado
-  const currentRoleView: "admin" | "audiovisual" | "community" =
+  const currentRoleView: "admin" | "audiovisual" | "community" | "designer" =
     profile?.role === "creador_audiovisual"
       ? "audiovisual"
       : profile?.role === "community_manager"
       ? "community"
+      : profile?.role === "disenador_ai"
+      ? "designer"
       : "admin";
 
   const [activeProjectName, setActiveProjectName] = useState<string>("Casa Luifer");
@@ -54,9 +57,14 @@ export default function Home() {
         return;
       }
       setProfile(p);
-      if (p.role === "creador_audiovisual" || p.role === "community_manager") {
+      if (
+        p.role === "creador_audiovisual" ||
+        p.role === "community_manager"
+      ) {
         setActiveNav("dashboard");
         if (p.projectName) setActiveProjectName(p.projectName);
+      } else if (p.role === "disenador_ai") {
+        setActiveNav("plan_desatraso");
       } else {
         setActiveNav("organigrama");
       }
@@ -186,6 +194,10 @@ export default function Home() {
             ) : (
               <AudiovisualDailyView currentProjectName={activeProjectName} />
             )
+          ) : currentRoleView === "designer" ? (
+            <DesignerDailyView
+              designerName={profile.name || "Daniela S."}
+            />
           ) : selectedProfilePerson ? (
             <FullProfileView
               person={selectedProfilePerson}
