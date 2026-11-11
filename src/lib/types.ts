@@ -45,6 +45,23 @@ export type Project = {
   createdAt?: string;
 };
 
+export type DailyVideoLog = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  creatorId: string;
+  creatorName: string;
+  projectName: string;
+  formatDisneySub30: number;
+  formatDisneyGala: number;
+  formatMovimiento: number;
+  formatAvatarYapping: number;
+  notesDisneySub30: string;
+  notesDisneyGala: string;
+  notesMovimiento: string;
+  notesAvatarYapping: string;
+  updatedAt?: string;
+};
+
 export const PHASE_COLORS: Record<
   Phase,
   { color: string; soft: string; label: string }

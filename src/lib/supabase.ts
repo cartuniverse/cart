@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Client, Person, Project, Task } from "./types";
+import type { Client, DailyVideoLog, Person, Project, Task } from "./types";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -458,6 +458,208 @@ export async function deleteProjectFromDb(id: string): Promise<boolean> {
 
   return true;
 }
+
+// -------------------------------------------------------------
+// Funciones para el Módulo Creador Audiovisual AI (Diario de hoy)
+// -------------------------------------------------------------
+
+export async function getDailyVideoLog(
+  date: string,
+  projectName = "Casa Luifer",
+  creatorId = "andres-m"
+): Promise<DailyVideoLog | null> {
+  const localKey = `cart_videolog_${date}_${projectName}_${creatorId}`;
+
+  if (!supabase) {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(localKey);
+      if (stored) return JSON.parse(stored);
+    }
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("daily_video_logs")
+      .select("*")
+      .eq("date", date)
+      .eq("project_name", projectName)
+      .eq("creator_id", creatorId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching daily video log:", error);
+    }
+
+    if (data) {
+      const log: DailyVideoLog = {
+        id: data.id,
+        date: data.date,
+        creatorId: data.creator_id,
+        creatorName: data.creator_name,
+        projectName: data.project_name,
+        formatDisneySub30: data.format_disney_sub30,
+        formatDisneyGala: data.format_disney_gala,
+        formatMovimiento: data.format_movimiento,
+        formatAvatarYapping: data.format_avatar_yapping,
+        notesDisneySub30: data.notes_disney_sub30 || "",
+        notesDisneyGala: data.notes_disney_gala || "",
+        notesMovimiento: data.notes_movimiento || "",
+        notesAvatarYapping: data.notes_avatar_yapping || "",
+        updatedAt: data.updated_at,
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(localKey, JSON.stringify(log));
+      }
+      return log;
+    }
+  } catch (err) {
+    console.error("Error in getDailyVideoLog:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(localKey);
+    if (stored) return JSON.parse(stored);
+  }
+
+  return null;
+}
+
+export async function saveDailyVideoLog(
+  log: Omit<DailyVideoLog, "id" | "updatedAt"> & { id?: string }
+): Promise<DailyVideoLog> {
+  const finalId = log.id || `vlog-${log.date}-${log.creatorId}-${log.projectName}`;
+  const now = new Date().toISOString();
+
+  const finalLog: DailyVideoLog = {
+    id: finalId,
+    date: log.date,
+    creatorId: log.creatorId,
+    creatorName: log.creatorName,
+    projectName: log.projectName,
+    formatDisneySub30: log.formatDisneySub30,
+    formatDisneyGala: log.formatDisneyGala,
+    formatMovimiento: log.formatMovimiento,
+    formatAvatarYapping: log.formatAvatarYapping,
+    notesDisneySub30: log.notesDisneySub30 || "",
+    notesDisneyGala: log.notesDisneyGala || "",
+    notesMovimiento: log.notesMovimiento || "",
+    notesAvatarYapping: log.notesAvatarYapping || "",
+    updatedAt: now,
+  };
+
+  const localKey = `cart_videolog_${log.date}_${log.projectName}_${log.creatorId}`;
+  if (typeof window !== "undefined") {
+    localStorage.setItem(localKey, JSON.stringify(finalLog));
+
+    // Guardar en índice de logs
+    const indexKey = "cart_videolog_index";
+    const existingIndex: string[] = JSON.parse(localStorage.getItem(indexKey) || "[]");
+    if (!existingIndex.includes(localKey)) {
+      existingIndex.push(localKey);
+      localStorage.setItem(indexKey, JSON.stringify(existingIndex));
+    }
+  }
+
+  if (supabase) {
+    try {
+      await supabase.from("daily_video_logs").upsert(
+        {
+          id: finalId,
+          date: log.date,
+          creator_id: log.creatorId,
+          creator_name: log.creatorName,
+          project_name: log.projectName,
+          format_disney_sub30: log.formatDisneySub30,
+          format_disney_gala: log.formatDisneyGala,
+          format_movimiento: log.formatMovimiento,
+          format_avatar_yapping: log.formatAvatarYapping,
+          notes_disney_sub30: log.notesDisneySub30 || "",
+          notes_disney_gala: log.notesDisneyGala || "",
+          notes_movimiento: log.notesMovimiento || "",
+          notes_avatar_yapping: log.notesAvatarYapping || "",
+          updated_at: now,
+        },
+        { onConflict: "date,creator_id,project_name" }
+      );
+    } catch (err) {
+      console.error("Error upserting daily video log in supabase:", err);
+    }
+  }
+
+  return finalLog;
+}
+
+export async function getWeeklyVideoLogs(
+  weekDates: string[], // Array de 5 fechas [lunes..viernes] YYYY-MM-DD
+  projectName = "Casa Luifer",
+  creatorId = "andres-m"
+): Promise<Record<string, DailyVideoLog>> {
+  const result: Record<string, DailyVideoLog> = {};
+
+  if (!supabase) {
+    if (typeof window !== "undefined") {
+      weekDates.forEach((d) => {
+        const localKey = `cart_videolog_${d}_${projectName}_${creatorId}`;
+        const stored = localStorage.getItem(localKey);
+        if (stored) {
+          result[d] = JSON.parse(stored);
+        }
+      });
+    }
+    return result;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("daily_video_logs")
+      .select("*")
+      .in("date", weekDates)
+      .eq("project_name", projectName)
+      .eq("creator_id", creatorId);
+
+    if (error) {
+      console.error("Error fetching weekly logs:", error);
+    } else if (data) {
+      data.forEach((d: any) => {
+        result[d.date] = {
+          id: d.id,
+          date: d.date,
+          creatorId: d.creator_id,
+          creatorName: d.creator_name,
+          projectName: d.project_name,
+          formatDisneySub30: d.format_disney_sub30,
+          formatDisneyGala: d.format_disney_gala,
+          formatMovimiento: d.format_movimiento,
+          formatAvatarYapping: d.format_avatar_yapping,
+          notesDisneySub30: d.notes_disney_sub30 || "",
+          notesDisneyGala: d.notes_disney_gala || "",
+          notesMovimiento: d.notes_movimiento || "",
+          notesAvatarYapping: d.notes_avatar_yapping || "",
+          updatedAt: d.updated_at,
+        };
+      });
+    }
+  } catch (err) {
+    console.error("Error in getWeeklyVideoLogs:", err);
+  }
+
+  // Rellenar desde localStorage si falló o falta alguno
+  if (typeof window !== "undefined") {
+    weekDates.forEach((d) => {
+      if (!result[d]) {
+        const localKey = `cart_videolog_${d}_${projectName}_${creatorId}`;
+        const stored = localStorage.getItem(localKey);
+        if (stored) {
+          result[d] = JSON.parse(stored);
+        }
+      }
+    });
+  }
+
+  return result;
+}
+
 
 
 
