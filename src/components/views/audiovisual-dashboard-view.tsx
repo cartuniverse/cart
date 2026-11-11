@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "motion/react";
 import {
   Activity,
   HelpCircle,
@@ -12,6 +13,23 @@ import type { DailyVideoLog } from "@/lib/types";
 interface AudiovisualDashboardViewProps {
   onGoToDailyView: () => void;
   currentProjectName?: string;
+  creatorName?: string;
+}
+
+const GREETINGS = (name: string) => [
+  { emoji: "🎬", text: `¡Qué tal, ${name}! Listo para crear magia hoy` },
+  { emoji: "🔥", text: `${name}, hoy es un gran día para grabar algo increíble` },
+  { emoji: "✨", text: `¡Bienvenido de vuelta, ${name}! Tus videos no se graban solos` },
+  { emoji: "🚀", text: `${name}, la cámara te extrañó. ¡A darle!` },
+  { emoji: "🎥", text: `¡Hola, ${name}! El set de grabación ya te está esperando` },
+  { emoji: "⚡️", text: `${name}, tu creatividad hoy va a romperla` },
+  { emoji: "🍿", text: `¡Arriba ese ánimo, ${name}! Hoy toca crear contenido top` },
+  { emoji: "🌟", text: `${name}, cada video que grabas suma. ¡Vamos con todo!` },
+];
+
+function pickGreeting(name: string) {
+  const list = GREETINGS(name);
+  return list[Math.floor(Math.random() * list.length)];
 }
 
 // Fechas de la semana de referencia (Lunes a Domingo)
@@ -41,9 +59,12 @@ function toISODate(d: Date): string {
 export function AudiovisualDashboardView({
   onGoToDailyView,
   currentProjectName = "Casa Luifer",
+  creatorName = "creador",
 }: AudiovisualDashboardViewProps) {
   const [allLogs, setAllLogs] = useState<DailyVideoLog[]>([]);
   const [weeklyLogs, setWeeklyLogs] = useState<Record<string, DailyVideoLog>>({});
+  const firstName = creatorName.trim().split(" ")[0] || creatorName;
+  const [greeting] = useState(() => pickGreeting(firstName));
 
   // Fecha fija de referencia para concordar con la imagen (10 nov 2026 - Martes)
   const referenceDate = useMemo(() => new Date("2026-11-10T12:00:00"), []);
@@ -148,12 +169,24 @@ export function AudiovisualDashboardView({
         {/* Banner Hero Superior (Fondo Gris Neutro Muy Suave, No Azul) */}
         <div className="rounded-2xl bg-surface-2/70 border border-[var(--border)] p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xs">
           <div className="flex flex-col gap-2.5 max-w-[560px]">
-            <div className="flex items-center gap-2.5">
-              <span className="text-[22px]">🎬</span>
+            <motion.div
+              className="flex items-center gap-2.5"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: "easeOut" }}
+            >
+              <motion.span
+                className="text-[22px]"
+                initial={{ scale: 0, rotate: -20 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ duration: 0.5, delay: 0.1, type: "spring", stiffness: 260 }}
+              >
+                {greeting.emoji}
+              </motion.span>
               <h1 className="text-[24px] font-bold text-text-primary tracking-tight">
-                ¡Qué tal, Andrés!
+                {greeting.text}
               </h1>
-            </div>
+            </motion.div>
             <p className="text-[13.5px] text-text-secondary leading-relaxed">
               Tus avatares de la semana pasada se vieron increíbles. Hoy toca grabar 2 videos más — ya casi completas la meta.
             </p>

@@ -153,6 +153,7 @@ export default function Home() {
             activeNav === "dashboard" ? (
               <AudiovisualDashboardView
                 currentProjectName={activeProjectName}
+                creatorName={profile.name}
                 onGoToDailyView={() => setActiveNav("diario_hoy")}
               />
             ) : (

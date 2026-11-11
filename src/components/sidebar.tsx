@@ -78,17 +78,6 @@ export function Sidebar({
       {/* Si está en la vista del Creador Audiovisual */}
       {isAudiovisual ? (
         <div className="flex flex-col gap-6 flex-1">
-          {/* Badge del rol activo del creador */}
-          <div className="p-3 rounded-xl bg-[#f0f3ff] border border-[#e0e7ff] flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#4f46e5] text-white flex items-center justify-center shadow-xs">
-              <Video className="w-4 h-4" />
-            </div>
-            <div className="leading-tight">
-              <div className="text-[13px] font-bold text-text-primary">Andrés M.</div>
-              <div className="text-[11px] font-medium text-[#4f46e5]">Creador Audiovisual AI</div>
-            </div>
-          </div>
-
           {/* Sección: ESPACIO */}
           <div className="flex flex-col gap-1">
             <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
