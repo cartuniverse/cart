@@ -24,57 +24,121 @@ interface AudiovisualDailyViewProps {
 }
 
 // Configuración de los 4 formatos de vídeo
-const FORMATS_CONFIG = [
+const FORMATS_BASE = [
   {
     key: "disneySub30" as const,
     title: "Disney <30sg",
-    target: "1 pieza",
-    tagline: "Clip rápido · gancho visual",
+    defaultTagline: "Clip rápido · gancho visual",
     icon: Sparkles,
     iconBg: "bg-pink-50 text-pink-500 border border-pink-100",
     color: "#ec4899",
-    activeToday: true,
   },
   {
     key: "disneyGala" as const,
-    title: "Disney 30sg · desfile gala",
-    target: "0 piezas",
-    tagline: "Hoy no es día de desfile",
+    title: "Disney 30sg",
+    defaultTagline: "Clip de 30 segundos",
     icon: Gem,
     iconBg: "bg-violet-50 text-violet-500 border border-violet-100",
     color: "#8b5cf6",
-    activeToday: false,
   },
   {
     key: "movimiento" as const,
     title: "Movimiento",
-    target: "1 pieza",
-    tagline: "Lunes · Trajes de hombre",
+    defaultTagline: "Video de prendas en movimiento",
     tagBadge: true,
     icon: Video,
     iconBg: "bg-blue-50 text-blue-500 border border-blue-100",
     color: "#3b82f6",
-    activeToday: true,
   },
   {
     key: "avatarYapping" as const,
     title: "Avatar yapping",
-    target: "1 pieza",
-    tagline: "Avatar explicando producto",
+    defaultTagline: "Avatar explicando producto",
     icon: Mic,
     iconBg: "bg-emerald-50 text-emerald-500 border border-emerald-100",
     color: "#10b981",
-    activeToday: true,
   },
 ];
 
 // Metas semanales por formato
 const WEEKLY_GOALS = {
-  disneySub30: 4,
+  disneySub30: 3,
   disneyGala: 3,
-  movimiento: 4,
+  movimiento: 5,
   avatarYapping: 4,
 };
+
+// Temáticas diarias para el formato "Movimiento"
+// "Traje hombre, novias, quinces y primera comunion"
+const MOVIMIENTO_THEMES: Record<number, { theme: string; dayName: string }> = {
+  1: { theme: "Trajes de hombre", dayName: "Lunes" },
+  2: { theme: "Novias", dayName: "Martes" },
+  3: { theme: "Quinces", dayName: "Miércoles" },
+  4: { theme: "Primera comunión", dayName: "Jueves" },
+  5: { theme: "Novias y Gala", dayName: "Viernes" },
+};
+
+// Regla de disponibilidad diaria: exactamente 3 habilitados por día (uno deshabilitado)
+// Lunes (1): Disney <30sg, Movimiento, Avatar yapping (Disney 30sg deshabilitado)
+// Martes (2): Disney 30sg, Movimiento, Avatar yapping (Disney <30sg deshabilitado)
+// Miércoles (3): Disney <30sg, Movimiento, Disney 30sg (Avatar yapping deshabilitado)
+// Jueves (4): Disney 30sg, Movimiento, Avatar yapping (Disney <30sg deshabilitado)
+// Viernes (5): Disney <30sg, Movimiento, Avatar yapping (Disney 30sg deshabilitado)
+function getDayFormatAvailability(dayOfWeek: number) {
+  switch (dayOfWeek) {
+    case 1: // Lunes
+      return {
+        disneySub30: true,
+        disneyGala: false,
+        movimiento: true,
+        avatarYapping: true,
+        disabledKey: "disneyGala",
+        disabledReason: "Hoy no toca Disney 30sg (plan de 3 vídeos hoy)",
+        planDayText: "3 piezas · plan del lunes",
+      };
+    case 2: // Martes
+      return {
+        disneySub30: false,
+        disneyGala: true,
+        movimiento: true,
+        avatarYapping: true,
+        disabledKey: "disneySub30",
+        disabledReason: "Hoy no toca Disney <30sg (plan de 3 vídeos hoy)",
+        planDayText: "3 piezas · plan del martes",
+      };
+    case 3: // Miércoles
+      return {
+        disneySub30: true,
+        disneyGala: true,
+        movimiento: true,
+        avatarYapping: false,
+        disabledKey: "avatarYapping",
+        disabledReason: "Hoy no toca Avatar yapping (plan de 3 vídeos hoy)",
+        planDayText: "3 piezas · plan del miércoles",
+      };
+    case 4: // Jueves
+      return {
+        disneySub30: false,
+        disneyGala: true,
+        movimiento: true,
+        avatarYapping: true,
+        disabledKey: "disneySub30",
+        disabledReason: "Hoy no toca Disney <30sg (plan de 3 vídeos hoy)",
+        planDayText: "3 piezas · plan del jueves",
+      };
+    case 5: // Viernes
+    default:
+      return {
+        disneySub30: true,
+        disneyGala: false,
+        movimiento: true,
+        avatarYapping: true,
+        disabledKey: "disneyGala",
+        disabledReason: "Hoy no toca Disney 30sg (plan de 3 vídeos hoy)",
+        planDayText: "3 piezas · plan del viernes",
+      };
+  }
+}
 
 // Formato de fecha en español tipo: "Lunes, 10 nov 2026"
 function formatDateToDisplay(d: Date): string {
@@ -261,8 +325,13 @@ export function AudiovisualDailyView({
     counts.disneySub30 + counts.disneyGala + counts.movimiento + counts.avatarYapping;
   const planDelDia = 3; // Plan meta del día
 
-  // Cálculos acumulados de la semana (reactivos al día actual y a los guardados)
+  // Cálculos de día y disponibilidad de formatos
   const currentIso = toISODate(selectedDate);
+  const dayOfWeek = selectedDate.getDay(); // 0: domingo, 1: lunes, ..., 5: viernes
+  const availability = useMemo(() => getDayFormatAvailability(dayOfWeek), [dayOfWeek]);
+  const movimientoTheme = useMemo(() => {
+    return MOVIMIENTO_THEMES[dayOfWeek] || { theme: "Trajes de hombre", dayName: "Lunes" };
+  }, [dayOfWeek]);
 
   // Mezclamos lo que está en pantalla con lo guardado en los otros días de la semana
   const weeklyAggregates = useMemo(() => {
@@ -393,7 +462,7 @@ export function AudiovisualDailyView({
                   </h2>
                   <span className="h-6 px-2.5 rounded-full bg-[#f5f3ff] text-[#7c3aed] text-[11px] font-semibold flex items-center gap-1 border border-[#ede9fe]">
                     <Sparkles className="w-3 h-3" />
-                    3 piezas · plan del lunes
+                    {availability.planDayText}
                   </span>
                 </div>
                 <p className="text-[12.5px] text-text-tertiary">
@@ -434,15 +503,34 @@ export function AudiovisualDailyView({
 
             {/* Grid 2x2 con las 4 tarjetas de creación */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {FORMATS_CONFIG.map((fmt) => {
+              {FORMATS_BASE.map((fmt) => {
                 const Icon = fmt.icon;
                 const count = counts[fmt.key];
                 const note = notes[fmt.key];
 
+                // Reglas dinámicas por formato según el día seleccionado
+                const isEnabled = availability[fmt.key];
+                const targetText = isEnabled ? "1 pieza" : "0 piezas";
+
+                // Subtítulo / Tagline dinámico
+                let tagline = fmt.defaultTagline;
+                let isTagBadge = fmt.tagBadge;
+
+                if (!isEnabled) {
+                  tagline = availability.disabledReason;
+                  isTagBadge = false;
+                } else if (fmt.key === "movimiento") {
+                  // Temática dinámica para videos de movimiento según el día
+                  tagline = `${movimientoTheme.dayName} · ${movimientoTheme.theme}`;
+                  isTagBadge = true;
+                }
+
                 return (
                   <div
                     key={fmt.key}
-                    className="rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col gap-5 shadow-2xs hover:shadow-xs transition"
+                    className={`rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col gap-5 shadow-2xs transition ${
+                      !isEnabled ? "opacity-60 bg-gray-50/70" : "hover:shadow-xs"
+                    }`}
                   >
                     {/* Header de la tarjeta */}
                     <div className="flex items-start justify-between">
@@ -457,25 +545,34 @@ export function AudiovisualDailyView({
                             <h3 className="text-[14.5px] font-bold text-text-primary">
                               {fmt.title}
                             </h3>
+                            {!isEnabled && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+                                Deshabilitado hoy
+                              </span>
+                            )}
                           </div>
-                          <span className="text-[11px] font-semibold text-text-tertiary">
-                            {fmt.target}
+                          <span
+                            className={`text-[11px] font-semibold ${
+                              isEnabled ? "text-text-tertiary" : "text-gray-400"
+                            }`}
+                          >
+                            {targetText}
                           </span>
                         </div>
                       </div>
                     </div>
 
                     {/* Tagline / Subtítulo */}
-                    {fmt.tagBadge ? (
+                    {isTagBadge ? (
                       <div>
                         <span className="h-6 px-2.5 rounded-lg bg-surface-2 text-text-secondary text-[11px] font-medium inline-flex items-center gap-1.5 border border-border">
                           <CalendarIcon className="w-3 h-3 text-text-tertiary" />
-                          {fmt.tagline}
+                          {tagline}
                         </span>
                       </div>
                     ) : (
-                      <p className="text-[11.5px] text-text-tertiary">
-                        {fmt.tagline}
+                      <p className={`text-[11.5px] ${!isEnabled ? "text-gray-400 italic" : "text-text-tertiary"}`}>
+                        {tagline}
                       </p>
                     )}
 
@@ -488,14 +585,14 @@ export function AudiovisualDailyView({
                         <button
                           type="button"
                           onClick={() => updateCount(fmt.key, -1)}
-                          disabled={count <= 0}
-                          className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-text-secondary hover:bg-surface-2 disabled:opacity-30 transition cursor-pointer active:scale-95 shadow-2xs"
+                          disabled={!isEnabled || count <= 0}
+                          className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-text-secondary hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer active:scale-95 shadow-2xs"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
 
                         <div className="flex items-baseline gap-1.5">
-                          <span className="text-[20px] font-bold text-text-primary">
+                          <span className={`text-[20px] font-bold ${isEnabled ? "text-text-primary" : "text-gray-400"}`}>
                             {count}
                           </span>
                           <span className="text-[11px] font-medium text-text-tertiary">
@@ -506,7 +603,8 @@ export function AudiovisualDailyView({
                         <button
                           type="button"
                           onClick={() => updateCount(fmt.key, 1)}
-                          className="w-8 h-8 rounded-lg bg-[#111113] text-white flex items-center justify-center hover:opacity-90 transition cursor-pointer active:scale-95 shadow-2xs"
+                          disabled={!isEnabled}
+                          className="w-8 h-8 rounded-lg bg-[#111113] text-white flex items-center justify-center hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer active:scale-95 shadow-2xs"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -520,16 +618,17 @@ export function AudiovisualDailyView({
                       </span>
                       <textarea
                         rows={2}
+                        disabled={!isEnabled}
                         placeholder={
-                          fmt.activeToday
+                          isEnabled
                             ? "Link al archivo o comentario..."
-                            : "Añade un link o nota"
+                            : "Deshabilitado para hoy (máximo 3 videos por día)"
                         }
                         value={note}
                         onChange={(e) =>
                           setNotes((prev) => ({ ...prev, [fmt.key]: e.target.value }))
                         }
-                        className="p-3 text-[12px] rounded-xl border bg-white text-text-primary placeholder:text-text-tertiary/70 focus:outline-none focus:border-accent resize-none leading-relaxed"
+                        className="p-3 text-[12px] rounded-xl border bg-white text-text-primary placeholder:text-text-tertiary/70 focus:outline-none focus:border-accent disabled:bg-gray-100/50 disabled:cursor-not-allowed resize-none leading-relaxed"
                         style={{ borderColor: "var(--border)" }}
                       />
                     </div>
@@ -664,11 +763,11 @@ export function AudiovisualDailyView({
                   </div>
                 </div>
 
-                {/* Disney 30sg · gala */}
+                {/* Disney 30sg */}
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between text-[11.5px]">
                     <span className="font-semibold text-text-primary">
-                      Disney 30sg · gala
+                      Disney 30sg
                     </span>
                     <span className="text-[11px] font-bold text-violet-500">
                       {weeklyAggregates.gala}/{WEEKLY_GOALS.disneyGala}
