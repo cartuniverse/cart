@@ -77,6 +77,33 @@ export type DailyVideoLog = {
   updatedAt?: string;
 };
 
+export type CommunityFormatKey =
+  | "historiaOrganica"
+  | "historiaProducto"
+  | "historiaInteractiva"
+  | "feedOrganico"
+  | "feedCreativo"
+  | "videoTestimonio"
+  | "carrusel"
+  | "post";
+
+export type DailyCommunityLog = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  cmId: string;
+  cmName: string;
+  projectName: string;
+  formatHistoriaOrganica: number;
+  formatHistoriaProducto: number;
+  formatHistoriaInteractiva: number;
+  formatFeedOrganico: number;
+  formatFeedCreativo: number;
+  formatVideoTestimonio: number;
+  formatCarrusel: number;
+  formatPost: number;
+  updatedAt?: string;
+};
+
 export const PHASE_COLORS: Record<
   Phase,
   { color: string; soft: string; label: string }

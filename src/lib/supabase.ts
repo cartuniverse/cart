@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Client, DailyVideoLog, Person, Project, Task } from "./types";
+import type { Client, DailyCommunityLog, DailyVideoLog, Person, Project, Task } from "./types";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -713,6 +713,286 @@ export async function getAllVideoLogs(
     }
   } catch (err) {
     console.error("Error in getAllVideoLogs:", err);
+  }
+
+  return localList;
+}
+
+// ==========================================
+// REGISTROS DIARIOS DE COMMUNITY MANAGER
+// ==========================================
+
+export async function getDailyCommunityLog(
+  date: string,
+  projectName = "Casa Luifer",
+  cmId = "valentina-c"
+): Promise<DailyCommunityLog | null> {
+  const localKey = `daily_community_log_${date}_${projectName}_${cmId}`;
+
+  // Intentar cargar de localStorage primero como fallback rápido
+  let fallbackLog: DailyCommunityLog | null = null;
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(localKey);
+    if (stored) {
+      try {
+        fallbackLog = JSON.parse(stored);
+      } catch (e) {}
+    }
+  }
+
+  if (!supabase) return fallbackLog;
+
+  try {
+    const { data, error } = await supabase
+      .from("daily_community_logs")
+      .select("*")
+      .eq("date", date)
+      .eq("project_name", projectName)
+      .eq("cm_id", cmId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching daily community log:", error);
+      return fallbackLog;
+    }
+
+    if (data) {
+      const log: DailyCommunityLog = {
+        id: data.id,
+        date: data.date,
+        cmId: data.cm_id,
+        cmName: data.cm_name,
+        projectName: data.project_name,
+        formatHistoriaOrganica: data.format_historia_organica ?? 0,
+        formatHistoriaProducto: data.format_historia_producto ?? 0,
+        formatHistoriaInteractiva: data.format_historia_interactiva ?? 0,
+        formatFeedOrganico: data.format_feed_organico ?? 0,
+        formatFeedCreativo: data.format_feed_creativo ?? 0,
+        formatVideoTestimonio: data.format_video_testimonio ?? 0,
+        formatCarrusel: data.format_carrusel ?? 0,
+        formatPost: data.format_post ?? 0,
+        updatedAt: data.updated_at,
+      };
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem(localKey, JSON.stringify(log));
+      }
+      return log;
+    }
+  } catch (err) {
+    console.error("Error in getDailyCommunityLog:", err);
+  }
+
+  return fallbackLog;
+}
+
+export async function saveDailyCommunityLog(
+  log: Omit<DailyCommunityLog, "id" | "updatedAt"> & { id?: string }
+): Promise<DailyCommunityLog> {
+  const id =
+    log.id || `cm_log_${log.date}_${log.projectName}_${log.cmId}`.toLowerCase().replace(/[^a-z0-9_]/g, "_");
+
+  const finalLog: DailyCommunityLog = {
+    ...log,
+    id,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const localKey = `daily_community_log_${log.date}_${log.projectName}_${log.cmId}`;
+
+  // Guardar en localStorage inmediatamente
+  if (typeof window !== "undefined") {
+    localStorage.setItem(localKey, JSON.stringify(finalLog));
+    // Guardar en un índice de logs para recuperación
+    const indexKey = `daily_community_logs_index_${log.projectName}_${log.cmId}`;
+    const keys: string[] = JSON.parse(localStorage.getItem(indexKey) || "[]");
+    if (!keys.includes(localKey)) {
+      keys.push(localKey);
+      localStorage.setItem(indexKey, JSON.stringify(keys));
+    }
+  }
+
+  if (!supabase) return finalLog;
+
+  try {
+    const { data, error } = await supabase
+      .from("daily_community_logs")
+      .upsert(
+        {
+          id,
+          date: log.date,
+          cm_id: log.cmId,
+          cm_name: log.cmName,
+          project_name: log.projectName,
+          format_historia_organica: log.formatHistoriaOrganica,
+          format_historia_producto: log.formatHistoriaProducto,
+          format_historia_interactiva: log.formatHistoriaInteractiva,
+          format_feed_organico: log.formatFeedOrganico,
+          format_feed_creativo: log.formatFeedCreativo,
+          format_video_testimonio: log.formatVideoTestimonio,
+          format_carrusel: log.formatCarrusel,
+          format_post: log.formatPost,
+          updated_at: finalLog.updatedAt,
+        },
+        { onConflict: "date,cm_id,project_name" }
+      )
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error saving daily community log to Supabase:", error);
+      return finalLog;
+    }
+
+    if (data) {
+      return {
+        id: data.id,
+        date: data.date,
+        cmId: data.cm_id,
+        cmName: data.cm_name,
+        projectName: data.project_name,
+        formatHistoriaOrganica: data.format_historia_organica ?? 0,
+        formatHistoriaProducto: data.format_historia_producto ?? 0,
+        formatHistoriaInteractiva: data.format_historia_interactiva ?? 0,
+        formatFeedOrganico: data.format_feed_organico ?? 0,
+        formatFeedCreativo: data.format_feed_creativo ?? 0,
+        formatVideoTestimonio: data.format_video_testimonio ?? 0,
+        formatCarrusel: data.format_carrusel ?? 0,
+        formatPost: data.format_post ?? 0,
+        updatedAt: data.updated_at,
+      };
+    }
+  } catch (err) {
+    console.error("Error in saveDailyCommunityLog:", err);
+  }
+
+  return finalLog;
+}
+
+export async function getWeeklyCommunityLogs(
+  weekDates: string[],
+  projectName = "Casa Luifer",
+  cmId = "valentina-c"
+): Promise<Record<string, DailyCommunityLog>> {
+  const result: Record<string, DailyCommunityLog> = {};
+
+  // Primero poblar desde localStorage
+  if (typeof window !== "undefined") {
+    weekDates.forEach((d) => {
+      const localKey = `daily_community_log_${d}_${projectName}_${cmId}`;
+      const stored = localStorage.getItem(localKey);
+      if (stored) {
+        try {
+          result[d] = JSON.parse(stored);
+        } catch (e) {}
+      }
+    });
+  }
+
+  if (!supabase || weekDates.length === 0) return result;
+
+  try {
+    const { data, error } = await supabase
+      .from("daily_community_logs")
+      .select("*")
+      .in("date", weekDates)
+      .eq("project_name", projectName)
+      .eq("cm_id", cmId);
+
+    if (error) {
+      console.error("Error fetching weekly community logs:", error);
+      return result;
+    }
+
+    if (data) {
+      data.forEach((d: any) => {
+        const item: DailyCommunityLog = {
+          id: d.id,
+          date: d.date,
+          cmId: d.cm_id,
+          cmName: d.cm_name,
+          projectName: d.project_name,
+          formatHistoriaOrganica: d.format_historia_organica ?? 0,
+          formatHistoriaProducto: d.format_historia_producto ?? 0,
+          formatHistoriaInteractiva: d.format_historia_interactiva ?? 0,
+          formatFeedOrganico: d.format_feed_organico ?? 0,
+          formatFeedCreativo: d.format_feed_creativo ?? 0,
+          formatVideoTestimonio: d.format_video_testimonio ?? 0,
+          formatCarrusel: d.format_carrusel ?? 0,
+          formatPost: d.format_post ?? 0,
+          updatedAt: d.updated_at,
+        };
+        result[d.date] = item;
+
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            `daily_community_log_${d.date}_${projectName}_${cmId}`,
+            JSON.stringify(item)
+          );
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Error in getWeeklyCommunityLogs:", err);
+  }
+
+  return result;
+}
+
+export async function getAllCommunityLogs(
+  projectName = "Casa Luifer",
+  cmId = "valentina-c"
+): Promise<DailyCommunityLog[]> {
+  const localList: DailyCommunityLog[] = [];
+
+  if (typeof window !== "undefined") {
+    const indexKey = `daily_community_logs_index_${projectName}_${cmId}`;
+    const keys: string[] = JSON.parse(localStorage.getItem(indexKey) || "[]");
+    keys.forEach((k) => {
+      const stored = localStorage.getItem(k);
+      if (stored) {
+        try {
+          localList.push(JSON.parse(stored));
+        } catch (e) {}
+      }
+    });
+  }
+
+  if (!supabase) return localList;
+
+  try {
+    const { data, error } = await supabase
+      .from("daily_community_logs")
+      .select("*")
+      .eq("project_name", projectName)
+      .eq("cm_id", cmId)
+      .order("date", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching all community logs:", error);
+      return localList;
+    }
+
+    if (data && data.length > 0) {
+      return data.map((d: any) => ({
+        id: d.id,
+        date: d.date,
+        cmId: d.cm_id,
+        cmName: d.cm_name,
+        projectName: d.project_name,
+        formatHistoriaOrganica: d.format_historia_organica ?? 0,
+        formatHistoriaProducto: d.format_historia_producto ?? 0,
+        formatHistoriaInteractiva: d.format_historia_interactiva ?? 0,
+        formatFeedOrganico: d.format_feed_organico ?? 0,
+        formatFeedCreativo: d.format_feed_creativo ?? 0,
+        formatVideoTestimonio: d.format_video_testimonio ?? 0,
+        formatCarrusel: d.format_carrusel ?? 0,
+        formatPost: d.format_post ?? 0,
+        updatedAt: d.updated_at,
+      }));
+    }
+  } catch (err) {
+    console.error("Error in getAllCommunityLogs:", err);
   }
 
   return localList;

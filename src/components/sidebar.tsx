@@ -15,7 +15,27 @@ import {
   LogOut,
   Sun,
   Moon,
+  UserCheck,
 } from "lucide-react";
+
+// Icono SVG oficial de Instagram
+function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+    </svg>
+  );
+}
 import { useTheme } from "@/lib/use-theme";
 import type { Profile } from "@/lib/types";
 
@@ -36,7 +56,8 @@ const ROLE_LABELS: Record<string, string> = {
 interface SidebarProps {
   activeNav?: string;
   onSelectNav?: (navId: string) => void;
-  currentRoleView?: "admin" | "audiovisual";
+  currentRoleView?: "admin" | "audiovisual" | "community";
+  onRoleViewChange?: (view: "admin" | "audiovisual" | "community") => void;
   profile?: Profile | null;
   onLogout?: () => void;
   activeProjectName?: string;
@@ -47,16 +68,32 @@ export function Sidebar({
   activeNav = "organigrama",
   onSelectNav,
   currentRoleView = "admin",
+  onRoleViewChange,
   profile,
   onLogout,
   activeProjectName = "Casa Luifer",
   onSelectProjectName,
 }: SidebarProps) {
   const isAudiovisual = currentRoleView === "audiovisual";
+  const isCommunity = currentRoleView === "community";
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
-  const displayName = profile?.name ?? "Usuario";
-  const roleLabel = profile ? ROLE_LABELS[profile.role] ?? profile.role : "";
+
+  // Nombre e iniciales según la vista
+  const displayName = isCommunity
+    ? "Valentina C."
+    : isAudiovisual
+    ? "Andrés M."
+    : profile?.name ?? "Cristian A.";
+
+  const roleLabel = isCommunity
+    ? "Community Manager"
+    : isAudiovisual
+    ? "Creador Audiovisual AI"
+    : profile
+    ? ROLE_LABELS[profile.role] ?? profile.role
+    : "Administrador";
+
   const initials = displayName
     .split(" ")
     .map((p) => p[0])
@@ -73,9 +110,9 @@ export function Sidebar({
             <img src="/cart-logo.png" alt="Cart Logo" className="w-full h-full object-cover" />
           </div>
           <div className="leading-tight">
-            <div className="text-[15px] font-bold text-text-primary">Cart</div>
+            <div className="text-[15px] font-bold text-text-primary">Orbit</div>
             <div className="text-[11px] font-medium text-text-tertiary">
-              {isAudiovisual ? "Mi diario" : "Mi equipo"}
+              {isAudiovisual || isCommunity ? "Mi diario" : "Mi equipo"}
             </div>
           </div>
         </div>
@@ -100,13 +137,103 @@ export function Sidebar({
         </button>
       </div>
 
-      {/* Si está en la vista del Creador Audiovisual */}
-      {isAudiovisual ? (
+      {/* Si está en la vista de Community Manager */}
+      {isCommunity ? (
         <div className="flex flex-col gap-6 flex-1">
-          {/* Sección: ESPACIO */}
+          {/* Tarjeta de usuario destacada de Valentina C. con icono Instagram */}
+          <div className="rounded-2xl bg-pink-50/70 border border-pink-100 p-3 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center text-white shadow-2xs shrink-0">
+              <InstagramIcon className="w-5 h-5" />
+            </div>
+            <div className="leading-tight min-w-0">
+              <div className="text-[13.5px] font-bold text-text-primary truncate">
+                Valentina C.
+              </div>
+              <div className="text-[11px] font-semibold text-pink-600 truncate">
+                Community Manager
+              </div>
+            </div>
+          </div>
+
+          {/* Sección: MI DÍA */}
           <div className="flex flex-col gap-1">
             <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              ESPACIO
+              MI DÍA
+            </div>
+            <button
+              onClick={() => onSelectNav?.("diario_hoy")}
+              className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
+                activeNav === "diario_hoy"
+                  ? "bg-pink-50/80 text-pink-700 font-bold border border-pink-200/60 shadow-xs"
+                  : "text-text-secondary font-medium hover:bg-surface-2"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Calendar className="w-[18px] h-[18px] text-pink-500" />
+                <span className="text-[13px]">Diario de hoy</span>
+              </div>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-pink-100/80 text-pink-600">
+                8/15
+              </span>
+            </button>
+          </div>
+
+          {/* Sección: MARCAS */}
+          <div className="flex flex-col gap-1">
+            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
+              MARCAS
+            </div>
+            {[
+              { name: "Casa Luifer", target: "56 / sem", color: "#ec4899" },
+              { name: "Montana", target: "39 / sem", color: "#3b82f6" },
+            ].map((brand) => {
+              const isSelected = activeProjectName === brand.name;
+              return (
+                <button
+                  key={brand.name}
+                  onClick={() => onSelectProjectName?.(brand.name)}
+                  className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer text-[12.5px] ${
+                    isSelected
+                      ? "bg-surface-2 text-text-primary font-bold"
+                      : "text-text-secondary font-medium hover:bg-surface-2"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: brand.color }}
+                    />
+                    <span className="truncate">{brand.name}</span>
+                  </div>
+                  <span className="text-[11px] text-text-tertiary font-medium">
+                    {brand.target}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : isAudiovisual ? (
+        <div className="flex flex-col gap-6 flex-1">
+          {/* Tarjeta de usuario destacada de Andrés M. con icono Cámara */}
+          <div className="rounded-2xl bg-indigo-50/70 border border-indigo-100 p-3 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-2xs shrink-0">
+              <Video className="w-5 h-5" />
+            </div>
+            <div className="leading-tight min-w-0">
+              <div className="text-[13.5px] font-bold text-text-primary truncate">
+                Andrés M.
+              </div>
+              <div className="text-[11px] font-semibold text-indigo-600 truncate">
+                Creador Audiovisual AI
+              </div>
+            </div>
+          </div>
+
+          {/* Sección: MI DÍA */}
+          <div className="flex flex-col gap-1">
+            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
+              MI DÍA
             </div>
             {/* Botón Dashboard */}
             <button
@@ -145,7 +272,7 @@ export function Sidebar({
             <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
               MIS PROYECTOS
             </div>
-            {[activeProjectName].map((proj) => {
+            {["Casa Luifer"].map((proj) => {
               const isSelected = activeProjectName === proj;
               return (
                 <button
@@ -200,27 +327,81 @@ export function Sidebar({
         </div>
       )}
 
-      {/* User Footer */}
-      <button
-        onClick={onLogout}
-        title="Cerrar sesión"
-        className="h-14 rounded-xl bg-surface-2 flex items-center gap-2.5 px-2.5 shrink-0 hover:bg-surface border border-transparent hover:border-border transition cursor-pointer text-left"
-      >
-        <div
-          className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-[12px] ${
-            isAudiovisual ? "bg-[#4f46e5]" : "bg-accent"
-          }`}
-        >
-          {initials}
-        </div>
-        <div className="flex-1 leading-tight min-w-0">
-          <div className="text-[13px] font-semibold text-text-primary truncate">
-            {displayName}
+      {/* User Footer con selector de rol/vista */}
+      <div className="relative">
+        <div className="rounded-xl bg-surface-2 p-2 flex flex-col gap-2 border border-border/60">
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-[12px] shrink-0 ${
+                isCommunity
+                  ? "bg-pink-500"
+                  : isAudiovisual
+                  ? "bg-[#4f46e5]"
+                  : "bg-accent"
+              }`}
+            >
+              {initials}
+            </div>
+            <div className="flex-1 leading-tight min-w-0">
+              <div className="text-[13px] font-semibold text-text-primary truncate">
+                {displayName}
+              </div>
+              <div className="text-[11px] text-text-tertiary truncate">
+                {roleLabel}
+              </div>
+            </div>
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                title="Cerrar sesión"
+                className="p-1.5 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface transition cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
-          <div className="text-[11px] text-text-tertiary truncate">{roleLabel}</div>
+
+          {/* Switch rápido de vista para el usuario */}
+          {onRoleViewChange && (
+            <div className="grid grid-cols-3 gap-1 pt-1 border-t border-border/40 text-[10px] font-bold">
+              <button
+                type="button"
+                onClick={() => onRoleViewChange("admin")}
+                className={`py-1 rounded text-center transition cursor-pointer ${
+                  currentRoleView === "admin"
+                    ? "bg-surface text-text-primary shadow-2xs"
+                    : "text-text-tertiary hover:text-text-primary"
+                }`}
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => onRoleViewChange("audiovisual")}
+                className={`py-1 rounded text-center transition cursor-pointer ${
+                  currentRoleView === "audiovisual"
+                    ? "bg-indigo-50 text-indigo-700 shadow-2xs"
+                    : "text-text-tertiary hover:text-text-primary"
+                }`}
+              >
+                Audiovisual
+              </button>
+              <button
+                type="button"
+                onClick={() => onRoleViewChange("community")}
+                className={`py-1 rounded text-center transition cursor-pointer ${
+                  currentRoleView === "community"
+                    ? "bg-pink-50 text-pink-700 shadow-2xs"
+                    : "text-text-tertiary hover:text-text-primary"
+                }`}
+              >
+                Community
+              </button>
+            </div>
+          )}
         </div>
-        <LogOut className="w-3.5 h-3.5 text-text-tertiary shrink-0" />
-      </button>
+      </div>
     </aside>
   );
 }
