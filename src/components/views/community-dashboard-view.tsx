@@ -264,9 +264,9 @@ export function CommunityDashboardView({
   const offsetMT = circumference - (Math.min(100, avanceMTPct) / 100) * circumference;
 
   return (
-    <div className="flex-1 h-full flex flex-col min-w-0 bg-[#f8f9fa] overflow-y-auto">
+    <div className="flex-1 h-full flex flex-col min-w-0 bg-bg overflow-y-auto">
       {/* Top Navbar */}
-      <header className="h-[70px] shrink-0 bg-white border-b border-[var(--border)] px-8 flex items-center justify-between">
+      <header className="h-[70px] shrink-0 bg-surface border-b border-[var(--border)] px-8 flex items-center justify-between">
         <div className="flex items-center gap-2 text-[13px]">
           <span className="text-text-tertiary">Mi espacio</span>
           <span className="text-text-tertiary">›</span>
@@ -292,7 +292,7 @@ export function CommunityDashboardView({
       {/* Contenido Principal */}
       <div className="p-8 max-w-[1360px] mx-auto w-full flex flex-col gap-6">
         {/* Banner Hero Superior con degradado pastel tenue */}
-        <div className="rounded-2xl bg-gradient-to-r from-amber-50/40 via-pink-50/50 to-pink-50/20 border border-pink-100/70 p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xs">
+        <div className="rounded-2xl bg-surface-2/70 border border-[var(--border)] p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xs">
           <div className="flex flex-col gap-2.5 max-w-[580px]">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-pink-500" />
@@ -315,9 +315,9 @@ export function CommunityDashboardView({
             </div>
           </div>
 
-          {/* 3 Tarjetas de Resumen en Hero (Fondo blanco limpio) */}
+          {/* 3 Tarjetas de Resumen en Hero */}
           <div className="flex items-center gap-3 shrink-0 self-stretch md:self-auto justify-end">
-            <div className="w-[105px] h-[82px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs">
+            <div className="w-[105px] h-[82px] rounded-2xl bg-surface border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs">
               <span className="text-[26px] font-bold text-pink-500 leading-tight">
                 {postsHoy}
               </span>
@@ -326,7 +326,7 @@ export function CommunityDashboardView({
               </span>
             </div>
 
-            <div className="w-[105px] h-[82px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs">
+            <div className="w-[105px] h-[82px] rounded-2xl bg-surface border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs">
               <span className="text-[26px] font-bold text-text-primary leading-tight">
                 {semanaCL}
               </span>
@@ -335,7 +335,7 @@ export function CommunityDashboardView({
               </span>
             </div>
 
-            <div className="w-[105px] h-[82px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs">
+            <div className="w-[105px] h-[82px] rounded-2xl bg-surface border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs">
               <span className="text-[26px] font-bold text-text-primary leading-tight">
                 {semanaMT}
               </span>
@@ -349,7 +349,7 @@ export function CommunityDashboardView({
         {/* Sección de 2 Columnas de Gráficas: "Avance semanal por marca" (Izquierda) + "Formatos más publicados" (Derecha) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Card Izquierda: Avance semanal por marca (7 u 8 cols) */}
-          <div className="lg:col-span-8 rounded-2xl bg-white border border-[var(--border)] p-7 flex flex-col gap-6 shadow-2xs">
+          <div className="lg:col-span-8 rounded-2xl bg-surface border border-[var(--border)] p-7 flex flex-col gap-6 shadow-2xs">
             <div className="flex items-center gap-2">
               <GalleryIcon className="w-4 h-4 text-pink-500" />
               <h3 className="text-[14px] font-bold text-text-primary">
@@ -368,7 +368,8 @@ export function CommunityDashboardView({
                       cy="60"
                       r={radius}
                       fill="transparent"
-                      stroke="#fce7f3"
+                      stroke="currentColor"
+                      className="text-pink-100 dark:text-pink-950/40"
                       strokeWidth="10"
                     />
                     <circle
@@ -410,7 +411,8 @@ export function CommunityDashboardView({
                       cy="60"
                       r={radius}
                       fill="transparent"
-                      stroke="#dbeafe"
+                      stroke="currentColor"
+                      className="text-blue-100 dark:text-blue-950/40"
                       strokeWidth="10"
                     />
                     <circle
@@ -434,7 +436,7 @@ export function CommunityDashboardView({
                 </div>
 
                 <div className="flex flex-col items-center text-center gap-0.5">
-                  <span className="text-[13.5px] font-bold text-blue-600">
+                  <span className="text-[13.5px] font-bold text-blue-600 dark:text-blue-400">
                     Montana
                   </span>
                   <span className="text-[12px] font-medium text-text-tertiary">
@@ -446,7 +448,7 @@ export function CommunityDashboardView({
           </div>
 
           {/* Card Derecha: Formatos más publicados (4 o 5 cols) */}
-          <div className="lg:col-span-4 rounded-2xl bg-white border border-[var(--border)] p-7 flex flex-col gap-6 shadow-2xs">
+          <div className="lg:col-span-4 rounded-2xl bg-surface border border-[var(--border)] p-7 flex flex-col gap-6 shadow-2xs">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

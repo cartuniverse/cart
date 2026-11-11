@@ -474,9 +474,9 @@ export function CommunityDailyView({
     circumference - (Math.min(100, avanceSemanalPct) / 100) * circumference;
 
   return (
-    <div className="flex-1 h-full flex flex-col min-w-0 bg-[#f8f9fa] overflow-y-auto">
+    <div className="flex-1 h-full flex flex-col min-w-0 bg-bg overflow-y-auto">
       {/* Top Navbar */}
-      <header className="h-[70px] shrink-0 bg-white border-b border-[var(--border)] px-8 flex items-center justify-between gap-4">
+      <header className="h-[70px] shrink-0 bg-surface border-b border-[var(--border)] px-8 flex items-center justify-between gap-4">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-[13px]">
           <span className="text-text-tertiary">Mi espacio</span>
@@ -499,7 +499,7 @@ export function CommunityDailyView({
                   onClick={() => handleSelectProject(proj)}
                   className={`h-7 px-3.5 rounded-full text-[12px] font-semibold transition cursor-pointer ${
                     isActive
-                      ? "bg-white text-text-primary shadow-xs"
+                      ? "bg-surface text-text-primary shadow-xs"
                       : "text-text-tertiary hover:text-text-secondary"
                   }`}
                 >
@@ -510,7 +510,7 @@ export function CommunityDailyView({
           </div>
 
           {/* Navegador de Fecha */}
-          <div className="flex items-center bg-white border border-[var(--border)] rounded-xl h-9 px-2 shadow-2xs">
+          <div className="flex items-center bg-surface border border-[var(--border)] rounded-xl h-9 px-2 shadow-2xs">
             <button
               type="button"
               onClick={handlePrevDay}
@@ -569,7 +569,7 @@ export function CommunityDailyView({
       {/* Contenido Principal */}
       <div className="p-8 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
         {/* Banner Hero */}
-        <div className="rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xs">
+        <div className="rounded-2xl bg-surface border border-[var(--border)] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xs">
           <div className="flex items-center gap-4">
             {/* Avatar Círculo Rosa Iniciales */}
             <div className="w-12 h-12 rounded-full bg-pink-100/70 border border-pink-200 flex items-center justify-center shrink-0">
@@ -628,7 +628,7 @@ export function CommunityDailyView({
             </div>
 
             {/* Contenedor tipo tabla redondeado */}
-            <div className="rounded-2xl bg-white border border-[var(--border)] overflow-hidden shadow-2xs">
+            <div className="rounded-2xl bg-surface border border-[var(--border)] overflow-hidden shadow-2xs">
               {/* Encabezado de la tabla */}
               <div className="grid grid-cols-12 px-6 py-3.5 bg-surface-2/30 border-b border-[var(--border)] text-[10.5px] font-bold text-text-tertiary uppercase tracking-wider">
                 <div className="col-span-4">Formato</div>
@@ -675,7 +675,7 @@ export function CommunityDailyView({
                           <button
                             type="button"
                             onClick={() => handleDecrement(fmt.key)}
-                            className="w-6 h-6 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-white transition cursor-pointer"
+                            className="w-6 h-6 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface transition cursor-pointer"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
@@ -762,7 +762,7 @@ export function CommunityDailyView({
           {/* Columna Derecha: Widgets (4 cols) */}
           <div className="lg:col-span-4 flex flex-col gap-5">
             {/* Card 1: ESTA SEMANA (Lunes a Viernes) */}
-            <div className="rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col gap-5 shadow-2xs">
+            <div className="rounded-2xl bg-surface border border-[var(--border)] p-6 flex flex-col gap-5 shadow-2xs">
               {/* Header */}
               <div className="flex items-center gap-2 text-[11px] font-bold text-text-tertiary tracking-wider uppercase">
                 <Calendar className="w-3.5 h-3.5 text-pink-500" />
@@ -779,7 +779,8 @@ export function CommunityDailyView({
                       cy="50"
                       r={radius}
                       fill="transparent"
-                      stroke="#fce7f3"
+                      stroke="currentColor"
+                      className="text-pink-100 dark:text-pink-950/40"
                       strokeWidth="8"
                     />
                     {/* Círculo de progreso en rosa */}
@@ -842,7 +843,7 @@ export function CommunityDailyView({
                       onClick={() => setSelectedDate(dayDate)}
                       className={`h-[64px] rounded-xl flex flex-col items-center justify-center gap-1 transition cursor-pointer border ${
                         isCurrentSelected
-                          ? "bg-pink-50 border-pink-200 text-pink-600"
+                          ? "bg-pink-50 dark:bg-pink-950/40 border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-400"
                           : "bg-surface-2/40 border-[var(--border)] text-text-secondary hover:bg-surface-2"
                       }`}
                     >
@@ -851,7 +852,7 @@ export function CommunityDailyView({
                       </span>
                       <span
                         className={`text-[15px] font-bold ${
-                          isCurrentSelected ? "text-pink-600" : "text-text-primary"
+                          isCurrentSelected ? "text-pink-600 dark:text-pink-400" : "text-text-primary"
                         }`}
                       >
                         {dayPublications}
@@ -863,18 +864,18 @@ export function CommunityDailyView({
             </div>
 
             {/* Card 2: ALCANCE */}
-            <div className="rounded-2xl bg-[#fdf2f8] border border-[#fbcfe8] p-5 flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-[11px] font-bold text-pink-600 uppercase tracking-wider">
+            <div className="rounded-2xl bg-pink-50/50 dark:bg-pink-950/20 border border-pink-100 dark:border-pink-900/40 p-5 flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-[11px] font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider">
                 <Eye className="w-3.5 h-3.5 text-pink-500" />
                 <span>Alcance</span>
               </div>
-              <p className="text-[12.5px] text-pink-950 font-medium leading-relaxed">
+              <p className="text-[12.5px] text-pink-950 dark:text-pink-200 font-medium leading-relaxed">
                 Solo Instagram/facebook. No incluye TikTok por el momento
               </p>
             </div>
 
             {/* Card 3: PUBLICADO HOY */}
-            <div className="rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col gap-3.5 shadow-2xs">
+            <div className="rounded-2xl bg-surface border border-[var(--border)] p-6 flex flex-col gap-3.5 shadow-2xs">
               <div className="flex items-center gap-2 text-[11px] font-bold text-text-tertiary tracking-wider uppercase">
                 <InstagramIcon className="w-3.5 h-3.5 text-pink-500" />
                 <span>Publicado hoy</span>
