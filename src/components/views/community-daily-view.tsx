@@ -214,6 +214,25 @@ export function CommunityDailyView({
 }: CommunityDailyViewProps) {
   const [currentProjectName, setCurrentProjectName] = useState(initialProjectName);
 
+  // Sincronizar si la prop cambia desde el exterior
+  useEffect(() => {
+    if (initialProjectName && initialProjectName !== currentProjectName) {
+      setCurrentProjectName(initialProjectName);
+      // Resetear a 0 de inmediato para no mezclar datos de marcas
+      setCounts({
+        historiaOrganica: 0,
+        historiaProducto: 0,
+        historiaInteractiva: 0,
+        feedOrganico: 0,
+        feedCreativo: 0,
+        videoTestimonio: 0,
+        carrusel: 0,
+        post: 0,
+      });
+      setWeeklyLogs({});
+    }
+  }, [initialProjectName]);
+
   // Fecha seleccionada (Default fijo inicial: 2026-11-10 Lunes/Martes)
   const [selectedDate, setSelectedDate] = useState<Date>(
     () => new Date("2026-11-10T12:00:00")
@@ -348,6 +367,19 @@ export function CommunityDailyView({
 
   // Cambio de proyecto
   const handleSelectProject = (proj: string) => {
+    if (proj === currentProjectName) return;
+    // Resetear inmediatamente los datos de la pantalla a 0
+    setCounts({
+      historiaOrganica: 0,
+      historiaProducto: 0,
+      historiaInteractiva: 0,
+      feedOrganico: 0,
+      feedCreativo: 0,
+      videoTestimonio: 0,
+      carrusel: 0,
+      post: 0,
+    });
+    setWeeklyLogs({});
     setCurrentProjectName(proj);
     onProjectChange?.(proj);
   };

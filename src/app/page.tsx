@@ -18,6 +18,7 @@ import { ProjectDetailView } from "@/components/views/project-detail-view";
 import { AudiovisualDailyView } from "@/components/views/audiovisual-daily-view";
 import { AudiovisualDashboardView } from "@/components/views/audiovisual-dashboard-view";
 import { CommunityDailyView } from "@/components/views/community-daily-view";
+import { CommunityDashboardView } from "@/components/views/community-dashboard-view";
 import { getPeople, getProjects } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { getCurrentProfile, signOut } from "@/lib/auth";
@@ -33,20 +34,13 @@ export default function Home() {
   const [isAddingPerson, setIsAddingPerson] = useState(false);
   const [selectedProfilePerson, setSelectedProfilePerson] = useState<Person | null>(null);
 
-  // Soporte de cambio de rol para probar vistas ("admin" | "audiovisual" | "community")
-  const [roleViewOverride, setRoleViewOverride] = useState<
-    "admin" | "audiovisual" | "community" | null
-  >(null);
-
-  const detectedRole: "admin" | "audiovisual" | "community" =
+  // Vista derivada estrictamente del rol del usuario autenticado
+  const currentRoleView: "admin" | "audiovisual" | "community" =
     profile?.role === "creador_audiovisual"
       ? "audiovisual"
       : profile?.role === "community_manager"
       ? "community"
       : "admin";
-
-  const currentRoleView: "admin" | "audiovisual" | "community" =
-    roleViewOverride ?? detectedRole;
 
   const [activeProjectName, setActiveProjectName] = useState<string>("Casa Luifer");
 
@@ -60,7 +54,7 @@ export default function Home() {
         return;
       }
       setProfile(p);
-      if (p.role === "creador_audiovisual") {
+      if (p.role === "creador_audiovisual" || p.role === "community_manager") {
         setActiveNav("dashboard");
         if (p.projectName) setActiveProjectName(p.projectName);
       } else {
@@ -156,14 +150,6 @@ export default function Home() {
           activeNav={activeNav}
           onSelectNav={handleSelectNav}
           currentRoleView={currentRoleView}
-          onRoleViewChange={(view) => {
-            setRoleViewOverride(view);
-            if (view === "community" || view === "audiovisual") {
-              setActiveNav("diario_hoy");
-            } else {
-              setActiveNav("organigrama");
-            }
-          }}
           profile={profile}
           onLogout={handleLogout}
           activeProjectName={activeProjectName}
@@ -179,10 +165,17 @@ export default function Home() {
           >
           {/* Si estamos en la vista de Community Manager */}
           {currentRoleView === "community" ? (
-            <CommunityDailyView
-              initialProjectName={activeProjectName}
-              onProjectChange={(proj) => setActiveProjectName(proj)}
-            />
+            activeNav === "dashboard" ? (
+              <CommunityDashboardView
+                cmName={profile.name ? profile.name.split(" ")[0] : "Valentina"}
+                onGoToDailyView={() => setActiveNav("diario_hoy")}
+              />
+            ) : (
+              <CommunityDailyView
+                initialProjectName={activeProjectName}
+                onProjectChange={(proj) => setActiveProjectName(proj)}
+              />
+            )
           ) : currentRoleView === "audiovisual" ? (
             activeNav === "dashboard" ? (
               <AudiovisualDashboardView
