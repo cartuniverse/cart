@@ -21,7 +21,7 @@ export function Navbar({
   onToggleStatusEmoji,
   selectedProject = null,
   onSelectProject,
-  availableProjects = ["Orbit", "Mobile App", "Branding", "Web Platform"],
+  availableProjects = ["Cart", "Mobile App", "Branding", "Web Platform"],
 }: NavbarProps) {
   return (
     <header className="h-[72px] shrink-0 bg-surface border-b border-[var(--border)] flex items-center px-7 gap-4">
@@ -56,11 +56,10 @@ export function Navbar({
         <button
           onClick={onToggleStatusEmoji}
           title={showStatusEmoji ? "Desactivar emojis de estatus (🧑🏻‍💻 / 💤)" : "Activar emojis de estatus (🧑🏻‍💻 / 💤)"}
-          className={`h-9 px-3 rounded-[10px] border flex items-center gap-2 text-[12px] transition cursor-pointer ${
-            showStatusEmoji
+          className={`h-9 px-3 rounded-[10px] border flex items-center gap-2 text-[12px] transition cursor-pointer ${showStatusEmoji
               ? "bg-surface border-border text-text-primary font-medium shadow-2xs hover:bg-surface-2"
               : "bg-surface-2 border-transparent text-text-tertiary hover:text-text-primary"
-          }`}
+            }`}
         >
           <span className="text-[13px]">{showStatusEmoji ? "🧑🏻‍💻" : "💤"}</span>
           <span className="font-medium">{showStatusEmoji ? "Estatus: ON" : "Estatus: OFF"}</span>
@@ -71,11 +70,10 @@ export function Navbar({
       <div className="h-9 rounded-[10px] bg-surface-2 p-1 flex items-center gap-0.5">
         <button
           onClick={() => onTabChange("grafo")}
-          className={`h-full px-3 rounded-lg flex items-center gap-1.5 text-[12px] transition cursor-pointer ${
-            currentTab === "grafo"
+          className={`h-full px-3 rounded-lg flex items-center gap-1.5 text-[12px] transition cursor-pointer ${currentTab === "grafo"
               ? "bg-surface border border-[var(--border)] text-text-primary font-semibold shadow-xs"
               : "text-text-secondary font-medium hover:bg-surface"
-          }`}
+            }`}
         >
           <Share2 className="w-3.5 h-3.5" />
           Grafo
@@ -83,11 +81,10 @@ export function Navbar({
 
         <button
           onClick={() => onTabChange("cuadricula")}
-          className={`h-full px-3 rounded-lg flex items-center gap-1.5 text-[12px] transition cursor-pointer ${
-            currentTab === "cuadricula"
+          className={`h-full px-3 rounded-lg flex items-center gap-1.5 text-[12px] transition cursor-pointer ${currentTab === "cuadricula"
               ? "bg-surface border border-[var(--border)] text-text-primary font-semibold shadow-xs"
               : "text-text-secondary font-medium hover:bg-surface"
-          }`}
+            }`}
         >
           <Grid3x3 className="w-3.5 h-3.5" />
           Cuadrícula
