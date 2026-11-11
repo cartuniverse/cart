@@ -202,7 +202,7 @@ export function AudiovisualDashboardView({
             <div className="pt-1">
               <button
                 onClick={onGoToDailyView}
-                className="h-10 px-4 rounded-xl bg-[#111113] text-white text-[13px] font-semibold flex items-center gap-2 hover:opacity-90 active:scale-95 transition shadow-sm cursor-pointer"
+                className="h-10 px-4 rounded-xl bg-[#111113] text-white dark:bg-white dark:text-[#111113] text-[13px] font-semibold flex items-center gap-2 hover:opacity-90 active:scale-95 transition shadow-sm cursor-pointer"
               >
                 <Video className="w-3.5 h-3.5" />
                 <span>Ver diario de hoy</span>

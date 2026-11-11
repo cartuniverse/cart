@@ -543,7 +543,7 @@ export function CommunityDailyView({
             className={`h-9 px-4 rounded-xl text-[12.5px] font-semibold flex items-center gap-2 transition shadow-sm cursor-pointer ${
               savedSuccess
                 ? "bg-emerald-600 text-white"
-                : "bg-[#111113] text-white hover:opacity-90 active:scale-95"
+                : "bg-[#111113] text-white dark:bg-white dark:text-[#111113] hover:opacity-90 active:scale-95"
             }`}
           >
             {isSaving ? (

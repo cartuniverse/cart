@@ -425,7 +425,7 @@ export function AudiovisualDailyView({
             whileTap={{ scale: 0.95 }}
             animate={showSavedFeedback ? { scale: [1, 1.08, 1] } : {}}
             transition={{ duration: 0.35, ease: "easeOut" }}
-            className="h-9 px-4 rounded-xl bg-[#111113] text-white text-[12.5px] font-semibold flex items-center gap-1.5 hover:opacity-90 transition shadow-sm cursor-pointer disabled:opacity-50"
+            className="h-9 px-4 rounded-xl bg-[#111113] text-white dark:bg-white dark:text-[#111113] text-[12.5px] font-semibold flex items-center gap-1.5 hover:opacity-90 transition shadow-sm cursor-pointer disabled:opacity-50"
           >
             <AnimatePresence mode="wait" initial={false}>
               {isSaving ? (

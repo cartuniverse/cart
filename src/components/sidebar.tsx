@@ -144,16 +144,16 @@ export function Sidebar({
   const displayName = isCommunity
     ? "Valentina C."
     : isAudiovisual
-    ? "Andrés M."
-    : profile?.name ?? "Cristian A.";
+      ? "Andrés M."
+      : profile?.name ?? "Cristian A.";
 
   const roleLabel = isCommunity
     ? "Community Manager"
     : isAudiovisual
-    ? "Creador Audiovisual AI"
-    : profile
-    ? ROLE_LABELS[profile.role] ?? profile.role
-    : "Administrador";
+      ? "Creador Audiovisual AI"
+      : profile
+        ? ROLE_LABELS[profile.role] ?? profile.role
+        : "Administrador";
 
   const initials = displayName
     .split(" ")
@@ -210,11 +210,10 @@ export function Sidebar({
             {/* Dashboard */}
             <button
               onClick={() => onSelectNav?.("dashboard")}
-              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
-                activeNav === "dashboard"
-                  ? "bg-pink-50/80 text-pink-700 font-bold border border-pink-200/60 shadow-xs"
-                  : "text-text-secondary font-medium hover:bg-surface-2"
-              }`}
+              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${activeNav === "dashboard"
+                ? "bg-pink-50/80 text-pink-700 font-bold border border-pink-200/60 shadow-xs"
+                : "text-text-secondary font-medium hover:bg-surface-2"
+                }`}
             >
               <LayoutDashboard className="w-[18px] h-[18px] text-pink-500" />
               <span className="text-[13px] flex-1">Dashboard</span>
@@ -223,11 +222,10 @@ export function Sidebar({
             {/* Diario de hoy */}
             <button
               onClick={() => onSelectNav?.("diario_hoy")}
-              className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
-                activeNav === "diario_hoy"
-                  ? "bg-pink-50/80 text-pink-700 font-bold border border-pink-200/60 shadow-xs"
-                  : "text-text-secondary font-medium hover:bg-surface-2"
-              }`}
+              className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${activeNav === "diario_hoy"
+                ? "bg-pink-50/80 text-pink-700 font-bold border border-pink-200/60 shadow-xs"
+                : "text-text-secondary font-medium hover:bg-surface-2"
+                }`}
             >
               <div className="flex items-center gap-3">
                 <Calendar className="w-[18px] h-[18px] text-pink-500" />
@@ -253,11 +251,10 @@ export function Sidebar({
                 <button
                   key={brand.name}
                   onClick={() => onSelectProjectName?.(brand.name)}
-                  className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer text-[12.5px] ${
-                    isSelected
-                      ? "bg-surface-2 text-text-primary font-bold"
-                      : "text-text-secondary font-medium hover:bg-surface-2"
-                  }`}
+                  className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer text-[12.5px] ${isSelected
+                    ? "bg-surface-2 text-text-primary font-bold"
+                    : "text-text-secondary font-medium hover:bg-surface-2"
+                    }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span
@@ -299,11 +296,10 @@ export function Sidebar({
             {/* Botón Dashboard */}
             <button
               onClick={() => onSelectNav?.("dashboard")}
-              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
-                activeNav === "dashboard"
-                  ? "bg-accent-soft text-text-primary font-bold shadow-xs"
-                  : "text-text-secondary font-medium hover:bg-surface-2"
-              }`}
+              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${activeNav === "dashboard"
+                ? "bg-accent-soft text-text-primary font-bold shadow-xs"
+                : "text-text-secondary font-medium hover:bg-surface-2"
+                }`}
             >
               <LayoutDashboard className="w-[18px] h-[18px]" />
               <span className="text-[13px] flex-1">Dashboard</span>
@@ -312,11 +308,10 @@ export function Sidebar({
             {/* Botón Diario de hoy */}
             <button
               onClick={() => onSelectNav?.("diario_hoy")}
-              className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
-                activeNav === "diario_hoy"
-                  ? "bg-accent-soft text-text-primary font-bold shadow-xs"
-                  : "text-text-secondary font-medium hover:bg-surface-2"
-              }`}
+              className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${activeNav === "diario_hoy"
+                ? "bg-accent-soft text-text-primary font-bold shadow-xs"
+                : "text-text-secondary font-medium hover:bg-surface-2"
+                }`}
             >
               <div className="flex items-center gap-3">
                 <Calendar className="w-[18px] h-[18px]" />
@@ -339,11 +334,10 @@ export function Sidebar({
                 <button
                   key={proj}
                   onClick={() => onSelectProjectName?.(proj)}
-                  className={`h-9 rounded-[10px] flex items-center gap-2.5 px-3 text-left transition cursor-pointer text-[12.5px] ${
-                    isSelected
-                      ? "bg-surface-2 text-text-primary font-bold"
-                      : "text-text-secondary font-medium hover:bg-surface-2"
-                  }`}
+                  className={`h-9 rounded-[10px] flex items-center gap-2.5 px-3 text-left transition cursor-pointer text-[12.5px] ${isSelected
+                    ? "bg-surface-2 text-text-primary font-bold"
+                    : "text-text-secondary font-medium hover:bg-surface-2"
+                    }`}
                 >
                   <span
                     className="w-2 h-2 rounded-full shrink-0"
@@ -351,9 +345,9 @@ export function Sidebar({
                       background:
                         proj === "Casa Luifer"
                           ? "#ec4899"
-                          : proj === "Orbit"
-                          ? "#6366f1"
-                          : "#10b981",
+                          : proj === "Cart"
+                            ? "#6366f1"
+                            : "#10b981",
                     }}
                   />
                   <span className="truncate">{proj}</span>
@@ -374,11 +368,10 @@ export function Sidebar({
               <button
                 key={id}
                 onClick={() => onSelectNav?.(id)}
-                className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
-                  isActive
-                    ? "bg-accent-soft text-text-primary font-bold shadow-xs"
-                    : "text-text-secondary font-medium hover:bg-surface-2"
-                }`}
+                className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${isActive
+                  ? "bg-accent-soft text-text-primary font-bold shadow-xs"
+                  : "text-text-secondary font-medium hover:bg-surface-2"
+                  }`}
               >
                 <Icon className="w-[18px] h-[18px]" />
                 <span className="text-[13px] flex-1">{label}</span>
@@ -392,13 +385,12 @@ export function Sidebar({
       <div className="h-14 rounded-xl bg-surface-2 flex items-center justify-between px-3 shrink-0 border border-transparent hover:border-border transition">
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div
-            className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-[12px] shrink-0 ${
-              isCommunity
-                ? "bg-pink-500"
-                : isAudiovisual
+            className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-[12px] shrink-0 ${isCommunity
+              ? "bg-pink-500"
+              : isAudiovisual
                 ? "bg-[#4f46e5]"
                 : "bg-accent"
-            }`}
+              }`}
           >
             {initials}
           </div>
