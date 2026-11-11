@@ -24,6 +24,34 @@
   --accent-red: #ef4444;
 }
 
+html.dark {
+  --bg: #121214;
+  --surface: #1b1b1f;
+  --surface-2: #232327;
+  --border: #2d2d32;
+  --border-strong: #3c3c42;
+  --text-primary: #f5f5f6;
+  --text-secondary: #a7a7ad;
+  --text-tertiary: #727278;
+
+  --accent: #e4e4e7;
+  --accent-soft: #2a2a2e;
+  --accent-pink: #f472b6;
+  --accent-pink-soft: #3a2230;
+  --accent-green: #34d399;
+  --accent-green-soft: #163a2d;
+  --accent-orange: #fbbf24;
+  --accent-orange-soft: #3a2d10;
+  --accent-blue: #60a5fa;
+  --accent-blue-soft: #1c2d4a;
+  --accent-red: #f87171;
+}
+
+html,
+html.dark {
+  transition: background-color 0.25s ease;
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);

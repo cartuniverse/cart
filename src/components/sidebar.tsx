@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import {
   Share2,
   Users,
@@ -12,7 +13,10 @@ import {
   Sparkles,
   LayoutDashboard,
   LogOut,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useTheme } from "@/lib/use-theme";
 import type { Profile } from "@/lib/types";
 
 const NAV = [
@@ -49,6 +53,8 @@ export function Sidebar({
   onSelectProjectName,
 }: SidebarProps) {
   const isAudiovisual = currentRoleView === "audiovisual";
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const displayName = profile?.name ?? "Usuario";
   const roleLabel = profile ? ROLE_LABELS[profile.role] ?? profile.role : "";
   const initials = displayName
@@ -73,6 +79,25 @@ export function Sidebar({
             </div>
           </div>
         </div>
+
+        {/* Interruptor de tema claro/oscuro */}
+        <button
+          onClick={toggleTheme}
+          title={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+          className="relative w-11 h-6 rounded-full bg-surface-2 border border-border flex items-center px-0.5 cursor-pointer shrink-0"
+        >
+          <motion.div
+            className="w-5 h-5 rounded-full bg-white shadow-sm flex items-center justify-center"
+            animate={{ x: isDark ? 18 : 0 }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          >
+            {isDark ? (
+              <Moon className="w-3 h-3 text-[#4f46e5]" />
+            ) : (
+              <Sun className="w-3 h-3 text-amber-500" />
+            )}
+          </motion.div>
+        </button>
       </div>
 
       {/* Si está en la vista del Creador Audiovisual */}

@@ -155,9 +155,9 @@ export function AudiovisualDashboardView({
   }, [weekISODates, weeklyLogs]);
 
   return (
-    <div className="flex-1 h-full flex flex-col min-w-0 bg-[#f8f9fa] overflow-y-auto">
+    <div className="flex-1 h-full flex flex-col min-w-0 bg-bg overflow-y-auto">
       {/* Top Navbar */}
-      <header className="h-[70px] shrink-0 bg-white border-b border-[var(--border)] px-8 flex items-center justify-between">
+      <header className="h-[70px] shrink-0 bg-surface border-b border-[var(--border)] px-8 flex items-center justify-between">
         <div className="flex items-center gap-2 text-[13px]">
           <span className="text-text-tertiary">Mi espacio</span>
           <span className="text-text-tertiary">›</span>
@@ -221,7 +221,7 @@ export function AudiovisualDashboardView({
               variants={popIn}
               whileHover={{ y: -3, scale: 1.03 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="w-[100px] h-[80px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs"
+              className="w-[100px] h-[80px] rounded-2xl bg-surface border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs"
             >
               <span className="text-[26px] font-bold text-text-primary leading-tight">
                 {videosHoy}
@@ -235,7 +235,7 @@ export function AudiovisualDashboardView({
               variants={popIn}
               whileHover={{ y: -3, scale: 1.03 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="w-[100px] h-[80px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs"
+              className="w-[100px] h-[80px] rounded-2xl bg-surface border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs"
             >
               <span className="text-[26px] font-bold text-[#4f46e5] leading-tight">
                 {estaSemana}
@@ -249,7 +249,7 @@ export function AudiovisualDashboardView({
               variants={popIn}
               whileHover={{ y: -3, scale: 1.03 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="w-[100px] h-[80px] rounded-2xl bg-white border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs"
+              className="w-[100px] h-[80px] rounded-2xl bg-surface border border-[var(--border)] flex flex-col items-center justify-center shadow-2xs"
             >
               <span className="text-[26px] font-bold text-[#10b981] leading-tight">
                 {avancePct}%
@@ -267,7 +267,7 @@ export function AudiovisualDashboardView({
           <motion.div
             whileHover={{ y: -2 }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="lg:col-span-8 rounded-2xl bg-white border border-[var(--border)] p-7 flex flex-col justify-between gap-6 shadow-2xs"
+            className="lg:col-span-8 rounded-2xl bg-surface border border-[var(--border)] p-7 flex flex-col justify-between gap-6 shadow-2xs"
           >
             <div>
               {/* Header de la card */}
@@ -366,7 +366,7 @@ export function AudiovisualDashboardView({
           <motion.div
             whileHover={{ y: -2 }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="lg:col-span-4 rounded-2xl bg-white border border-[var(--border)] p-7 flex flex-col justify-between gap-5 shadow-2xs"
+            className="lg:col-span-4 rounded-2xl bg-surface border border-[var(--border)] p-7 flex flex-col justify-between gap-5 shadow-2xs"
           >
             <div>
               {/* Header */}

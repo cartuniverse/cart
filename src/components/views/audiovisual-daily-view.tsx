@@ -377,9 +377,9 @@ export function AudiovisualDailyView({
   }, [weekISOStrings, currentIso, counts, weeklyLogs]);
 
   return (
-    <div className="flex-1 h-full flex flex-col min-w-0 bg-[#f8f9fa] overflow-hidden">
+    <div className="flex-1 h-full flex flex-col min-w-0 bg-bg overflow-hidden">
       {/* Top Navbar del Diario de Hoy */}
-      <header className="h-[70px] shrink-0 bg-white border-b border-[var(--border)] px-8 flex items-center justify-between">
+      <header className="h-[70px] shrink-0 bg-surface border-b border-[var(--border)] px-8 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-[17px] font-bold text-text-primary">Diario de hoy</h1>
         </div>
@@ -387,7 +387,7 @@ export function AudiovisualDailyView({
         {/* Selector de Fecha y botón de Guardar Día */}
         <div className="flex items-center gap-3">
           {/* Navegador de Fecha */}
-          <div className="h-9 rounded-xl bg-white border border-[var(--border)] px-2.5 flex items-center gap-2 shadow-2xs">
+          <div className="h-9 rounded-xl bg-surface border border-[var(--border)] px-2.5 flex items-center gap-2 shadow-2xs">
             <button
               onClick={handlePrevDay}
               title="Día anterior"
@@ -482,7 +482,7 @@ export function AudiovisualDailyView({
             {/* Banner: Videos que te tocan hoy */}
             <motion.div
               variants={fadeInUp}
-              className="rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs"
+              className="rounded-2xl bg-surface border border-[var(--border)] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs"
             >
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-2.5 flex-wrap">
@@ -560,7 +560,7 @@ export function AudiovisualDailyView({
                     variants={popIn}
                     whileHover={isEnabled ? { y: -3 } : {}}
                     transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                    className={`rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col gap-5 shadow-2xs transition ${
+                    className={`rounded-2xl bg-surface border border-[var(--border)] p-6 flex flex-col gap-5 shadow-2xs transition ${
                       !isEnabled ? "opacity-60 bg-gray-50/70" : "hover:shadow-xs"
                     }`}
                   >
@@ -620,7 +620,7 @@ export function AudiovisualDailyView({
                           disabled={!isEnabled || count <= 0}
                           whileHover={isEnabled && count > 0 ? { scale: 1.08 } : {}}
                           whileTap={isEnabled && count > 0 ? { scale: 0.9 } : {}}
-                          className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-text-secondary hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer shadow-2xs"
+                          className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center text-text-secondary hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer shadow-2xs"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </motion.button>
@@ -670,7 +670,7 @@ export function AudiovisualDailyView({
                         onChange={(e) =>
                           setNotes((prev) => ({ ...prev, [fmt.key]: e.target.value }))
                         }
-                        className="p-3 text-[12px] rounded-xl border bg-white text-text-primary placeholder:text-text-tertiary/70 focus:outline-none focus:border-accent disabled:bg-gray-100/50 disabled:cursor-not-allowed resize-none leading-relaxed"
+                        className="p-3 text-[12px] rounded-xl border bg-surface text-text-primary placeholder:text-text-tertiary/70 focus:outline-none focus:border-accent disabled:bg-gray-100/50 disabled:cursor-not-allowed resize-none leading-relaxed"
                         style={{ borderColor: "var(--border)" }}
                       />
                     </div>
@@ -683,7 +683,7 @@ export function AudiovisualDailyView({
           {/* Columna Derecha: Tarjeta reactiva 'ESTA SEMANA' */}
           <motion.div variants={fadeInUp} className="w-full lg:w-[350px] shrink-0 flex flex-col gap-4">
             {/* Widget principal: ESTA SEMANA */}
-            <div className="rounded-2xl bg-white border border-[var(--border)] p-6 flex flex-col gap-6 shadow-2xs">
+            <div className="rounded-2xl bg-surface border border-[var(--border)] p-6 flex flex-col gap-6 shadow-2xs">
               {/* Header */}
               <div className="flex items-center gap-2 text-text-tertiary">
                 <CalendarIcon className="w-4 h-4 text-[#7c3aed]" />
