@@ -181,16 +181,16 @@ export function AudiovisualDailyView({
   // Fecha fija inicial determinista para SSR (Lunes, 10 nov 2026 como en la imagen)
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date("2026-11-10T12:00:00"));
 
-  // Estado del formulario del día
+  // Estado del formulario del día (por defecto todo en 0 a menos que exista un registro guardado)
   const [counts, setCounts] = useState<{
     disneySub30: number;
     disneyGala: number;
     movimiento: number;
     avatarYapping: number;
   }>({
-    disneySub30: 1,
+    disneySub30: 0,
     disneyGala: 0,
-    movimiento: 1,
+    movimiento: 0,
     avatarYapping: 0,
   });
 
@@ -233,11 +233,10 @@ export function AudiovisualDailyView({
           avatarYapping: log.notesAvatarYapping,
         });
       } else {
-        // Valores por defecto como en la captura
         setCounts({
-          disneySub30: 1,
+          disneySub30: 0,
           disneyGala: 0,
-          movimiento: 1,
+          movimiento: 0,
           avatarYapping: 0,
         });
         setNotes({
@@ -355,13 +354,7 @@ export function AudiovisualDailyView({
           mov += log.formatMovimiento;
           yap += log.formatAvatarYapping;
         } else {
-          // Si no hay log guardado, simular datos de muestra para días anteriores de la semana
-          // Ejemplo: si es martes (11 nov) o lunes anterior
-          if (d < currentIso) {
-            sub30 += 1;
-            mov += 1;
-            yap += 1;
-          }
+          // No log saved — contributes 0 to weekly totals
         }
       }
     });
@@ -646,7 +639,7 @@ export function AudiovisualDailyView({
               <div className="flex items-center gap-2 text-text-tertiary">
                 <CalendarIcon className="w-4 h-4 text-[#7c3aed]" />
                 <span className="text-[11px] font-bold tracking-wider text-text-secondary uppercase">
-                  Esta semana · Galaxia 02
+                  Esta semana
                 </span>
               </div>
 
@@ -705,7 +698,7 @@ export function AudiovisualDailyView({
                       l.formatMovimiento +
                       l.formatAvatarYapping;
                   } else if (dayIso < currentIso) {
-                    dayCount = 3; // muestra para días pasados
+                    dayCount = 0;
                   }
 
                   return (
