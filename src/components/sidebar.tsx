@@ -10,8 +10,6 @@ import {
   GitBranch,
   Video,
   Calendar,
-  CalendarDays,
-  LayoutGrid,
   Sparkles,
   LayoutDashboard,
   LogOut,
@@ -37,7 +35,9 @@ function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
     </svg>
   );
 }
+import { useEffect, useState } from "react";
 import { useTheme } from "@/lib/use-theme";
+import { getDailyCommunityLog, getDailyVideoLog } from "@/lib/supabase";
 import type { Profile } from "@/lib/types";
 
 const NAV = [
@@ -77,6 +77,68 @@ export function Sidebar({
   const isCommunity = currentRoleView === "community";
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
+
+  // Conteos diarios reales para el badge de "Diario de hoy"
+  const [cmTodayCount, setCmTodayCount] = useState<number>(0);
+  const [avTodayCount, setAvTodayCount] = useState<number>(0);
+
+  useEffect(() => {
+    let active = true;
+    const todayIso = "2026-11-10";
+
+    const refreshCounts = () => {
+      if (isCommunity) {
+        getDailyCommunityLog(todayIso, activeProjectName).then((log) => {
+          if (!active) return;
+          if (log) {
+            const total =
+              (log.formatHistoriaOrganica ?? 0) +
+              (log.formatHistoriaProducto ?? 0) +
+              (log.formatHistoriaInteractiva ?? 0) +
+              (log.formatFeedOrganico ?? 0) +
+              (log.formatFeedCreativo ?? 0) +
+              (log.formatVideoTestimonio ?? 0) +
+              (log.formatCarrusel ?? 0) +
+              (log.formatPost ?? 0);
+            setCmTodayCount(total);
+          } else {
+            setCmTodayCount(0);
+          }
+        });
+      } else if (isAudiovisual) {
+        getDailyVideoLog(todayIso, activeProjectName).then((log) => {
+          if (!active) return;
+          if (log) {
+            const total =
+              log.formatDisneySub30 +
+              log.formatDisneyGala +
+              log.formatMovimiento +
+              log.formatAvatarYapping;
+            setAvTodayCount(total);
+          } else {
+            setAvTodayCount(0);
+          }
+        });
+      }
+    };
+
+    refreshCounts();
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("daily_log_updated", refreshCounts);
+      return () => {
+        active = false;
+        window.removeEventListener("daily_log_updated", refreshCounts);
+      };
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [isCommunity, isAudiovisual, activeProjectName, activeNav]);
+
+  // Metas diarias sugeridas para cada marca
+  const cmDailyTarget = activeProjectName === "Montana" ? 8 : 11;
 
   // Nombre e iniciales según la vista
   const displayName = isCommunity
@@ -139,21 +201,6 @@ export function Sidebar({
       {/* Si está en la vista de Community Manager */}
       {isCommunity ? (
         <div className="flex flex-col gap-6 flex-1 overflow-y-auto">
-          {/* Tarjeta de usuario destacada de Valentina C. con icono Instagram */}
-          <div className="rounded-2xl bg-pink-50/70 border border-pink-100 p-3 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center text-white shadow-2xs shrink-0">
-              <InstagramIcon className="w-5 h-5" />
-            </div>
-            <div className="leading-tight min-w-0">
-              <div className="text-[13.5px] font-bold text-text-primary truncate">
-                Valentina C.
-              </div>
-              <div className="text-[11px] font-semibold text-pink-600 truncate">
-                Community Manager
-              </div>
-            </div>
-          </div>
-
           {/* Sección: ESPACIO */}
           <div className="flex flex-col gap-1">
             <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
@@ -186,35 +233,9 @@ export function Sidebar({
                 <Calendar className="w-[18px] h-[18px] text-pink-500" />
                 <span className="text-[13px]">Diario de hoy</span>
               </div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-pink-100/80 text-pink-600">
-                8/15
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100/80 text-pink-600 border border-pink-200/50">
+                {cmTodayCount}/{cmDailyTarget}
               </span>
-            </button>
-
-            {/* Semana */}
-            <button
-              onClick={() => onSelectNav?.("semana")}
-              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
-                activeNav === "semana"
-                  ? "bg-pink-50/80 text-pink-700 font-bold border border-pink-200/60 shadow-xs"
-                  : "text-text-secondary font-medium hover:bg-surface-2"
-              }`}
-            >
-              <CalendarDays className="w-[18px] h-[18px] text-text-tertiary" />
-              <span className="text-[13px] flex-1">Semana</span>
-            </button>
-
-            {/* Parrilla IG */}
-            <button
-              onClick={() => onSelectNav?.("parrilla_ig")}
-              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
-                activeNav === "parrilla_ig"
-                  ? "bg-pink-50/80 text-pink-700 font-bold border border-pink-200/60 shadow-xs"
-                  : "text-text-secondary font-medium hover:bg-surface-2"
-              }`}
-            >
-              <LayoutGrid className="w-[18px] h-[18px] text-text-tertiary" />
-              <span className="text-[13px] flex-1">Parrilla IG</span>
             </button>
           </div>
 
@@ -302,7 +323,7 @@ export function Sidebar({
                 <span className="text-[13px]">Diario de hoy</span>
               </div>
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-2 text-text-secondary border border-border">
-                2/3
+                {avTodayCount}/3
               </span>
             </button>
           </div>

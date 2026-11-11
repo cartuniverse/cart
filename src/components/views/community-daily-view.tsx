@@ -339,6 +339,11 @@ export function CommunityDailyView({
         [currentIso]: saved,
       }));
 
+      // Notificar al sidebar para actualizar el badge de hoy
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("daily_log_updated"));
+      }
+
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
     } catch (err) {
