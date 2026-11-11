@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { OrgCanvas } from "@/components/org-canvas";
 import { Sidebar } from "@/components/sidebar";
@@ -15,17 +16,58 @@ import { ProjectDetailView } from "@/components/views/project-detail-view";
 import { AudiovisualDailyView } from "@/components/views/audiovisual-daily-view";
 import { AudiovisualDashboardView } from "@/components/views/audiovisual-dashboard-view";
 import { getPeople, getProjects } from "@/lib/supabase";
-import type { Person, Project } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
+import { getCurrentProfile, signOut } from "@/lib/auth";
+import type { Person, Profile, Project } from "@/lib/types";
 
 export default function Home() {
+  const router = useRouter();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
   const [activeNav, setActiveNav] = useState<string>("dashboard");
   const [currentTab, setCurrentTab] = useState<"grafo" | "cuadricula">("grafo");
   const [isAddingPerson, setIsAddingPerson] = useState(false);
   const [selectedProfilePerson, setSelectedProfilePerson] = useState<Person | null>(null);
 
-  // Selector de rol actual para alternar entre Admin y Creador Audiovisual AI
-  const [currentRoleView, setCurrentRoleView] = useState<"admin" | "audiovisual">("audiovisual");
+  // Vista derivada del rol real del usuario autenticado
+  const isAudiovisualRole = profile?.role === "creador_audiovisual";
+  const currentRoleView: "admin" | "audiovisual" = isAudiovisualRole ? "audiovisual" : "admin";
   const [activeProjectName, setActiveProjectName] = useState<string>("Casa Luifer");
+
+  useEffect(() => {
+    let active = true;
+
+    getCurrentProfile().then((p) => {
+      if (!active) return;
+      if (!p) {
+        router.replace("/login");
+        return;
+      }
+      setProfile(p);
+      if (p.role === "creador_audiovisual") {
+        setActiveNav("dashboard");
+        if (p.projectName) setActiveProjectName(p.projectName);
+      } else {
+        setActiveNav("organigrama");
+      }
+      setAuthLoading(false);
+    });
+
+    const { data: listener } = supabase?.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") router.replace("/login");
+    }) ?? { data: { subscription: null } };
+
+    return () => {
+      active = false;
+      listener?.subscription?.unsubscribe();
+    };
+  }, [router]);
+
+  const handleLogout = async () => {
+    await signOut();
+    router.replace("/login");
+  };
 
   // Proyecto seleccionado para ver en detalle
   const [selectedProjectDetail, setSelectedProjectDetail] = useState<Project | null>(null);
@@ -88,6 +130,10 @@ export default function Home() {
     setRefreshKey((k) => k + 1);
   };
 
+  if (authLoading || !profile) {
+    return <div className="h-screen w-screen flex items-center justify-center bg-bg text-text-secondary text-sm">Cargando...</div>;
+  }
+
   return (
     <PersonPanelProvider>
       <div className="h-screen w-screen flex overflow-hidden relative">
@@ -95,16 +141,10 @@ export default function Home() {
           activeNav={activeNav}
           onSelectNav={handleSelectNav}
           currentRoleView={currentRoleView}
-          onSwitchRoleView={(role) => {
-            setCurrentRoleView(role);
-            if (role === "audiovisual") {
-              setActiveNav("dashboard");
-            } else {
-              setActiveNav("organigrama");
-            }
-          }}
+          profile={profile}
+          onLogout={handleLogout}
           activeProjectName={activeProjectName}
-          onSelectProjectName={(proj) => setActiveProjectName(proj)}
+          onSelectProjectName={isAudiovisualRole ? undefined : (proj) => setActiveProjectName(proj)}
         />
 
         <main className="flex-1 flex flex-col min-w-0 bg-bg">

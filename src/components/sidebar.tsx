@@ -11,7 +11,9 @@ import {
   Calendar,
   Sparkles,
   LayoutDashboard,
+  LogOut,
 } from "lucide-react";
+import type { Profile } from "@/lib/types";
 
 const NAV = [
   { id: "organigrama", icon: Share2, label: "Organigrama" },
@@ -19,11 +21,20 @@ const NAV = [
   { id: "tareas", icon: ListChecks, label: "Tareas" },
 ];
 
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Administrador",
+  director_area: "Director de área",
+  disenador_ai: "Diseñador AI",
+  community_manager: "Community Manager",
+  creador_audiovisual: "Creador Audiovisual AI",
+};
+
 interface SidebarProps {
   activeNav?: string;
   onSelectNav?: (navId: string) => void;
   currentRoleView?: "admin" | "audiovisual";
-  onSwitchRoleView?: (view: "admin" | "audiovisual") => void;
+  profile?: Profile | null;
+  onLogout?: () => void;
   activeProjectName?: string;
   onSelectProjectName?: (projectName: string) => void;
 }
@@ -32,11 +43,20 @@ export function Sidebar({
   activeNav = "organigrama",
   onSelectNav,
   currentRoleView = "admin",
-  onSwitchRoleView,
+  profile,
+  onLogout,
   activeProjectName = "Casa Luifer",
   onSelectProjectName,
 }: SidebarProps) {
   const isAudiovisual = currentRoleView === "audiovisual";
+  const displayName = profile?.name ?? "Usuario";
+  const roleLabel = profile ? ROLE_LABELS[profile.role] ?? profile.role : "";
+  const initials = displayName
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <aside className="w-[260px] shrink-0 h-full bg-surface border-r border-[var(--border)] flex flex-col px-5 py-6 gap-6">
@@ -53,15 +73,6 @@ export function Sidebar({
             </div>
           </div>
         </div>
-
-        {/* Switcher rápido de rol para testing sin login */}
-        <button
-          onClick={() => onSwitchRoleView?.(isAudiovisual ? "admin" : "audiovisual")}
-          title={isAudiovisual ? "Volver a vista Admin / Organigrama" : "Ver vista Creador Audiovisual AI"}
-          className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-surface-2 hover:bg-surface border border-border text-text-secondary hover:text-text-primary transition cursor-pointer"
-        >
-          {isAudiovisual ? "Admin" : "Creador AI"}
-        </button>
       </div>
 
       {/* Si está en la vista del Creador Audiovisual */}
@@ -120,7 +131,7 @@ export function Sidebar({
             <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
               MIS PROYECTOS
             </div>
-            {["Casa Luifer", "Orbit", "Mobile App"].map((proj) => {
+            {[activeProjectName].map((proj) => {
               const isSelected = activeProjectName === proj;
               return (
                 <button
@@ -172,42 +183,30 @@ export function Sidebar({
               </button>
             );
           })}
-
-          {/* Acceso directo a Vistas de Especialistas */}
-          <div className="pt-4 mt-4 border-t border-[var(--border)]">
-            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              ROLES ESPECIALISTAS
-            </div>
-            <button
-              onClick={() => onSwitchRoleView?.("audiovisual")}
-              className="h-9 w-full rounded-[10px] flex items-center gap-2.5 px-3 text-left text-text-secondary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer text-[12.5px]"
-            >
-              <Video className="w-3.5 h-3.5 text-[#4f46e5]" />
-              <span className="truncate font-medium">Creador Audiovisual AI</span>
-            </button>
-          </div>
         </div>
       )}
 
       {/* User Footer */}
-      <div className="h-14 rounded-xl bg-surface-2 flex items-center gap-2.5 px-2.5 shrink-0">
+      <button
+        onClick={onLogout}
+        title="Cerrar sesión"
+        className="h-14 rounded-xl bg-surface-2 flex items-center gap-2.5 px-2.5 shrink-0 hover:bg-surface border border-transparent hover:border-border transition cursor-pointer text-left"
+      >
         <div
           className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-[12px] ${
             isAudiovisual ? "bg-[#4f46e5]" : "bg-accent"
           }`}
         >
-          {isAudiovisual ? "AM" : "CA"}
+          {initials}
         </div>
         <div className="flex-1 leading-tight min-w-0">
           <div className="text-[13px] font-semibold text-text-primary truncate">
-            {isAudiovisual ? "Andrés M." : "Cristian A."}
+            {displayName}
           </div>
-          <div className="text-[11px] text-text-tertiary truncate">
-            {isAudiovisual ? "Creador Audiovisual AI" : "Mi cuenta"}
-          </div>
+          <div className="text-[11px] text-text-tertiary truncate">{roleLabel}</div>
         </div>
-        <ChevronsUpDown className="w-3.5 h-3.5 text-text-tertiary shrink-0" />
-      </div>
+        <LogOut className="w-3.5 h-3.5 text-text-tertiary shrink-0" />
+      </button>
     </aside>
   );
 }

@@ -1,3 +1,18 @@
+export type UserRole =
+  | "admin"
+  | "director_area"
+  | "disenador_ai"
+  | "community_manager"
+  | "creador_audiovisual";
+
+export type Profile = {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  projectName?: string | null;
+};
+
 export type Phase = "maduro" | "veterano" | "medio" | "capacitacion";
 
 export type Person = {
