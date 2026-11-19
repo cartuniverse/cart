@@ -317,18 +317,6 @@ export function Sidebar({
             <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
               MI DÍA
             </div>
-            {/* Dashboard */}
-            <button
-              onClick={() => onSelectNav?.("dashboard")}
-              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
-                activeNav === "dashboard"
-                  ? "bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 font-bold border border-violet-200/60 dark:border-violet-900/50 shadow-xs"
-                  : "text-text-secondary font-medium hover:bg-surface-2"
-              }`}
-            >
-              <LayoutDashboard className="w-[18px] h-[18px] text-violet-500" />
-              <span className="text-[13px] flex-1">Dashboard</span>
-            </button>
 
             {/* Plan continuo */}
             <button
