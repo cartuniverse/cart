@@ -1104,7 +1104,7 @@ export async function saveDailyDesignLog(
 
   if (supabase) {
     try {
-      await supabase.from("daily_design_logs").upsert(
+      const { error: upsertError } = await supabase.from("daily_design_logs").upsert(
         {
           id: finalId,
           date: log.date,
@@ -1124,6 +1124,9 @@ export async function saveDailyDesignLog(
         },
         { onConflict: "date,designer_id" }
       );
+      if (upsertError) {
+        console.error("Error upserting daily design log in supabase:", upsertError);
+      }
     } catch (err) {
       console.error("Error upserting daily design log in supabase:", err);
     }
