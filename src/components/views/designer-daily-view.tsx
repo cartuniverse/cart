@@ -33,8 +33,7 @@ type CountsState = Record<FormatKey, number>;
 type NotesState = Record<FormatKey, string>;
 
 // ─── Plan semanal: información capturada de la imagen ─────────────────────────
-// Lunes/Miércoles/Viernes → días "orgánicos" (Carrusel + Testimonio)
-// Martes/Jueves → días "creativos" (Creativo Disney/Yapping + Post)
+// Distribución según la asignación: Samuel vs Miguel
 type DayPlan = {
   label: string;
   shortLabel: string;
@@ -46,20 +45,21 @@ type DayPlan = {
   mt: { key: FormatKey; title: string; hint: string }[];
 };
 
-const WEEK_PLAN: Record<number, DayPlan> = {
+// Cronograma de SAMUEL
+const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
   1: {
     label: "Lunes", shortLabel: "L",
     clTheme: "Traje hombre",
     isCreativo: false,
     dayColor: "#4a6fa5",
     cl: [
-      { key: "clHistorias", title: "Orgánico", hint: "Traje hombre · story flat lay" },
+      { key: "clHistorias", title: "Orgánico traje", hint: "Traje hombre · story flat lay" },
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de producto" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
-      { key: "mtCarruseles", title: "Historia producto", hint: "Imagen de producto story" },
+      { key: "mtCarruseles", title: "Imagen producto (historia)", hint: "Imagen de producto story" },
     ],
   },
   2: {
@@ -69,13 +69,13 @@ const WEEK_PLAN: Record<number, DayPlan> = {
     creativoTag: "Creativo 1/2",
     dayColor: "#a04e6a",
     cl: [
-      { key: "clHistorias", title: "Orgánico", hint: "Novias · story editorial" },
-      { key: "clMovimiento", title: "Creativo (Disney)", hint: "Video creativo CL · Martes" },
-      { key: "clPost", title: "Post feed", hint: "Publicación cuadrada/portrait" },
+      { key: "clHistorias", title: "Orgánico novias", hint: "Novias · story editorial" },
+      { key: "clMovimiento", title: "Creativo (Disney)", hint: "Video creativo Disney CL" },
+      { key: "clPost", title: "Post", hint: "Publicación cuadrada/portrait" },
     ],
     mt: [
-      { key: "mtHistorias", title: "Historia interactiva", hint: "Trivia o encuesta MT" },
-      { key: "mtCarruseles", title: "Carrusel MT", hint: "5–7 slides editorial" },
+      { key: "mtHistorias", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
+      { key: "mtCarruseles", title: "Carrusel", hint: "5–7 slides editorial MT" },
     ],
   },
   3: {
@@ -84,13 +84,13 @@ const WEEK_PLAN: Record<number, DayPlan> = {
     isCreativo: false,
     dayColor: "#6a5a9e",
     cl: [
-      { key: "clHistorias", title: "Orgánico", hint: "Quinces · story flat lay" },
+      { key: "clHistorias", title: "Orgánico quince", hint: "Quinces · story flat lay" },
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de producto" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
-      { key: "mtCarruseles", title: "Historia producto", hint: "Imagen de producto story" },
+      { key: "mtCarruseles", title: "Imagen producto (historia)", hint: "Imagen de producto story" },
     ],
   },
   4: {
@@ -100,13 +100,13 @@ const WEEK_PLAN: Record<number, DayPlan> = {
     creativoTag: "Creativo 2/2",
     dayColor: "#3d7a60",
     cl: [
-      { key: "clHistorias", title: "Orgánico", hint: "Primera comunión · story" },
-      { key: "clMovimiento", title: "Creativo (Yapping)", hint: "Video creativo CL · Jueves" },
-      { key: "clPost", title: "Post feed", hint: "Publicación cuadrada/portrait" },
+      { key: "clHistorias", title: "Orgánico comunión", hint: "Primera comunión · story" },
+      { key: "clMovimiento", title: "Creativo (Disney)", hint: "Video creativo Disney CL" },
+      { key: "clPost", title: "Post", hint: "Publicación cuadrada/portrait" },
     ],
     mt: [
-      { key: "mtHistorias", title: "Historia interactiva", hint: "Trivia o encuesta MT" },
-      { key: "mtCarruseles", title: "Carrusel MT", hint: "5–7 slides editorial" },
+      { key: "mtHistorias", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
+      { key: "mtCarruseles", title: "Carrusel", hint: "5–7 slides editorial MT" },
     ],
   },
   5: {
@@ -121,17 +121,91 @@ const WEEK_PLAN: Record<number, DayPlan> = {
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
-      { key: "mtCarruseles", title: "Historia producto", hint: "Imagen de producto story" },
+      { key: "mtCarruseles", title: "Imagen producto (historia)", hint: "Imagen de producto story" },
     ],
   },
 };
 
-const FALLBACK_DAY: DayPlan = WEEK_PLAN[1];
-
-// Metas de plan semanal (5 días × piezas por día)
-const CL_PLAN_WEEK = 15; // 3 piezas × 5 días
-const MT_PLAN_WEEK = 10; // 2 piezas × 5 días
-const PLAN_DIA_TOTAL = 5; // 3 CL + 2 MT
+// Cronograma de MIGUEL
+const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
+  1: {
+    label: "Lunes", shortLabel: "L",
+    clTheme: "Traje hombre",
+    isCreativo: true,
+    creativoTag: "Creativo 1/3",
+    dayColor: "#4a6fa5",
+    cl: [
+      { key: "clHistorias", title: "Orgánico traje", hint: "Traje hombre · story flat lay" },
+      { key: "clMovimiento", title: "Creativo (yapping)", hint: "Video creativo Yapping CL" },
+      { key: "clPost", title: "Post", hint: "Publicación en feed" },
+    ],
+    mt: [
+      { key: "mtHistorias", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
+      { key: "mtCarruseles", title: "Carrusel", hint: "5–7 slides editorial MT" },
+    ],
+  },
+  2: {
+    label: "Martes", shortLabel: "M",
+    clTheme: "Novias",
+    isCreativo: false,
+    dayColor: "#a04e6a",
+    cl: [
+      { key: "clHistorias", title: "Orgánico novias", hint: "Novias · story editorial" },
+      { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de novias" },
+      { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
+    ],
+    mt: [
+      { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
+      { key: "mtCarruseles", title: "Imagen producto (historia)", hint: "Imagen de producto story" },
+    ],
+  },
+  3: {
+    label: "Miércoles", shortLabel: "Mi",
+    clTheme: "Quinces",
+    isCreativo: true,
+    creativoTag: "Creativo 2/3",
+    dayColor: "#6a5a9e",
+    cl: [
+      { key: "clHistorias", title: "Orgánico quince", hint: "Quinces · story flat lay" },
+      { key: "clMovimiento", title: "Creativo (yapping)", hint: "Video creativo Yapping CL" },
+      { key: "clPost", title: "Post", hint: "Publicación en feed" },
+    ],
+    mt: [
+      { key: "mtHistorias", title: "Creativo (yapping)", hint: "Video creativo Yapping MT" },
+      { key: "mtCarruseles", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
+    ],
+  },
+  4: {
+    label: "Jueves", shortLabel: "J",
+    clTheme: "Primera comunión",
+    isCreativo: false,
+    dayColor: "#3d7a60",
+    cl: [
+      { key: "clHistorias", title: "Orgánico comunión", hint: "Primera comunión · story" },
+      { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de comunión" },
+      { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
+    ],
+    mt: [
+      { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
+      { key: "mtCarruseles", title: "Imagen producto (historia)", hint: "Imagen de producto story" },
+    ],
+  },
+  5: {
+    label: "Viernes", shortLabel: "V",
+    clTheme: "Creativo",
+    isCreativo: true,
+    creativoTag: "Creativo 3/3",
+    dayColor: "#b07a3c",
+    cl: [
+      { key: "clHistorias", title: "Orgánico", hint: "Creativo libre · story CL" },
+      { key: "clMovimiento", title: "Creativo", hint: "Video creativo CL · Viernes" },
+      { key: "clPost", title: "Post", hint: "Publicación en feed" },
+    ],
+    mt: [
+      { key: "mtHistorias", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
+    ],
+  },
+};
 
 // ─── Helpers de fecha ─────────────────────────────────────────────────────────
 function formatDateDisplay(d: Date): string {
@@ -159,10 +233,23 @@ const emptyNotes = (): NotesState => ({ clHistorias: "", clMovimiento: "", clPos
 export function DesignerDailyView({
   designerId = "designer",
   designerName = "Diseñador",
+  designerEmail,
 }: {
   designerId?: string;
   designerName?: string;
+  designerEmail?: string;
 }) {
+  // Determinar si es Miguel o Samuel según email, id o nombre
+  const isMiguel = useMemo(() => {
+    const s = `${designerEmail ?? ""} ${designerId} ${designerName}`.toLowerCase();
+    return s.includes("miguel") || s.includes("bolivar");
+  }, [designerEmail, designerId, designerName]);
+
+  const activeWeekPlan = isMiguel ? MIGUEL_WEEK_PLAN : SAMUEL_WEEK_PLAN;
+  const CL_PLAN_WEEK = 15;
+  const MT_PLAN_WEEK = isMiguel ? 9 : 10; // Miguel tiene 2+2+2+2+1 = 9 MT; Samuel tiene 2+2+2+2+2 = 10 MT
+  const TOTAL_PLAN_WEEK = isMiguel ? 24 : 25; // 24 vs 25 piezas/sem
+
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     // Usar fecha actual local sin hardcodear
     const now = new Date();
@@ -178,7 +265,10 @@ export function DesignerDailyView({
   const weekISOs = useMemo(() => weekDays.map(toISO), [weekDays]);
   const currentISO = toISO(selectedDate);
   const dow = selectedDate.getDay(); // 0=dom … 6=sab
-  const todayPlan: DayPlan = WEEK_PLAN[dow] ?? FALLBACK_DAY;
+  const todayPlan: DayPlan = activeWeekPlan[dow] ?? activeWeekPlan[1];
+  const clTodayTarget = todayPlan.cl.length;
+  const mtTodayTarget = todayPlan.mt.length;
+  const planDiaTotal = clTodayTarget + mtTodayTarget;
 
   useEffect(() => {
     getDailyDesignLog(currentISO, designerId).then((log) => {
@@ -267,7 +357,7 @@ export function DesignerDailyView({
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <button onClick={() => { const now = new Date(); setSelectedDate(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0)); }} className="h-8 px-3 rounded-xl bg-amber-50 text-amber-700 text-[11px] font-semibold hover:bg-amber-100 transition cursor-pointer border border-amber-100">
+          <button onClick={() => { const now = new Date(); setSelectedDate(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0)); }} className="h-8 px-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-[11px] font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/40 transition cursor-pointer border border-amber-100 dark:border-amber-900/50">
             Hoy
           </button>
           <motion.button onClick={handleSave} disabled={isSaving} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }} animate={showSaved ? { scale: [1, 1.07, 1] } : {}} className="h-8 px-3.5 rounded-xl bg-[#111113] text-white dark:bg-white dark:text-[#111113] text-[11px] font-semibold flex items-center gap-1.5 hover:opacity-90 transition cursor-pointer disabled:opacity-50">
@@ -326,7 +416,7 @@ export function DesignerDailyView({
                       <span className="mx-1.5 text-text-tertiary/50">·</span>
                       <span>MT · Producto</span>
                       <span className="mx-1.5 text-text-tertiary/50">·</span>
-                      <span>{PLAN_DIA_TOTAL} piezas totales: 3 CL + 2 MT</span>
+                      <span>{planDiaTotal} piezas totales: {clTodayTarget} CL + {mtTodayTarget} MT</span>
                     </p>
                   </div>
                 </div>
@@ -334,8 +424,8 @@ export function DesignerDailyView({
                 {/* Stat chips */}
                 <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0">
                   {[
-                    { label: "Creadas hoy", value: totalHoy, color: totalHoy >= PLAN_DIA_TOTAL ? "text-emerald-500" : "text-amber-600" },
-                    { label: "Plan día", value: PLAN_DIA_TOTAL, color: "text-text-primary" },
+                    { label: "Creadas hoy", value: totalHoy, color: totalHoy >= planDiaTotal ? "text-emerald-500" : "text-amber-600" },
+                    { label: "Plan día", value: planDiaTotal, color: "text-text-primary" },
                     { label: "Semana", value: weeklyAgg.clSem + weeklyAgg.mtSem, color: "text-blue-500" },
                   ].map(({ label, value, color }) => (
                     <div key={label} className="w-[70px] h-[54px] rounded-xl bg-surface-2/60 border border-[var(--border)] flex flex-col items-center justify-center gap-0.5">
@@ -363,8 +453,7 @@ export function DesignerDailyView({
                       {todayPlan.isCreativo ? `Día creativo · ${todayPlan.creativoTag}` : `Temática: ${todayPlan.clTheme}`}
                     </div>
                   </div>
-                  <span className="h-5 px-2 rounded-full text-[10px] font-bold flex items-center border shrink-0"
-                    style={{ backgroundColor: "#fdf2f8", color: "#ec4899", borderColor: "#fce7f3" }}>
+                  <span className="h-5 px-2 rounded-full text-[10px] font-bold flex items-center border shrink-0 bg-[#fdf2f8] dark:bg-pink-950/40 text-[#ec4899] dark:text-pink-300 border-[#fce7f3] dark:border-pink-900/50">
                     {clHoy}/3
                   </span>
                 </div>
@@ -404,9 +493,8 @@ export function DesignerDailyView({
                       {todayPlan.isCreativo ? "Historia interactiva + Carrusel" : "Orgánico producto + Historia"}
                     </div>
                   </div>
-                  <span className="h-5 px-2 rounded-full text-[10px] font-bold flex items-center border shrink-0"
-                    style={{ backgroundColor: "#eff6ff", color: "#3b82f6", borderColor: "#dbeafe" }}>
-                    {mtHoy}/2
+                  <span className="h-5 px-2 rounded-full text-[10px] font-bold flex items-center border shrink-0 bg-[#eff6ff] dark:bg-blue-950/40 text-[#3b82f6] dark:text-blue-300 border-[#dbeafe] dark:border-blue-900/50">
+                    {mtHoy}/{mtTodayTarget}
                   </span>
                 </div>
                 <div className="p-3 flex flex-col gap-2">
@@ -439,16 +527,22 @@ export function DesignerDailyView({
 
             {/* Plan Semanal Integrado */}
             <div className="rounded-2xl bg-surface border border-[var(--border)] overflow-hidden shadow-2xs">
-              <div className="px-4 py-3 border-b border-[var(--border)] flex items-center gap-2 bg-surface-2/40">
-                <CalendarIcon className="w-3.5 h-3.5 text-text-tertiary" />
-                <span className="text-[9.5px] font-bold uppercase tracking-wider text-text-secondary">
-                  Plan semanal integrado
+              <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between gap-2 bg-surface-2/40">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-3.5 h-3.5 text-text-tertiary" />
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-text-secondary">
+                    Plan semanal · {isMiguel ? "Miguel" : "Samuel"}
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-surface border border-[var(--border)] text-text-tertiary">
+                  {TOTAL_PLAN_WEEK} piezas/sem
                 </span>
               </div>
               <div className="flex flex-col divide-y divide-[var(--border)]">
-                {Object.entries(WEEK_PLAN).map(([dayNum, plan]) => {
+                {Object.entries(activeWeekPlan).map(([dayNum, plan]) => {
                   const dn = Number(dayNum);
                   const isToday = dn === dow;
+                  const dayPieces = plan.cl.length + plan.mt.length;
                   return (
                     <button
                       key={dn}
@@ -457,7 +551,7 @@ export function DesignerDailyView({
                         const target = weekDays[dn - 1];
                         if (target) setSelectedDate(target);
                       }}
-                      className={`w-full text-left px-3.5 py-2.5 flex items-start gap-3 transition cursor-pointer ${isToday ? "bg-amber-50/60" : "hover:bg-surface-2/40"}`}
+                      className={`w-full text-left px-3.5 py-2.5 flex items-start gap-3 transition cursor-pointer ${isToday ? "bg-amber-50/60 dark:bg-amber-950/20" : "hover:bg-surface-2/40"}`}
                     >
                       {/* Day label badge */}
                       <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-[9.5px] shrink-0 mt-0.5"
@@ -468,12 +562,12 @@ export function DesignerDailyView({
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[11px] font-bold text-text-primary">{plan.label}</span>
                           {plan.isCreativo && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50">
                               {plan.creativoTag}
                             </span>
                           )}
                           {isToday && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50">
                               Hoy
                             </span>
                           )}
@@ -491,7 +585,7 @@ export function DesignerDailyView({
                           {plan.mt.map((f) => f.title).join(" · ")}
                         </div>
                       </div>
-                      <div className="text-[10px] font-bold text-text-tertiary shrink-0 mt-1">5</div>
+                      <div className="text-[10px] font-bold text-text-tertiary shrink-0 mt-1">{dayPieces}</div>
                     </button>
                   );
                 })}
@@ -541,16 +635,17 @@ export function DesignerDailyView({
                   let cnt = 0;
                   if (isCur) cnt = totalHoy;
                   else { const l = weeklyLogs[dayISO]; if (l) cnt = l.formatClHistorias + l.formatClMovimiento + (l.formatClPost ?? 0) + l.formatMtHistorias + l.formatMtCarruseles; }
-                  const planDay = WEEK_PLAN[idx + 1];
+                  const planDay = activeWeekPlan[idx + 1];
+                  const dayPiecesGoal = (planDay?.cl.length ?? 3) + (planDay?.mt.length ?? 2);
                   return (
                     <motion.button key={idx} type="button" onClick={() => setSelectedDate(dayDate)}
                       whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
-                      className={`h-[46px] rounded-xl flex flex-col items-center justify-center gap-0.5 transition cursor-pointer border ${isCur ? "bg-amber-50 border-amber-200" : "bg-surface-2/30 border-[var(--border)] hover:bg-surface-2"}`}>
+                      className={`h-[46px] rounded-xl flex flex-col items-center justify-center gap-0.5 transition cursor-pointer border ${isCur ? "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/50" : "bg-surface-2/30 border-[var(--border)] hover:bg-surface-2"}`}>
                       <span className="text-[8.5px] font-bold uppercase" style={{ color: isCur ? "#d97706" : planDay?.dayColor ?? "var(--text-tertiary)" }}>
                         {planDay?.shortLabel ?? ""}
                       </span>
-                      <span className={`text-[12px] font-bold ${isCur ? "text-amber-700" : "text-text-primary"}`}>{cnt}</span>
-                      {cnt >= 5 && <span className="text-[7.5px] text-emerald-500 font-bold">✓</span>}
+                      <span className={`text-[12px] font-bold ${isCur ? "text-amber-700 dark:text-amber-300" : "text-text-primary"}`}>{cnt}</span>
+                      {cnt >= dayPiecesGoal && <span className="text-[7.5px] text-emerald-500 font-bold">✓</span>}
                     </motion.button>
                   );
                 })}
@@ -559,15 +654,24 @@ export function DesignerDailyView({
 
             {/* Reglas del plan */}
             <div className="rounded-2xl bg-surface border border-[var(--border)] p-4 flex flex-col gap-2.5 shadow-2xs">
-              <span className="text-[9.5px] font-bold uppercase tracking-wider text-text-tertiary">Reglas del plan</span>
+              <span className="text-[9.5px] font-bold uppercase tracking-wider text-text-tertiary">Reglas del plan ({isMiguel ? "Miguel" : "Samuel"})</span>
               <div className="flex flex-col gap-1.5">
-                {[
-                  "5 piezas / día · 25 piezas / semana",
-                  "3 CL (Org. + variante + extra) · 2 MT",
-                  "Mar & Jue → días creativos (Disney/Yapping)",
-                  "Lun/Mié/Vie → Org. + Carrusel + Testimonio",
-                  "Solo Instagram · Lunes a viernes",
-                ].map((r) => (
+                {(isMiguel
+                  ? [
+                      "24 piezas / semana · Casa Luifer + Montana",
+                      "Lunes, Miércoles y Viernes → días creativos",
+                      "Videos creativos CL: Yapping Lun & Mié, Creativo Viernes",
+                      "Montana: Yapping Miércoles, Interactivas Lun/Mié/Vie",
+                      "Solo Instagram · Lunes a viernes",
+                    ]
+                  : [
+                      "25 piezas / semana · 5 piezas / día",
+                      "Martes y Jueves → días creativos (Disney)",
+                      "Lunes, Miércoles y Viernes → Orgánicos + Carrusel + Testimonio",
+                      "Montana: Orgánico producto + historias",
+                      "Solo Instagram · Lunes a viernes",
+                    ]
+                ).map((r) => (
                   <div key={r} className="flex items-start gap-1.5 text-[10px] text-text-secondary leading-snug">
                     <span className="mt-1 w-1 h-1 rounded-full bg-text-tertiary shrink-0" />
                     {r}
@@ -662,14 +766,28 @@ function FormatRow({
     if (file) handleUpload(file);
   }
 
-  return (
-    <div className={`rounded-2xl border p-4 flex flex-col gap-3 transition-all ${isDone ? "opacity-90" : ""}`}
-      style={{ backgroundColor: isDone ? bgSoft : "transparent", borderColor: isDone ? borderSoft : "var(--border)" }}>
+  const isCL = brandColor === "#ec4899";
+  const doneBgClass = isCL 
+    ? "bg-[#fdf2f8] dark:bg-pink-950/20 border-[#fce7f3] dark:border-pink-900/40" 
+    : "bg-[#eff6ff] dark:bg-blue-950/20 border-[#dbeafe] dark:border-blue-900/40";
+  const badgeDoneClass = isCL
+    ? "bg-[#fdf2f8] dark:bg-pink-950/50 text-[#ec4899] dark:text-pink-300 border-[#fce7f3] dark:border-pink-900/60"
+    : "bg-[#eff6ff] dark:bg-blue-950/50 text-[#3b82f6] dark:text-blue-300 border-[#dbeafe] dark:border-blue-900/60";
+  const iconBoxClass = isCL
+    ? "bg-[#fdf2f8] dark:bg-pink-950/40 border-[#fce7f3] dark:border-pink-900/50"
+    : "bg-[#eff6ff] dark:bg-blue-950/40 border-[#dbeafe] dark:border-blue-900/50";
 
+  return (
+    <div
+      className={`rounded-2xl border p-4 flex flex-col gap-3 transition-all ${
+        isDone ? doneBgClass : "bg-transparent border-[var(--border)]"
+      }`}
+    >
       {/* Title row */}
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ backgroundColor: bgSoft, border: `1px solid ${borderSoft}` }}>
+        <div
+          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${iconBoxClass}`}
+        >
           <Icon className="w-4 h-4" style={{ color: brandColor }} />
         </div>
         <div className="flex-1 min-w-0">
@@ -677,8 +795,7 @@ function FormatRow({
           <div className="text-[11px] text-text-tertiary truncate leading-snug mt-0.5">{hint}</div>
         </div>
         {isDone && (
-          <span className="h-5 px-2 rounded-full text-[10px] font-bold flex items-center gap-1 shrink-0"
-            style={{ backgroundColor: bgSoft, color: brandColor, border: `1px solid ${borderSoft}` }}>
+          <span className={`h-5 px-2 rounded-full text-[10px] font-bold flex items-center gap-1 shrink-0 border ${badgeDoneClass}`}>
             ✓ Hecho
           </span>
         )}

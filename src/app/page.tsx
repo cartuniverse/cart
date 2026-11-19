@@ -197,6 +197,7 @@ export default function Home() {
           ) : currentRoleView === "designer" ? (
             <DesignerDailyView
               designerName={profile.name || "Diseñador"}
+              designerEmail={profile.email}
               designerId={profile.id || profile.name?.toLowerCase().replace(/\s+/g, "-") || "designer"}
             />
           ) : selectedProfilePerson ? (

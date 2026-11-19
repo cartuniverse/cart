@@ -235,7 +235,7 @@ export function Sidebar({
             <button
               onClick={() => onSelectNav?.("dashboard")}
               className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${activeNav === "dashboard"
-                ? "bg-pink-50/80 text-pink-700 font-bold border border-pink-200/60 shadow-xs"
+                ? "bg-pink-50/80 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 font-bold border border-pink-200/60 dark:border-pink-900/50 shadow-xs"
                 : "text-text-secondary font-medium hover:bg-surface-2"
                 }`}
             >
@@ -247,7 +247,7 @@ export function Sidebar({
             <button
               onClick={() => onSelectNav?.("diario_hoy")}
               className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${activeNav === "diario_hoy"
-                ? "bg-pink-50/80 text-pink-700 font-bold border border-pink-200/60 shadow-xs"
+                ? "bg-pink-50/80 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 font-bold border border-pink-200/60 dark:border-pink-900/50 shadow-xs"
                 : "text-text-secondary font-medium hover:bg-surface-2"
                 }`}
             >
@@ -322,7 +322,7 @@ export function Sidebar({
               onClick={() => onSelectNav?.("dashboard")}
               className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
                 activeNav === "dashboard"
-                  ? "bg-violet-50 text-violet-700 font-bold border border-violet-200/60 shadow-xs"
+                  ? "bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 font-bold border border-violet-200/60 dark:border-violet-900/50 shadow-xs"
                   : "text-text-secondary font-medium hover:bg-surface-2"
               }`}
             >
@@ -335,7 +335,7 @@ export function Sidebar({
               onClick={() => onSelectNav?.("plan_continuo")}
               className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
                 activeNav === "plan_continuo"
-                  ? "bg-violet-50 text-violet-700 font-bold border border-violet-200/60 shadow-xs"
+                  ? "bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 font-bold border border-violet-200/60 dark:border-violet-900/50 shadow-xs"
                   : "text-text-secondary font-medium hover:bg-surface-2"
               }`}
             >
@@ -344,7 +344,7 @@ export function Sidebar({
                 <span className="text-[13px]">Plan continuo</span>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-700 border border-amber-200/50">
-                {designerTodayCount}/8
+                {designerTodayCount}/5
               </span>
             </button>
           </div>
@@ -355,8 +355,8 @@ export function Sidebar({
               MARCAS DEL PLAN
             </div>
             {[
-              { name: "Casa Luifer", perWeek: "20 / sem", color: "#ec4899" },
-              { name: "Montana", perWeek: "15 / sem", color: "#3b82f6" },
+              { name: "Casa Luifer", perWeek: "15 / sem", color: "#ec4899" },
+              { name: "Montana", perWeek: (profile?.email?.toLowerCase().includes("miguel") || profile?.name?.toLowerCase().includes("miguel")) ? "9 / sem" : "10 / sem", color: "#3b82f6" },
             ].map((brand) => (
               <div
                 key={brand.name}
@@ -379,7 +379,7 @@ export function Sidebar({
       ) : isAudiovisual ? (
         <div className="flex flex-col gap-6 flex-1">
           {/* Tarjeta de usuario destacada de Andrés M. con icono Cámara */}
-          <div className="rounded-2xl bg-indigo-50/70 border border-indigo-100 p-3 flex items-center gap-3">
+          <div className="rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 p-3 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-2xs shrink-0">
               <Video className="w-5 h-5" />
             </div>
