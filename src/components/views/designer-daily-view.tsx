@@ -28,7 +28,7 @@ import {
 import type { DailyDesignLog } from "@/lib/types";
 
 // ─── Tipos internos ───────────────────────────────────────────────────────────
-type FormatKey = "clHistorias" | "clMovimiento" | "clPost" | "mtHistorias" | "mtCarruseles";
+type FormatKey = "clHistorias" | "clMovimiento" | "clPost" | "clHistoriaProducto" | "clHistoriaInteractiva" | "mtHistorias" | "mtCarruseles";
 type CountsState = Record<FormatKey, number>;
 type NotesState = Record<FormatKey, string>;
 
@@ -56,6 +56,8 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico traje", hint: "Traje hombre · story flat lay" },
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de producto" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
+      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
+      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
@@ -72,6 +74,8 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico novias", hint: "Novias · story editorial" },
       { key: "clMovimiento", title: "Creativo (Disney)", hint: "Video creativo Disney CL" },
       { key: "clPost", title: "Post", hint: "Publicación cuadrada/portrait" },
+      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
+      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
@@ -87,6 +91,8 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico quince", hint: "Quinces · story flat lay" },
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de producto" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
+      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
+      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
@@ -103,6 +109,8 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico comunión", hint: "Primera comunión · story" },
       { key: "clMovimiento", title: "Creativo (Disney)", hint: "Video creativo Disney CL" },
       { key: "clPost", title: "Post", hint: "Publicación cuadrada/portrait" },
+      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
+      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
@@ -118,6 +126,8 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico", hint: "Creativo libre · story CL" },
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de producto" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
+      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
+      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
@@ -138,6 +148,8 @@ const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico traje", hint: "Traje hombre · story flat lay" },
       { key: "clMovimiento", title: "Creativo (yapping)", hint: "Video creativo Yapping CL" },
       { key: "clPost", title: "Post", hint: "Publicación en feed" },
+      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
+      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
@@ -153,6 +165,8 @@ const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico novias", hint: "Novias · story editorial" },
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de novias" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
+      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
+      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
@@ -169,6 +183,8 @@ const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico quince", hint: "Quinces · story flat lay" },
       { key: "clMovimiento", title: "Creativo (yapping)", hint: "Video creativo Yapping CL" },
       { key: "clPost", title: "Post", hint: "Publicación en feed" },
+      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
+      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Creativo (yapping)", hint: "Video creativo Yapping MT" },
@@ -184,6 +200,8 @@ const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico comunión", hint: "Primera comunión · story" },
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de comunión" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
+      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
+      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
@@ -200,6 +218,8 @@ const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico", hint: "Creativo libre · story CL" },
       { key: "clMovimiento", title: "Creativo", hint: "Video creativo CL · Viernes" },
       { key: "clPost", title: "Post", hint: "Publicación en feed" },
+      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
+      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
@@ -226,8 +246,8 @@ function getWeekDays(d: Date): Date[] {
   return Array.from({ length: 5 }, (_, i) => { const nd = new Date(mon); nd.setDate(mon.getDate() + i); return nd; });
 }
 
-const emptyCounts = (): CountsState => ({ clHistorias: 0, clMovimiento: 0, clPost: 0, mtHistorias: 0, mtCarruseles: 0 });
-const emptyNotes = (): NotesState => ({ clHistorias: "", clMovimiento: "", clPost: "", mtHistorias: "", mtCarruseles: "" });
+const emptyCounts = (): CountsState => ({ clHistorias: 0, clMovimiento: 0, clPost: 0, clHistoriaProducto: 0, clHistoriaInteractiva: 0, mtHistorias: 0, mtCarruseles: 0 });
+const emptyNotes = (): NotesState => ({ clHistorias: "", clMovimiento: "", clPost: "", clHistoriaProducto: "", clHistoriaInteractiva: "", mtHistorias: "", mtCarruseles: "" });
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function DesignerDailyView({
@@ -246,9 +266,9 @@ export function DesignerDailyView({
   }, [designerEmail, designerId, designerName]);
 
   const activeWeekPlan = isMiguel ? MIGUEL_WEEK_PLAN : SAMUEL_WEEK_PLAN;
-  const CL_PLAN_WEEK = 15;
-  const MT_PLAN_WEEK = isMiguel ? 9 : 10; // Miguel tiene 2+2+2+2+1 = 9 MT; Samuel tiene 2+2+2+2+2 = 10 MT
-  const TOTAL_PLAN_WEEK = isMiguel ? 24 : 25; // 24 vs 25 piezas/sem
+  const CL_PLAN_WEEK = 25; // 5 formatos CL × 5 días
+  const MT_PLAN_WEEK = isMiguel ? 9 : 10; // Miguel: 2+2+2+2+1=9, Samuel: 2+2+2+2+2=10
+  const TOTAL_PLAN_WEEK = isMiguel ? 34 : 35; // 25 CL + 9/10 MT
 
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     // Usar fecha actual local sin hardcodear
@@ -273,8 +293,8 @@ export function DesignerDailyView({
   useEffect(() => {
     getDailyDesignLog(currentISO, designerId).then((log) => {
       if (log) {
-        setCounts({ clHistorias: log.formatClHistorias, clMovimiento: log.formatClMovimiento, clPost: log.formatClPost ?? 0, mtHistorias: log.formatMtHistorias, mtCarruseles: log.formatMtCarruseles });
-        setNotes({ clHistorias: log.notesClHistorias, clMovimiento: log.notesClMovimiento, clPost: log.notesClPost ?? "", mtHistorias: log.notesMtHistorias, mtCarruseles: log.notesMtCarruseles });
+        setCounts({ clHistorias: log.formatClHistorias, clMovimiento: log.formatClMovimiento, clPost: log.formatClPost ?? 0, clHistoriaProducto: log.formatClHistoriaProducto ?? 0, clHistoriaInteractiva: log.formatClHistoriaInteractiva ?? 0, mtHistorias: log.formatMtHistorias, mtCarruseles: log.formatMtCarruseles });
+        setNotes({ clHistorias: log.notesClHistorias, clMovimiento: log.notesClMovimiento, clPost: log.notesClPost ?? "", clHistoriaProducto: log.notesClHistoriaProducto ?? "", clHistoriaInteractiva: log.notesClHistoriaInteractiva ?? "", mtHistorias: log.notesMtHistorias, mtCarruseles: log.notesMtCarruseles });
       } else {
         setCounts(emptyCounts());
         setNotes(emptyNotes());
@@ -292,8 +312,10 @@ export function DesignerDailyView({
       const saved = await saveDailyDesignLog({
         date: currentISO, designerId, designerName,
         formatClHistorias: counts.clHistorias, formatClMovimiento: counts.clMovimiento, formatClPost: counts.clPost,
+        formatClHistoriaProducto: counts.clHistoriaProducto, formatClHistoriaInteractiva: counts.clHistoriaInteractiva,
         formatMtHistorias: counts.mtHistorias, formatMtCarruseles: counts.mtCarruseles,
         notesClHistorias: notes.clHistorias, notesClMovimiento: notes.clMovimiento, notesClPost: notes.clPost,
+        notesClHistoriaProducto: notes.clHistoriaProducto, notesClHistoriaInteractiva: notes.clHistoriaInteractiva,
         notesMtHistorias: notes.mtHistorias, notesMtCarruseles: notes.mtCarruseles,
       });
       setWeeklyLogs((p) => ({ ...p, [currentISO]: saved }));
@@ -307,8 +329,8 @@ export function DesignerDailyView({
     }
   };
 
-  const totalHoy = counts.clHistorias + counts.clMovimiento + counts.clPost + counts.mtHistorias + counts.mtCarruseles;
-  const clHoy = counts.clHistorias + counts.clMovimiento + counts.clPost;
+  const totalHoy = counts.clHistorias + counts.clMovimiento + counts.clPost + counts.clHistoriaProducto + counts.clHistoriaInteractiva + counts.mtHistorias + counts.mtCarruseles;
+  const clHoy = counts.clHistorias + counts.clMovimiento + counts.clPost + counts.clHistoriaProducto + counts.clHistoriaInteractiva;
   const mtHoy = counts.mtHistorias + counts.mtCarruseles;
 
   const weeklyAgg = useMemo(() => {
@@ -318,7 +340,7 @@ export function DesignerDailyView({
       else {
         const l = weeklyLogs[d];
         if (l) {
-          clSem += l.formatClHistorias + l.formatClMovimiento + (l.formatClPost ?? 0);
+          clSem += l.formatClHistorias + l.formatClMovimiento + (l.formatClPost ?? 0) + (l.formatClHistoriaProducto ?? 0) + (l.formatClHistoriaInteractiva ?? 0);
           mtSem += l.formatMtHistorias + l.formatMtCarruseles;
         }
       }
@@ -454,7 +476,7 @@ export function DesignerDailyView({
                     </div>
                   </div>
                   <span className="h-5 px-2 rounded-full text-[10px] font-bold flex items-center border shrink-0 bg-[#fdf2f8] dark:bg-pink-950/40 text-[#ec4899] dark:text-pink-300 border-[#fce7f3] dark:border-pink-900/50">
-                    {clHoy}/3
+                    {clHoy}/{clTodayTarget}
                   </span>
                 </div>
                 {/* Formato rows */}
@@ -467,7 +489,7 @@ export function DesignerDailyView({
                       hint={f.hint}
                       count={counts[f.key]}
                       weekTotal={0}
-                      perWeek={CL_PLAN_WEEK / 3}
+                      perWeek={CL_PLAN_WEEK / 5}
                       brandColor="#ec4899"
                       bgSoft="#fdf2f8"
                       borderSoft="#fce7f3"
@@ -634,7 +656,7 @@ export function DesignerDailyView({
                   const isCur = dayISO === currentISO;
                   let cnt = 0;
                   if (isCur) cnt = totalHoy;
-                  else { const l = weeklyLogs[dayISO]; if (l) cnt = l.formatClHistorias + l.formatClMovimiento + (l.formatClPost ?? 0) + l.formatMtHistorias + l.formatMtCarruseles; }
+                  else { const l = weeklyLogs[dayISO]; if (l) cnt = l.formatClHistorias + l.formatClMovimiento + (l.formatClPost ?? 0) + (l.formatClHistoriaProducto ?? 0) + (l.formatClHistoriaInteractiva ?? 0) + l.formatMtHistorias + l.formatMtCarruseles; }
                   const planDay = activeWeekPlan[idx + 1];
                   const dayPiecesGoal = (planDay?.cl.length ?? 3) + (planDay?.mt.length ?? 2);
                   return (
@@ -658,14 +680,16 @@ export function DesignerDailyView({
               <div className="flex flex-col gap-1.5">
                 {(isMiguel
                   ? [
-                      "24 piezas / semana · Casa Luifer + Montana",
+                      "34 piezas / semana · Casa Luifer + Montana",
+                      "CL: 5 formatos/día · incluye Historia producto + Historia interactiva",
                       "Lunes, Miércoles y Viernes → días creativos",
                       "Videos creativos CL: Yapping Lun & Mié, Creativo Viernes",
                       "Montana: Yapping Miércoles, Interactivas Lun/Mié/Vie",
                       "Solo Instagram · Lunes a viernes",
                     ]
                   : [
-                      "25 piezas / semana · 5 piezas / día",
+                      "35 piezas / semana · 7 piezas / día",
+                      "CL: 5 formatos/día · incluye Historia producto + Historia interactiva",
                       "Martes y Jueves → días creativos (Disney)",
                       "Lunes, Miércoles y Viernes → Orgánicos + Carrusel + Testimonio",
                       "Montana: Orgánico producto + historias",

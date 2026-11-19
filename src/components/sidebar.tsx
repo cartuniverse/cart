@@ -133,6 +133,8 @@ export function Sidebar({
               (log.formatClHistorias ?? 0) +
               (log.formatClMovimiento ?? 0) +
               (log.formatClPost ?? 0) +
+              (log.formatClHistoriaProducto ?? 0) +
+              (log.formatClHistoriaInteractiva ?? 0) +
               (log.formatMtHistorias ?? 0) +
               (log.formatMtCarruseles ?? 0);
             setDesignerTodayCount(total);
@@ -337,7 +339,7 @@ export function Sidebar({
                 <span className="text-[13px]">Plan continuo</span>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-700 border border-amber-200/50">
-                {designerTodayCount}/5
+                {designerTodayCount}/7
               </span>
             </button>
           </div>

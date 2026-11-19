@@ -108,6 +108,8 @@ export type DesignerFormatKey =
   | "clHistorias"
   | "clMovimiento"
   | "clPost"
+  | "clHistoriaProducto"
+  | "clHistoriaInteractiva"
   | "mtHistorias"
   | "mtCarruseles";
 
@@ -119,11 +121,15 @@ export type DailyDesignLog = {
   formatClHistorias: number;
   formatClMovimiento: number;
   formatClPost: number;
+  formatClHistoriaProducto: number;
+  formatClHistoriaInteractiva: number;
   formatMtHistorias: number;
   formatMtCarruseles: number;
   notesClHistorias: string;
   notesClMovimiento: string;
   notesClPost: string;
+  notesClHistoriaProducto: string;
+  notesClHistoriaInteractiva: string;
   notesMtHistorias: string;
   notesMtCarruseles: string;
   updatedAt?: string;
