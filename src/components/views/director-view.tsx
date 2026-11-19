@@ -30,6 +30,7 @@ type DayPlan = {
   mt: { key: keyof DailyDesignLog; title: string }[];
 };
 
+// CL alterna: Lun/Mié/Vie = Historia producto · Mar/Jue = Historia interactiva
 const WEEK_PLAN: Record<number, DayPlan> = {
   1: {
     label: "Lunes", shortLabel: "L", clTheme: "Traje hombre",
@@ -39,7 +40,6 @@ const WEEK_PLAN: Record<number, DayPlan> = {
       { key: "formatClMovimiento", title: "Carrusel" },
       { key: "formatClPost", title: "Testimonio" },
       { key: "formatClHistoriaProducto", title: "Historia producto" },
-      { key: "formatClHistoriaInteractiva", title: "Historia interactiva" },
     ],
     mt: [
       { key: "formatMtHistorias", title: "Orgánico producto" },
@@ -53,7 +53,6 @@ const WEEK_PLAN: Record<number, DayPlan> = {
       { key: "formatClHistorias", title: "Orgánico" },
       { key: "formatClMovimiento", title: "Creativo" },
       { key: "formatClPost", title: "Post feed" },
-      { key: "formatClHistoriaProducto", title: "Historia producto" },
       { key: "formatClHistoriaInteractiva", title: "Historia interactiva" },
     ],
     mt: [
@@ -69,7 +68,6 @@ const WEEK_PLAN: Record<number, DayPlan> = {
       { key: "formatClMovimiento", title: "Carrusel" },
       { key: "formatClPost", title: "Testimonio" },
       { key: "formatClHistoriaProducto", title: "Historia producto" },
-      { key: "formatClHistoriaInteractiva", title: "Historia interactiva" },
     ],
     mt: [
       { key: "formatMtHistorias", title: "Orgánico producto" },
@@ -83,7 +81,6 @@ const WEEK_PLAN: Record<number, DayPlan> = {
       { key: "formatClHistorias", title: "Orgánico" },
       { key: "formatClMovimiento", title: "Creativo" },
       { key: "formatClPost", title: "Post feed" },
-      { key: "formatClHistoriaProducto", title: "Historia producto" },
       { key: "formatClHistoriaInteractiva", title: "Historia interactiva" },
     ],
     mt: [
@@ -99,7 +96,6 @@ const WEEK_PLAN: Record<number, DayPlan> = {
       { key: "formatClMovimiento", title: "Carrusel" },
       { key: "formatClPost", title: "Testimonio" },
       { key: "formatClHistoriaProducto", title: "Historia producto" },
-      { key: "formatClHistoriaInteractiva", title: "Historia interactiva" },
     ],
     mt: [
       { key: "formatMtHistorias", title: "Orgánico producto" },
@@ -108,9 +104,9 @@ const WEEK_PLAN: Record<number, DayPlan> = {
   },
 };
 
-const CL_PLAN_WEEK = 25; // 5 formatos CL × 5 días
+const CL_PLAN_WEEK = 20; // 4 formatos CL/día × 5 días (alternando)
 const MT_PLAN_WEEK = 10;
-const PLAN_DIA = 7; // 5 CL + 2 MT
+const PLAN_DIA = 6; // 4 CL + 2 MT
 
 // ─── Helpers de fecha ────────────────────────────────────────────────────────
 function formatDateDisplay(d: Date): string {

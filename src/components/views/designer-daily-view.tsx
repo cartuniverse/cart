@@ -45,7 +45,7 @@ type DayPlan = {
   mt: { key: FormatKey; title: string; hint: string }[];
 };
 
-// Cronograma de SAMUEL
+// Cronograma de SAMUEL — CL alterna: Lun/Mié/Vie = Historia producto · Mar/Jue = Historia interactiva
 const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
   1: {
     label: "Lunes", shortLabel: "L",
@@ -57,7 +57,6 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de producto" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
       { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
-      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
@@ -74,7 +73,6 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico novias", hint: "Novias · story editorial" },
       { key: "clMovimiento", title: "Creativo (Disney)", hint: "Video creativo Disney CL" },
       { key: "clPost", title: "Post", hint: "Publicación cuadrada/portrait" },
-      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
       { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
@@ -92,7 +90,6 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de producto" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
       { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
-      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
@@ -109,7 +106,6 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico comunión", hint: "Primera comunión · story" },
       { key: "clMovimiento", title: "Creativo (Disney)", hint: "Video creativo Disney CL" },
       { key: "clPost", title: "Post", hint: "Publicación cuadrada/portrait" },
-      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
       { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
@@ -127,7 +123,6 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de producto" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
       { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
-      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Orgánico producto", hint: "Catálogo editorial MT" },
@@ -136,7 +131,7 @@ const SAMUEL_WEEK_PLAN: Record<number, DayPlan> = {
   },
 };
 
-// Cronograma de MIGUEL
+// Cronograma de MIGUEL — CL alterna: Lun/Mié/Vie = Historia producto · Mar/Jue = Historia interactiva
 const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
   1: {
     label: "Lunes", shortLabel: "L",
@@ -149,7 +144,6 @@ const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clMovimiento", title: "Creativo (yapping)", hint: "Video creativo Yapping CL" },
       { key: "clPost", title: "Post", hint: "Publicación en feed" },
       { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
-      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
@@ -165,7 +159,6 @@ const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico novias", hint: "Novias · story editorial" },
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de novias" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
-      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
       { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
@@ -184,7 +177,6 @@ const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clMovimiento", title: "Creativo (yapping)", hint: "Video creativo Yapping CL" },
       { key: "clPost", title: "Post", hint: "Publicación en feed" },
       { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
-      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Creativo (yapping)", hint: "Video creativo Yapping MT" },
@@ -200,7 +192,6 @@ const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clHistorias", title: "Orgánico comunión", hint: "Primera comunión · story" },
       { key: "clMovimiento", title: "Carrusel", hint: "5–7 slides de comunión" },
       { key: "clPost", title: "Testimonio", hint: "Review de cliente en feed" },
-      { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
       { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
@@ -219,7 +210,6 @@ const MIGUEL_WEEK_PLAN: Record<number, DayPlan> = {
       { key: "clMovimiento", title: "Creativo", hint: "Video creativo CL · Viernes" },
       { key: "clPost", title: "Post", hint: "Publicación en feed" },
       { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia de producto CL · story" },
-      { key: "clHistoriaInteractiva", title: "Historia interactiva", hint: "Encuesta o trivia CL · story" },
     ],
     mt: [
       { key: "mtHistorias", title: "Imagen interactiva (historia)", hint: "Trivia o encuesta MT" },
@@ -266,9 +256,9 @@ export function DesignerDailyView({
   }, [designerEmail, designerId, designerName]);
 
   const activeWeekPlan = isMiguel ? MIGUEL_WEEK_PLAN : SAMUEL_WEEK_PLAN;
-  const CL_PLAN_WEEK = 25; // 5 formatos CL × 5 días
-  const MT_PLAN_WEEK = isMiguel ? 9 : 10; // Miguel: 2+2+2+2+1=9, Samuel: 2+2+2+2+2=10
-  const TOTAL_PLAN_WEEK = isMiguel ? 34 : 35; // 25 CL + 9/10 MT
+  const CL_PLAN_WEEK = 20; // 4 formatos CL/día × 5 días (alternando hist. producto / hist. interactiva)
+  const MT_PLAN_WEEK = isMiguel ? 9 : 10;
+  const TOTAL_PLAN_WEEK = isMiguel ? 29 : 30; // 20 CL + 9/10 MT
 
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     // Usar fecha actual local sin hardcodear
@@ -489,7 +479,7 @@ export function DesignerDailyView({
                       hint={f.hint}
                       count={counts[f.key]}
                       weekTotal={0}
-                      perWeek={CL_PLAN_WEEK / 5}
+                      perWeek={CL_PLAN_WEEK / 4}
                       brandColor="#ec4899"
                       bgSoft="#fdf2f8"
                       borderSoft="#fce7f3"
@@ -680,16 +670,16 @@ export function DesignerDailyView({
               <div className="flex flex-col gap-1.5">
                 {(isMiguel
                   ? [
-                      "34 piezas / semana · Casa Luifer + Montana",
-                      "CL: 5 formatos/día · incluye Historia producto + Historia interactiva",
+                      "29 piezas / semana · 4 CL/día + MT",
+                      "CL alterna: Lun/Mié/Vie = Historia producto · Mar/Jue = Historia interactiva",
                       "Lunes, Miércoles y Viernes → días creativos",
                       "Videos creativos CL: Yapping Lun & Mié, Creativo Viernes",
                       "Montana: Yapping Miércoles, Interactivas Lun/Mié/Vie",
                       "Solo Instagram · Lunes a viernes",
                     ]
                   : [
-                      "35 piezas / semana · 7 piezas / día",
-                      "CL: 5 formatos/día · incluye Historia producto + Historia interactiva",
+                      "30 piezas / semana · 4 CL/día + 2 MT/día",
+                      "CL alterna: Lun/Mié/Vie = Historia producto · Mar/Jue = Historia interactiva",
                       "Martes y Jueves → días creativos (Disney)",
                       "Lunes, Miércoles y Viernes → Orgánicos + Carrusel + Testimonio",
                       "Montana: Orgánico producto + historias",

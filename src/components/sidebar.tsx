@@ -339,7 +339,7 @@ export function Sidebar({
                 <span className="text-[13px]">Plan continuo</span>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-700 border border-amber-200/50">
-                {designerTodayCount}/7
+                {designerTodayCount}/6
               </span>
             </button>
           </div>
