@@ -64,7 +64,7 @@ export default function Home() {
         setActiveNav("dashboard");
         if (p.projectName) setActiveProjectName(p.projectName);
       } else if (p.role === "disenador_ai") {
-        setActiveNav("plan_desatraso");
+        setActiveNav("plan_continuo");
       } else {
         setActiveNav("organigrama");
       }
@@ -196,7 +196,8 @@ export default function Home() {
             )
           ) : currentRoleView === "designer" ? (
             <DesignerDailyView
-              designerName={profile.name || "Daniela S."}
+              designerName={profile.name || "Diseñador"}
+              designerId={profile.id || profile.name?.toLowerCase().replace(/\s+/g, "-") || "designer"}
             />
           ) : selectedProfilePerson ? (
             <FullProfileView

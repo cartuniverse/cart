@@ -14,8 +14,10 @@ CREATE TABLE IF NOT EXISTS public.daily_design_logs (
   -- Casa Luifer
   format_cl_historias     INT NOT NULL DEFAULT 0,
   format_cl_movimiento    INT NOT NULL DEFAULT 0,
+  format_cl_post          INT NOT NULL DEFAULT 0,
   notes_cl_historias      TEXT NOT NULL DEFAULT '',
   notes_cl_movimiento     TEXT NOT NULL DEFAULT '',
+  notes_cl_post           TEXT NOT NULL DEFAULT '',
 
   -- Montana
   format_mt_historias     INT NOT NULL DEFAULT 0,

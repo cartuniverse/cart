@@ -999,7 +999,7 @@ export async function getAllCommunityLogs(
 }
 
 // ==========================================
-// REGISTROS DIARIOS DEL DISEÑADOR AI · PLAN DE DESATRASO
+// REGISTROS DIARIOS DEL DISEÑADOR AI · PLAN CONTINUO
 // Alcance: Casa Luifer + Montana (una sola tabla por día/diseñador)
 // Tabla Supabase: daily_design_logs
 // Clave de conflicto: (date, designer_id)
@@ -1039,10 +1039,12 @@ export async function getDailyDesignLog(
         designerName: data.designer_name,
         formatClHistorias: data.format_cl_historias ?? 0,
         formatClMovimiento: data.format_cl_movimiento ?? 0,
+        formatClPost: data.format_cl_post ?? 0,
         formatMtHistorias: data.format_mt_historias ?? 0,
         formatMtCarruseles: data.format_mt_carruseles ?? 0,
         notesClHistorias: data.notes_cl_historias || "",
         notesClMovimiento: data.notes_cl_movimiento || "",
+        notesClPost: data.notes_cl_post || "",
         notesMtHistorias: data.notes_mt_historias || "",
         notesMtCarruseles: data.notes_mt_carruseles || "",
         updatedAt: data.updated_at,
@@ -1077,10 +1079,12 @@ export async function saveDailyDesignLog(
     designerName: log.designerName,
     formatClHistorias: log.formatClHistorias,
     formatClMovimiento: log.formatClMovimiento,
+    formatClPost: log.formatClPost,
     formatMtHistorias: log.formatMtHistorias,
     formatMtCarruseles: log.formatMtCarruseles,
     notesClHistorias: log.notesClHistorias || "",
     notesClMovimiento: log.notesClMovimiento || "",
+    notesClPost: log.notesClPost || "",
     notesMtHistorias: log.notesMtHistorias || "",
     notesMtCarruseles: log.notesMtCarruseles || "",
     updatedAt: now,
@@ -1108,10 +1112,12 @@ export async function saveDailyDesignLog(
           designer_name: log.designerName,
           format_cl_historias: log.formatClHistorias,
           format_cl_movimiento: log.formatClMovimiento,
+          format_cl_post: log.formatClPost,
           format_mt_historias: log.formatMtHistorias,
           format_mt_carruseles: log.formatMtCarruseles,
           notes_cl_historias: log.notesClHistorias || "",
           notes_cl_movimiento: log.notesClMovimiento || "",
+          notes_cl_post: log.notesClPost || "",
           notes_mt_historias: log.notesMtHistorias || "",
           notes_mt_carruseles: log.notesMtCarruseles || "",
           updated_at: now,
@@ -1124,6 +1130,38 @@ export async function saveDailyDesignLog(
   }
 
   return finalLog;
+}
+
+export async function uploadDesignCapture(
+  file: File,
+  designerId: string,
+  date: string,
+  formatKey: string
+): Promise<string | null> {
+  if (!supabase) return null;
+  try {
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const fileName = `${formatKey}-${Date.now()}.${ext}`;
+    const filePath = `${designerId}/${date}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("design-captures")
+      .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+    if (uploadError) {
+      console.error("Error uploading design capture:", uploadError.message);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from("design-captures")
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  } catch (err) {
+    console.error("Error in uploadDesignCapture:", err);
+    return null;
+  }
 }
 
 export async function getWeeklyDesignLogs(
@@ -1161,10 +1199,12 @@ export async function getWeeklyDesignLogs(
           designerName: d.designer_name,
           formatClHistorias: d.format_cl_historias ?? 0,
           formatClMovimiento: d.format_cl_movimiento ?? 0,
+          formatClPost: d.format_cl_post ?? 0,
           formatMtHistorias: d.format_mt_historias ?? 0,
           formatMtCarruseles: d.format_mt_carruseles ?? 0,
           notesClHistorias: d.notes_cl_historias || "",
           notesClMovimiento: d.notes_cl_movimiento || "",
+          notesClPost: d.notes_cl_post || "",
           notesMtHistorias: d.notes_mt_historias || "",
           notesMtCarruseles: d.notes_mt_carruseles || "",
           updatedAt: d.updated_at,

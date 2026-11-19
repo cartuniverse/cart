@@ -87,7 +87,8 @@ export function Sidebar({
 
   useEffect(() => {
     let active = true;
-    const todayIso = "2026-11-10";
+    const now = new Date();
+    const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
     const refreshCounts = () => {
       if (isCommunity) {
@@ -123,12 +124,14 @@ export function Sidebar({
           }
         });
       } else if (isDesigner) {
-        getDailyDesignLog(todayIso).then((log) => {
+        const designerId = profile?.id || "designer";
+        getDailyDesignLog(todayIso, designerId).then((log) => {
           if (!active) return;
           if (log) {
             const total =
               (log.formatClHistorias ?? 0) +
               (log.formatClMovimiento ?? 0) +
+              (log.formatClPost ?? 0) +
               (log.formatMtHistorias ?? 0) +
               (log.formatMtCarruseles ?? 0);
             setDesignerTodayCount(total);
@@ -152,7 +155,7 @@ export function Sidebar({
     return () => {
       active = false;
     };
-  }, [isCommunity, isAudiovisual, isDesigner, activeProjectName, activeNav]);
+  }, [isCommunity, isAudiovisual, isDesigner, activeProjectName, activeNav, profile?.id]);
 
   // Metas diarias sugeridas para cada marca
   const cmDailyTarget = activeProjectName === "Montana" ? 8 : 11;
@@ -163,7 +166,7 @@ export function Sidebar({
     : isAudiovisual
       ? "Andrés M."
       : isDesigner
-        ? "Daniela S."
+        ? (profile?.name ?? "Diseñador")
         : profile?.name ?? "Cristian A.";
 
   const roleLabel = isCommunity
@@ -294,14 +297,14 @@ export function Sidebar({
         </div>
       ) : isDesigner ? (
         <div className="flex flex-col gap-6 flex-1">
-          {/* Tarjeta de usuario destacada de Daniela S. */}
-          <div className="rounded-2xl bg-violet-50/70 border border-violet-100 p-3 flex items-center gap-3">
+          {/* Tarjeta de usuario del diseñador */}
+          <div className="rounded-2xl bg-violet-50/70 border border-violet-100 dark:bg-violet-950/30 dark:border-violet-900/50 p-3 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center text-white shadow-2xs shrink-0">
               <Palette className="w-5 h-5" />
             </div>
             <div className="leading-tight min-w-0">
               <div className="text-[13.5px] font-bold text-text-primary truncate">
-                Daniela S.
+                {displayName}
               </div>
               <div className="text-[11px] font-semibold text-violet-600 truncate">
                 Diseñador AI
@@ -327,21 +330,21 @@ export function Sidebar({
               <span className="text-[13px] flex-1">Dashboard</span>
             </button>
 
-            {/* Plan de desatraso */}
+            {/* Plan continuo */}
             <button
-              onClick={() => onSelectNav?.("plan_desatraso")}
+              onClick={() => onSelectNav?.("plan_continuo")}
               className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
-                activeNav === "plan_desatraso"
+                activeNav === "plan_continuo"
                   ? "bg-violet-50 text-violet-700 font-bold border border-violet-200/60 shadow-xs"
                   : "text-text-secondary font-medium hover:bg-surface-2"
               }`}
             >
               <div className="flex items-center gap-3">
                 <Flame className="w-[18px] h-[18px] text-amber-500" />
-                <span className="text-[13px]">Plan de desatraso</span>
+                <span className="text-[13px]">Plan continuo</span>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-700 border border-amber-200/50">
-                {designerTodayCount}/7
+                {designerTodayCount}/8
               </span>
             </button>
           </div>

@@ -107,6 +107,7 @@ export type DailyCommunityLog = {
 export type DesignerFormatKey =
   | "clHistorias"
   | "clMovimiento"
+  | "clPost"
   | "mtHistorias"
   | "mtCarruseles";
 
@@ -117,10 +118,12 @@ export type DailyDesignLog = {
   designerName: string;
   formatClHistorias: number;
   formatClMovimiento: number;
+  formatClPost: number;
   formatMtHistorias: number;
   formatMtCarruseles: number;
   notesClHistorias: string;
   notesClMovimiento: string;
+  notesClPost: string;
   notesMtHistorias: string;
   notesMtCarruseles: string;
   updatedAt?: string;
