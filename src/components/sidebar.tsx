@@ -58,7 +58,7 @@ const ROLE_LABELS: Record<string, string> = {
 interface SidebarProps {
   activeNav?: string;
   onSelectNav?: (navId: string) => void;
-  currentRoleView?: "admin" | "audiovisual" | "community" | "designer";
+  currentRoleView?: "admin" | "audiovisual" | "community" | "designer" | "director";
   profile?: Profile | null;
   onLogout?: () => void;
   activeProjectName?: string;
@@ -77,6 +77,7 @@ export function Sidebar({
   const isAudiovisual = currentRoleView === "audiovisual";
   const isCommunity = currentRoleView === "community";
   const isDesigner = currentRoleView === "designer";
+  const isDirector = currentRoleView === "director";
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
 
@@ -167,7 +168,9 @@ export function Sidebar({
       ? "Andrés M."
       : isDesigner
         ? (profile?.name ?? "Diseñador")
-        : profile?.name ?? "Cristian A.";
+        : isDirector
+          ? (profile?.name ?? "Director")
+          : profile?.name ?? "Cristian A.";
 
   const roleLabel = isCommunity
     ? "Community Manager"
@@ -175,9 +178,11 @@ export function Sidebar({
       ? "Creador Audiovisual AI"
       : isDesigner
         ? "Diseñador AI"
-        : profile
-          ? ROLE_LABELS[profile.role] ?? profile.role
-          : "Administrador";
+        : isDirector
+          ? "Director de Área"
+          : profile
+            ? ROLE_LABELS[profile.role] ?? profile.role
+            : "Administrador";
 
   const initials = displayName
     .split(" ")
@@ -197,7 +202,7 @@ export function Sidebar({
           <div className="leading-tight">
             <div className="text-[15px] font-bold text-text-primary">Cart</div>
             <div className="text-[11px] font-medium text-text-tertiary">
-              {isAudiovisual || isCommunity ? "Mi diario" : "Mi equipo"}
+              {isAudiovisual || isCommunity ? "Mi diario" : isDirector ? "Seguimiento" : "Mi equipo"}
             </div>
           </div>
         </div>
@@ -449,6 +454,67 @@ export function Sidebar({
             })}
           </div>
         </div>
+      ) : isDirector ? (
+        /* Navegación del Director de Área */
+        <div className="flex flex-col gap-6 flex-1">
+          {/* Tarjeta de usuario del director */}
+          <div className="rounded-2xl bg-emerald-50/70 border border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900/50 p-3 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-2xs shrink-0">
+              <LayoutDashboard className="w-5 h-5" />
+            </div>
+            <div className="leading-tight min-w-0">
+              <div className="text-[13.5px] font-bold text-text-primary truncate">
+                {displayName}
+              </div>
+              <div className="text-[11px] font-semibold text-emerald-600 truncate">
+                Director de Área
+              </div>
+            </div>
+          </div>
+
+          {/* SEGUIMIENTO */}
+          <div className="flex flex-col gap-1">
+            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
+              SEGUIMIENTO
+            </div>
+
+            <button
+              onClick={() => onSelectNav?.("seguimiento")}
+              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
+                activeNav === "seguimiento"
+                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200/60 dark:border-emerald-900/50 shadow-xs"
+                  : "text-text-secondary font-medium hover:bg-surface-2"
+              }`}
+            >
+              <Flame className="w-[18px] h-[18px] text-emerald-500" />
+              <span className="text-[13px] flex-1">Plan del equipo</span>
+            </button>
+          </div>
+
+          {/* EQUIPO */}
+          <div className="flex flex-col gap-1">
+            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
+              EQUIPO
+            </div>
+            {NAV.map(({ id, icon: Icon, label }) => {
+              const isActive = activeNav === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => onSelectNav?.(id)}
+                  className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
+                    isActive
+                      ? "bg-accent-soft text-text-primary font-bold shadow-xs"
+                      : "text-text-secondary font-medium hover:bg-surface-2"
+                  }`}
+                >
+                  <Icon className="w-[18px] h-[18px]" />
+                  <span className="text-[13px] flex-1">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       ) : (
         /* Navegación estándar de Administrador */
         <div className="flex flex-col gap-1 flex-1">
@@ -485,7 +551,9 @@ export function Sidebar({
                   ? "bg-[#4f46e5]"
                   : isDesigner
                     ? "bg-violet-600"
-                    : "bg-accent"
+                    : isDirector
+                      ? "bg-emerald-600"
+                      : "bg-accent"
             }`}
           >
             {initials}

@@ -20,6 +20,7 @@ import { AudiovisualDashboardView } from "@/components/views/audiovisual-dashboa
 import { CommunityDailyView } from "@/components/views/community-daily-view";
 import { CommunityDashboardView } from "@/components/views/community-dashboard-view";
 import { DesignerDailyView } from "@/components/views/designer-daily-view";
+import { DirectorView } from "@/components/views/director-view";
 import { getPeople, getProjects } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { getCurrentProfile, signOut } from "@/lib/auth";
@@ -36,13 +37,15 @@ export default function Home() {
   const [selectedProfilePerson, setSelectedProfilePerson] = useState<Person | null>(null);
 
   // Vista derivada estrictamente del rol del usuario autenticado
-  const currentRoleView: "admin" | "audiovisual" | "community" | "designer" =
+  const currentRoleView: "admin" | "audiovisual" | "community" | "designer" | "director" =
     profile?.role === "creador_audiovisual"
       ? "audiovisual"
       : profile?.role === "community_manager"
       ? "community"
       : profile?.role === "disenador_ai"
       ? "designer"
+      : profile?.role === "director_area"
+      ? "director"
       : "admin";
 
   const [activeProjectName, setActiveProjectName] = useState<string>("Casa Luifer");
@@ -65,6 +68,8 @@ export default function Home() {
         if (p.projectName) setActiveProjectName(p.projectName);
       } else if (p.role === "disenador_ai") {
         setActiveNav("plan_continuo");
+      } else if (p.role === "director_area") {
+        setActiveNav("seguimiento");
       } else {
         setActiveNav("organigrama");
       }
@@ -200,6 +205,8 @@ export default function Home() {
               designerEmail={profile.email}
               designerId={profile.id || profile.name?.toLowerCase().replace(/\s+/g, "-") || "designer"}
             />
+          ) : currentRoleView === "director" && activeNav === "seguimiento" ? (
+            <DirectorView />
           ) : selectedProfilePerson ? (
             <FullProfileView
               person={selectedProfilePerson}
