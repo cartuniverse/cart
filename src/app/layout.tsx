@@ -24,6 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="es" suppressHydrationWarning className={`${inter.variable} h-full`}>
       <head>
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `
               try {
