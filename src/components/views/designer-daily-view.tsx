@@ -6,6 +6,7 @@ import { fadeInUp, popIn, staggerContainer } from "@/lib/motion-variants";
 import {
   Calendar as CalendarIcon,
   Camera,
+  Check,
   ChevronLeft,
   ChevronRight,
   Flame,
@@ -15,12 +16,14 @@ import {
   MessageSquare,
   Minus,
   Plus,
+  Save,
   Sparkles,
   Video,
   X,
 } from "lucide-react";
 import {
   getDailyDesignLog,
+  getMonthlyDesignLogs,
   getWeeklyDesignLogs,
   saveDailyDesignLog,
   uploadDesignCapture,
@@ -269,7 +272,12 @@ export function DesignerDailyView({
   const [notes, setNotes] = useState<NotesState>(emptyNotes);
   const [isSaving, setIsSaving] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [weeklyLogs, setWeeklyLogs] = useState<Record<string, DailyDesignLog>>({});
+  const [monthLogs, setMonthLogs] = useState<Record<string, DailyDesignLog>>({});
+
+  // Mes visible en el calendario mensual
+  const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
 
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
   const weekISOs = useMemo(() => weekDays.map(toISO), [weekDays]);
@@ -280,21 +288,58 @@ export function DesignerDailyView({
   const mtTodayTarget = todayPlan.mt.length;
   const planDiaTotal = clTodayTarget + mtTodayTarget;
 
+  // Cargar registro del día y semana actual
   useEffect(() => {
     getDailyDesignLog(currentISO, designerId).then((log) => {
       if (log) {
-        setCounts({ clHistorias: log.formatClHistorias, clMovimiento: log.formatClMovimiento, clPost: log.formatClPost ?? 0, clHistoriaProducto: log.formatClHistoriaProducto ?? 0, clHistoriaInteractiva: log.formatClHistoriaInteractiva ?? 0, mtHistorias: log.formatMtHistorias, mtCarruseles: log.formatMtCarruseles });
-        setNotes({ clHistorias: log.notesClHistorias, clMovimiento: log.notesClMovimiento, clPost: log.notesClPost ?? "", clHistoriaProducto: log.notesClHistoriaProducto ?? "", clHistoriaInteractiva: log.notesClHistoriaInteractiva ?? "", mtHistorias: log.notesMtHistorias, mtCarruseles: log.notesMtCarruseles });
+        setCounts({
+          clHistorias: log.formatClHistorias,
+          clMovimiento: log.formatClMovimiento,
+          clPost: log.formatClPost ?? 0,
+          clHistoriaProducto: log.formatClHistoriaProducto ?? 0,
+          clHistoriaInteractiva: log.formatClHistoriaInteractiva ?? 0,
+          mtHistorias: log.formatMtHistorias,
+          mtCarruseles: log.formatMtCarruseles,
+        });
+        setNotes({
+          clHistorias: log.notesClHistorias,
+          clMovimiento: log.notesClMovimiento,
+          clPost: log.notesClPost ?? "",
+          clHistoriaProducto: log.notesClHistoriaProducto ?? "",
+          clHistoriaInteractiva: log.notesClHistoriaInteractiva ?? "",
+          mtHistorias: log.notesMtHistorias,
+          mtCarruseles: log.notesMtCarruseles,
+        });
       } else {
         setCounts(emptyCounts());
         setNotes(emptyNotes());
       }
+      setHasUnsavedChanges(false);
     });
     getWeeklyDesignLogs(weekISOs, designerId).then(setWeeklyLogs);
   }, [currentISO, designerId, weekISOs]);
 
-  const updateCount = (key: FormatKey, delta: number) =>
+  // Sincronizar mes visible si se cambia de fecha a otro mes
+  useEffect(() => {
+    if (calendarMonth.getFullYear() !== selectedDate.getFullYear() || calendarMonth.getMonth() !== selectedDate.getMonth()) {
+      setCalendarMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+    }
+  }, [selectedDate]);
+
+  // Cargar registros mensuales para pintar el calendario
+  useEffect(() => {
+    getMonthlyDesignLogs(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, designerId).then(setMonthLogs);
+  }, [calendarMonth, designerId]);
+
+  const updateCount = (key: FormatKey, delta: number) => {
     setCounts((p) => ({ ...p, [key]: Math.max(0, p[key] + delta) }));
+    setHasUnsavedChanges(true);
+  };
+
+  const updateNote = (key: FormatKey, value: string) => {
+    setNotes((p) => ({ ...p, [key]: value }));
+    setHasUnsavedChanges(true);
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -309,6 +354,8 @@ export function DesignerDailyView({
         notesMtHistorias: notes.mtHistorias, notesMtCarruseles: notes.mtCarruseles,
       });
       setWeeklyLogs((p) => ({ ...p, [currentISO]: saved }));
+      setMonthLogs((p) => ({ ...p, [currentISO]: saved }));
+      setHasUnsavedChanges(false);
       setShowSaved(true);
       if (typeof window !== "undefined") window.dispatchEvent(new Event("daily_log_updated"));
       setTimeout(() => setShowSaved(false), 2500);
@@ -317,6 +364,23 @@ export function DesignerDailyView({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Navegar semana anterior / siguiente
+  const handlePrevWeek = () => {
+    setSelectedDate((p) => {
+      const n = new Date(p);
+      n.setDate(p.getDate() - 7);
+      return n;
+    });
+  };
+
+  const handleNextWeek = () => {
+    setSelectedDate((p) => {
+      const n = new Date(p);
+      n.setDate(p.getDate() + 7);
+      return n;
+    });
   };
 
   const totalHoy = counts.clHistorias + counts.clMovimiento + counts.clPost + counts.clHistoriaProducto + counts.clHistoriaInteractiva + counts.mtHistorias + counts.mtCarruseles;
@@ -357,6 +421,28 @@ export function DesignerDailyView({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {/* Navegador de semana */}
+          <div className="flex items-center rounded-xl bg-surface border border-[var(--border)] p-0.5 shadow-2xs">
+            <button
+              onClick={handlePrevWeek}
+              title="Semana anterior"
+              className="h-7 px-2 rounded-lg flex items-center gap-1 text-[11px] font-medium text-text-secondary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sem. anterior</span>
+            </button>
+            <div className="h-4 w-px bg-[var(--border)] mx-1" />
+            <button
+              onClick={handleNextWeek}
+              title="Semana siguiente"
+              className="h-7 px-2 rounded-lg flex items-center gap-1 text-[11px] font-medium text-text-secondary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
+            >
+              <span className="hidden sm:inline">Sem. siguiente</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Selector de día actual */}
           <div className="h-8 rounded-xl bg-surface border border-[var(--border)] px-2 flex items-center gap-1 shadow-2xs">
             <button onClick={() => setSelectedDate((p) => { const n = new Date(p); n.setDate(p.getDate() - 1); return n; })} className="w-5 h-5 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer">
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -372,14 +458,53 @@ export function DesignerDailyView({
           <button onClick={() => { const now = new Date(); setSelectedDate(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0)); }} className="h-8 px-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-[11px] font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/40 transition cursor-pointer border border-amber-100 dark:border-amber-900/50">
             Hoy
           </button>
-          <motion.button onClick={handleSave} disabled={isSaving} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }} animate={showSaved ? { scale: [1, 1.07, 1] } : {}} className="h-8 px-3.5 rounded-xl bg-[#111113] text-white dark:bg-white dark:text-[#111113] text-[11px] font-semibold flex items-center gap-1.5 hover:opacity-90 transition cursor-pointer disabled:opacity-50">
+
+          {/* BOTÓN GUARDAR DÍA DESTACADO Y PROMINENTE */}
+          <motion.button
+            onClick={handleSave}
+            disabled={isSaving}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            animate={
+              hasUnsavedChanges
+                ? {
+                    boxShadow: [
+                      "0 0 0 0 rgba(16, 185, 129, 0)",
+                      "0 0 0 6px rgba(16, 185, 129, 0.25)",
+                      "0 0 0 0 rgba(16, 185, 129, 0)",
+                    ],
+                  }
+                : showSaved
+                ? { scale: [1, 1.08, 1] }
+                : {}
+            }
+            transition={
+              hasUnsavedChanges
+                ? { repeat: Infinity, duration: 2 }
+                : { duration: 0.3 }
+            }
+            className={`h-9 px-4 rounded-xl text-[12px] font-bold flex items-center gap-2 transition cursor-pointer disabled:opacity-50 shadow-md ${
+              hasUnsavedChanges
+                ? "bg-emerald-600 hover:bg-emerald-500 text-white ring-2 ring-emerald-400/50"
+                : "bg-[#111113] text-white dark:bg-white dark:text-[#111113] hover:opacity-95"
+            }`}
+          >
             <AnimatePresence mode="wait" initial={false}>
               {isSaving ? (
-                <motion.span key="s" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" />Guardando...</motion.span>
+                <motion.span key="s" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-1.5">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Guardando...</span>
+                </motion.span>
               ) : showSaved ? (
-                <motion.span key="d" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 18 }} className="flex items-center gap-1.5"><span className="text-emerald-400">✓</span>¡Guardado!</motion.span>
+                <motion.span key="d" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 400, damping: 18 }} className="flex items-center gap-1.5">
+                  <Check className="w-4 h-4 text-emerald-300" />
+                  <span>¡Día guardado!</span>
+                </motion.span>
               ) : (
-                <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-1.5"><span>✓</span>Guardar día</motion.span>
+                <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-1.5">
+                  <Save className={`w-3.5 h-3.5 ${hasUnsavedChanges ? "text-emerald-200 animate-pulse" : ""}`} />
+                  <span>{hasUnsavedChanges ? "Guardar día *" : "Guardar día"}</span>
+                </motion.span>
               )}
             </AnimatePresence>
           </motion.button>
@@ -487,13 +612,13 @@ export function DesignerDailyView({
                       designerId={designerId}
                       date={currentISO}
                       onDelta={(d) => updateCount(f.key, d)}
-                      onNote={(v) => setNotes((p) => ({ ...p, [f.key]: v }))}
+                      onNote={(v) => updateNote(f.key, v)}
                     />
                   ))}
                 </div>
               </motion.div>
 
-              {/* ── Montana ── */}
+              {/* Montana */}
               <motion.div variants={popIn} className="rounded-2xl bg-surface border border-[var(--border)] shadow-2xs overflow-hidden">
                 <div className="px-4 py-3 flex items-center gap-2.5 border-b border-[var(--border)]">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-[11px] shrink-0" style={{ backgroundColor: "#3b82f6" }}>
@@ -526,16 +651,215 @@ export function DesignerDailyView({
                       designerId={designerId}
                       date={currentISO}
                       onDelta={(d) => updateCount(f.key, d)}
-                      onNote={(v) => setNotes((p) => ({ ...p, [f.key]: v }))}
+                      onNote={(v) => updateNote(f.key, v)}
                     />
                   ))}
                 </div>
               </motion.div>
             </motion.div>
+
+            {/* BARRA INFERIOR / RECORDATORIO DE GUARDADO */}
+            {hasUnsavedChanges && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl bg-amber-500/10 border-2 border-amber-500/40 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                    <Save className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-[13px] font-bold text-text-primary">
+                      Tienes cambios sin guardar en este día
+                    </div>
+                    <div className="text-[11px] text-text-secondary">
+                      No olvides presionar guardar para que el progreso quede registrado en la base de datos.
+                    </div>
+                  </div>
+                </div>
+
+                <motion.button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="w-full sm:w-auto h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[12.5px] flex items-center justify-center gap-2 shadow-md cursor-pointer shrink-0 transition"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Guardar día ahora
+                    </>
+                  )}
+                </motion.button>
+              </motion.div>
+            )}
           </div>
 
           {/* ════════ PANEL DERECHO ════════ */}
-          <motion.div variants={fadeInUp} className="w-full lg:w-[310px] shrink-0 flex flex-col gap-3.5">
+          <motion.div variants={fadeInUp} className="w-full lg:w-[320px] shrink-0 flex flex-col gap-3.5">
+
+            {/* CALENDARIO MENSUAL */}
+            <div className="rounded-2xl bg-surface border border-[var(--border)] overflow-hidden shadow-2xs">
+              <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between gap-2 bg-surface-2/40">
+                <div className="flex items-center gap-2 min-w-0">
+                  <CalendarIcon className="w-3.5 h-3.5 text-text-tertiary shrink-0" />
+                  <span className="text-[11px] font-bold text-text-primary capitalize truncate">
+                    {calendarMonth.toLocaleDateString("es-ES", { month: "long", year: "numeric" })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => {
+                      setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+                    }}
+                    title="Mes anterior"
+                    className="w-6 h-6 rounded-lg flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      const now = new Date();
+                      setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+                      setSelectedDate(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0));
+                    }}
+                    title="Mes actual"
+                    className="px-1.5 h-6 rounded-lg text-[9.5px] font-semibold text-text-secondary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
+                  >
+                    Hoy
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+                    }}
+                    title="Mes siguiente"
+                    className="w-6 h-6 rounded-lg flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid de días del mes */}
+              <div className="p-3 flex flex-col gap-1.5">
+                {/* Cabecera de días de la semana */}
+                <div className="grid grid-cols-7 gap-1 text-center">
+                  {["L", "M", "X", "J", "V", "S", "D"].map((d, i) => (
+                    <span
+                      key={d}
+                      className={`text-[9.5px] font-bold ${
+                        i >= 5 ? "text-text-tertiary/40" : "text-text-tertiary"
+                      }`}
+                    >
+                      {d}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Días */}
+                <div className="grid grid-cols-7 gap-1">
+                  {(() => {
+                    const year = calendarMonth.getFullYear();
+                    const month = calendarMonth.getMonth();
+                    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0=Dom
+                    const leadBlanks = (firstDayOfMonth + 6) % 7; // Lunes=0
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const cells = [];
+
+                    for (let b = 0; b < leadBlanks; b++) {
+                      cells.push(<div key={`b-${b}`} className="h-8" />);
+                    }
+
+                    for (let day = 1; day <= daysInMonth; day++) {
+                      const dateObj = new Date(year, month, day, 12, 0, 0);
+                      const iso = toISO(dateObj);
+                      const isSelected = iso === currentISO;
+                      const isInSelectedWeek = weekISOs.includes(iso);
+                      const dayOfWeek = dateObj.getDay();
+                      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+                      // Conteo de piezas registradas
+                      let loggedCount = 0;
+                      if (iso === currentISO) {
+                        loggedCount = totalHoy;
+                      } else {
+                        const log = monthLogs[iso] || weeklyLogs[iso];
+                        if (log) {
+                          loggedCount =
+                            (log.formatClHistorias ?? 0) +
+                            (log.formatClMovimiento ?? 0) +
+                            (log.formatClPost ?? 0) +
+                            (log.formatClHistoriaProducto ?? 0) +
+                            (log.formatClHistoriaInteractiva ?? 0) +
+                            (log.formatMtHistorias ?? 0) +
+                            (log.formatMtCarruseles ?? 0);
+                        }
+                      }
+
+                      const hasActivity = loggedCount > 0;
+
+                      cells.push(
+                        <button
+                          key={iso}
+                          onClick={() => setSelectedDate(dateObj)}
+                          title={`${iso}: ${loggedCount} piezas`}
+                          className={`h-8 rounded-lg flex flex-col items-center justify-center relative transition cursor-pointer text-[11px] font-semibold ${
+                            isSelected
+                              ? "bg-emerald-600 text-white font-bold shadow-xs scale-105 z-10"
+                              : isInSelectedWeek
+                              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
+                              : isWeekend
+                              ? "text-text-tertiary/40 hover:bg-surface-2/40"
+                              : "text-text-primary hover:bg-surface-2"
+                          }`}
+                        >
+                          <span>{day}</span>
+                          {hasActivity && !isSelected && (
+                            <span
+                              className={`w-1 h-1 rounded-full absolute bottom-0.5 ${
+                                loggedCount >= 5 ? "bg-emerald-500" : "bg-amber-500"
+                              }`}
+                            />
+                          )}
+                        </button>
+                      );
+                    }
+
+                    return cells;
+                  })()}
+                </div>
+
+                {/* Leyenda y saltos de semana */}
+                <div className="pt-2 mt-1 border-t border-[var(--border)] flex items-center justify-between text-[10px] text-text-tertiary">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span>Con registros</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handlePrevWeek}
+                      className="hover:text-text-primary underline cursor-pointer"
+                    >
+                      ‹ Sem. ant.
+                    </button>
+                    <span>·</span>
+                    <button
+                      onClick={handleNextWeek}
+                      className="hover:text-text-primary underline cursor-pointer"
+                    >
+                      Sem. sig. ›
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Plan Semanal Integrado */}
             <div className="rounded-2xl bg-surface border border-[var(--border)] overflow-hidden shadow-2xs">

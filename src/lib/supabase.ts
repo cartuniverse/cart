@@ -1239,6 +1239,77 @@ export async function getWeeklyAllDesignLogs(
   }
 }
 
+export async function getMonthlyDesignLogs(
+  year: number,
+  month: number, // 1-12
+  designerId = "daniela-s"
+): Promise<Record<string, DailyDesignLog>> {
+  const result: Record<string, DailyDesignLog> = {};
+  const monthStr = String(month).padStart(2, "0");
+  const startIso = `${year}-${monthStr}-01`;
+  const lastDay = new Date(year, month, 0).getDate();
+  const endIso = `${year}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("daily_design_logs")
+        .select("*")
+        .gte("date", startIso)
+        .lte("date", endIso)
+        .eq("designer_id", designerId);
+
+      if (error) {
+        console.error("Error fetching monthly design logs:", error);
+      } else if (data) {
+        data.forEach((d: any) => {
+          result[d.date] = {
+            id: d.id,
+            date: d.date,
+            designerId: d.designer_id,
+            designerName: d.designer_name,
+            formatClHistorias: d.format_cl_historias ?? 0,
+            formatClMovimiento: d.format_cl_movimiento ?? 0,
+            formatClPost: d.format_cl_post ?? 0,
+            formatClHistoriaProducto: d.format_cl_historia_producto ?? 0,
+            formatClHistoriaInteractiva: d.format_cl_historia_interactiva ?? 0,
+            formatMtHistorias: d.format_mt_historias ?? 0,
+            formatMtCarruseles: d.format_mt_carruseles ?? 0,
+            notesClHistorias: d.notes_cl_historias || "",
+            notesClMovimiento: d.notes_cl_movimiento || "",
+            notesClPost: d.notes_cl_post || "",
+            notesClHistoriaProducto: d.notes_cl_historia_producto || "",
+            notesClHistoriaInteractiva: d.notes_cl_historia_interactiva || "",
+            notesMtHistorias: d.notes_mt_historias || "",
+            notesMtCarruseles: d.notes_mt_carruseles || "",
+            updatedAt: d.updated_at,
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Error in getMonthlyDesignLogs:", err);
+    }
+  }
+
+  // Fallback con localStorage
+  if (typeof window !== "undefined") {
+    for (let day = 1; day <= lastDay; day++) {
+      const dateIso = `${year}-${monthStr}-${String(day).padStart(2, "0")}`;
+      if (!result[dateIso]) {
+        const localKey = `cart_designlog_${dateIso}_${designerId}`;
+        const stored = localStorage.getItem(localKey);
+        if (stored) {
+          try {
+            result[dateIso] = JSON.parse(stored);
+          } catch {}
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
 export async function getWeeklyDesignLogs(
   weekDates: string[], // L..V (YYYY-MM-DD)
   designerId = "daniela-s"
