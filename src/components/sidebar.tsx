@@ -167,7 +167,7 @@ export function Sidebar({
 
   // Nombre e iniciales según la vista
   const displayName = isCommunity
-    ? "Valentina C."
+    ? (profile?.name ?? "Lizz")
     : isAudiovisual
       ? "Andrés M."
       : isDesigner

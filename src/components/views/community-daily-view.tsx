@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Calendar,
   Check,
@@ -20,7 +20,9 @@ import {
   Radio,
   Share2,
   Sparkles,
+  Trash2,
   Tv,
+  Upload,
 } from "lucide-react";
 
 // Icono SVG de Instagram
@@ -45,6 +47,7 @@ import {
   getDailyCommunityLog,
   getWeeklyCommunityLogs,
   saveDailyCommunityLog,
+  uploadDesignCapture,
 } from "@/lib/supabase";
 import type { DailyCommunityLog } from "@/lib/types";
 
@@ -233,10 +236,13 @@ export function CommunityDailyView({
     }
   }, [initialProjectName]);
 
-  // Fecha seleccionada (Default fijo inicial: 2026-11-10 Lunes/Martes)
-  const [selectedDate, setSelectedDate] = useState<Date>(
-    () => new Date("2026-11-10T12:00:00")
-  );
+  // Fecha seleccionada (Hoy real)
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
+
+  // Captura de pantalla de Historias (solo para Historias de Casa Luifer o Montana)
+  const [storyCaptureUrl, setStoryCaptureUrl] = useState<string>("");
+  const [uploadingStory, setUploadingStory] = useState(false);
+  const storyInputRef = useRef<HTMLInputElement>(null);
 
   // Contadores diarios de los 8 formatos
   const [counts, setCounts] = useState<CommunityDailyCounts>({
@@ -298,10 +304,46 @@ export function CommunityDailyView({
       setWeeklyLogs(res);
     });
 
+    // 3. Cargar captura de Historias del día
+    if (typeof window !== "undefined") {
+      const savedCapture = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}`) || "";
+      setStoryCaptureUrl(savedCapture);
+    }
+
     return () => {
       active = false;
     };
   }, [currentIso, currentProjectName, weekISOStrings]);
+
+  const handleStoryUpload = async (file: File) => {
+    setUploadingStory(true);
+    const url = await uploadDesignCapture(file, "lizz", currentIso, `${currentProjectName}_historias`);
+    const saveUrl = (finalUrl: string) => {
+      setStoryCaptureUrl(finalUrl);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`community_story_capture_${currentIso}_${currentProjectName}`, finalUrl);
+        window.dispatchEvent(new Event("daily_log_updated"));
+      }
+    };
+    if (url) {
+      saveUrl(url);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) saveUrl(ev.target.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+    setUploadingStory(false);
+  };
+
+  const handleRemoveStoryCapture = () => {
+    setStoryCaptureUrl("");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(`community_story_capture_${currentIso}_${currentProjectName}`);
+      window.dispatchEvent(new Event("daily_log_updated"));
+    }
+  };
 
   // Manejo de conteos
   const handleIncrement = (key: keyof CommunityDailyCounts) => {
@@ -321,7 +363,7 @@ export function CommunityDailyView({
       const saved = await saveDailyCommunityLog({
         date: currentIso,
         cmId: "valentina-c",
-        cmName: "Valentina C.",
+        cmName: "Lizz",
         projectName: currentProjectName,
         formatHistoriaOrganica: counts.historiaOrganica,
         formatHistoriaProducto: counts.historiaProducto,

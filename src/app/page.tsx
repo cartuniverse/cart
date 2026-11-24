@@ -190,7 +190,7 @@ export default function Home() {
           {currentRoleView === "community" ? (
             activeNav === "dashboard" ? (
               <CommunityDashboardView
-                cmName={profile.name ? profile.name.split(" ")[0] : "Valentina"}
+                cmName={profile.name ? profile.name.split(" ")[0] : "Lizz"}
                 onGoToDailyView={() => setActiveNav("diario_hoy")}
               />
             ) : (
