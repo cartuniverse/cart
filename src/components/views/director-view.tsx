@@ -515,7 +515,7 @@ export function DirectorView({
   const miguelWeekPct = Math.min(100, Math.round((miguelWeekTotal / weekTargetTotal) * 100))
 
   return (
-    <div className="min-h-screen bg-bg text-text-primary p-5 md:p-8 font-sans transition-colors duration-200">
+    <div className="flex-1 w-full overflow-y-auto bg-bg text-text-primary p-5 md:p-8 font-sans transition-colors duration-200 pb-16">
 
       {/* ======================================================== */}
       {/* 1. HEADER: TITULO, FILTRO DE CALENDARIO Y RECARGA        */}
@@ -753,17 +753,15 @@ export function DirectorView({
               <div className="grid grid-cols-2 gap-2.5">
                 {samuelClFormats.map(f => {
                   const isMissed = !f.completed && isPast8PM
-                  const isInProgress = !f.completed && !isPast8PM
                   return (
                     <div
                       key={f.key}
-                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
-                        f.completed
-                          ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                          : isMissed
+                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${f.completed
+                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
+                        : isMissed
                           ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
-                          : "bg-amber-500/15 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 shadow-xs"
-                      }`}
+                          : "bg-surface/30 text-text-tertiary"
+                        }`}
                     >
                       <div>
                         <div className="flex items-center gap-1.5">
@@ -772,26 +770,24 @@ export function DirectorView({
                           ) : isMissed ? (
                             <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
                           ) : (
-                            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                           )}
-                          <span className={`text-xs font-semibold ${
-                            f.completed
-                              ? "text-emerald-950 dark:text-emerald-100"
-                              : isMissed
+                          <span className={`text-xs font-semibold ${f.completed
+                            ? "text-emerald-950 dark:text-emerald-100"
+                            : isMissed
                               ? "text-rose-950 dark:text-rose-100"
-                              : "text-amber-950 dark:text-amber-100"
-                          }`}>
+                              : "text-text-secondary"
+                            }`}>
                             {f.title}
                           </span>
                         </div>
-                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${
-                          f.completed
-                            ? "text-emerald-700/80 dark:text-emerald-300/80"
-                            : isMissed
+                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed
+                          ? "text-emerald-700/80 dark:text-emerald-300/80"
+                          : isMissed
                             ? "text-rose-700/80 dark:text-rose-300/80"
-                            : "text-amber-700/80 dark:text-amber-300/80 font-medium"
-                        }`}>
-                          {isMissed ? "No entregado a las 8:00 PM" : isInProgress ? "En progreso · pendiente" : f.hint}
+                            : "text-text-tertiary"
+                          }`}>
+                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
                         </p>
                       </div>
 
@@ -833,17 +829,15 @@ export function DirectorView({
               <div className="grid grid-cols-2 gap-2.5">
                 {samuelMtFormats.map(f => {
                   const isMissed = !f.completed && isPast8PM
-                  const isInProgress = !f.completed && !isPast8PM
                   return (
                     <div
                       key={f.key}
-                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
-                        f.completed
-                          ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                          : isMissed
+                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${f.completed
+                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
+                        : isMissed
                           ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
-                          : "bg-amber-500/15 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 shadow-xs"
-                      }`}
+                          : "bg-surface/30 text-text-tertiary"
+                        }`}
                     >
                       <div>
                         <div className="flex items-center gap-1.5">
@@ -852,26 +846,24 @@ export function DirectorView({
                           ) : isMissed ? (
                             <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
                           ) : (
-                            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                           )}
-                          <span className={`text-xs font-semibold ${
-                            f.completed
-                              ? "text-emerald-950 dark:text-emerald-100"
-                              : isMissed
+                          <span className={`text-xs font-semibold ${f.completed
+                            ? "text-emerald-950 dark:text-emerald-100"
+                            : isMissed
                               ? "text-rose-950 dark:text-rose-100"
-                              : "text-amber-950 dark:text-amber-100"
-                          }`}>
+                              : "text-text-secondary"
+                            }`}>
                             {f.title}
                           </span>
                         </div>
-                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${
-                          f.completed
-                            ? "text-emerald-700/80 dark:text-emerald-300/80"
-                            : isMissed
+                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed
+                          ? "text-emerald-700/80 dark:text-emerald-300/80"
+                          : isMissed
                             ? "text-rose-700/80 dark:text-rose-300/80"
-                            : "text-amber-700/80 dark:text-amber-300/80 font-medium"
-                        }`}>
-                          {isMissed ? "No entregado a las 8:00 PM" : isInProgress ? "En progreso · pendiente" : f.hint}
+                            : "text-text-tertiary"
+                          }`}>
+                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
                         </p>
                       </div>
 
@@ -972,17 +964,15 @@ export function DirectorView({
               <div className="grid grid-cols-2 gap-2.5">
                 {miguelClFormats.map(f => {
                   const isMissed = !f.completed && isPast8PM
-                  const isInProgress = !f.completed && !isPast8PM
                   return (
                     <div
                       key={f.key}
-                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
-                        f.completed
-                          ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                          : isMissed
+                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${f.completed
+                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
+                        : isMissed
                           ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
-                          : "bg-amber-500/15 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 shadow-xs"
-                      }`}
+                          : "bg-surface/30 text-text-tertiary"
+                        }`}
                     >
                       <div>
                         <div className="flex items-center gap-1.5">
@@ -991,26 +981,24 @@ export function DirectorView({
                           ) : isMissed ? (
                             <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
                           ) : (
-                            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                           )}
-                          <span className={`text-xs font-semibold ${
-                            f.completed
-                              ? "text-emerald-950 dark:text-emerald-100"
-                              : isMissed
+                          <span className={`text-xs font-semibold ${f.completed
+                            ? "text-emerald-950 dark:text-emerald-100"
+                            : isMissed
                               ? "text-rose-950 dark:text-rose-100"
-                              : "text-amber-950 dark:text-amber-100"
-                          }`}>
+                              : "text-text-secondary"
+                            }`}>
                             {f.title}
                           </span>
                         </div>
-                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${
-                          f.completed
-                            ? "text-emerald-700/80 dark:text-emerald-300/80"
-                            : isMissed
+                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed
+                          ? "text-emerald-700/80 dark:text-emerald-300/80"
+                          : isMissed
                             ? "text-rose-700/80 dark:text-rose-300/80"
-                            : "text-amber-700/80 dark:text-amber-300/80 font-medium"
-                        }`}>
-                          {isMissed ? "No entregado a las 8:00 PM" : isInProgress ? "En progreso · pendiente" : f.hint}
+                            : "text-text-tertiary"
+                          }`}>
+                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
                         </p>
                       </div>
 
@@ -1052,17 +1040,15 @@ export function DirectorView({
               <div className="grid grid-cols-2 gap-2.5">
                 {miguelMtFormats.map(f => {
                   const isMissed = !f.completed && isPast8PM
-                  const isInProgress = !f.completed && !isPast8PM
                   return (
                     <div
                       key={f.key}
-                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
-                        f.completed
-                          ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                          : isMissed
+                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${f.completed
+                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
+                        : isMissed
                           ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
-                          : "bg-amber-500/15 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 shadow-xs"
-                      }`}
+                          : "bg-surface/30 text-text-tertiary"
+                        }`}
                     >
                       <div>
                         <div className="flex items-center gap-1.5">
@@ -1071,26 +1057,24 @@ export function DirectorView({
                           ) : isMissed ? (
                             <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
                           ) : (
-                            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                           )}
-                          <span className={`text-xs font-semibold ${
-                            f.completed
-                              ? "text-emerald-950 dark:text-emerald-100"
-                              : isMissed
+                          <span className={`text-xs font-semibold ${f.completed
+                            ? "text-emerald-950 dark:text-emerald-100"
+                            : isMissed
                               ? "text-rose-950 dark:text-rose-100"
-                              : "text-amber-950 dark:text-amber-100"
-                          }`}>
+                              : "text-text-secondary"
+                            }`}>
                             {f.title}
                           </span>
                         </div>
-                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${
-                          f.completed
-                            ? "text-emerald-700/80 dark:text-emerald-300/80"
-                            : isMissed
+                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed
+                          ? "text-emerald-700/80 dark:text-emerald-300/80"
+                          : isMissed
                             ? "text-rose-700/80 dark:text-rose-300/80"
-                            : "text-amber-700/80 dark:text-amber-300/80 font-medium"
-                        }`}>
-                          {isMissed ? "No entregado a las 8:00 PM" : isInProgress ? "En progreso · pendiente" : f.hint}
+                            : "text-text-tertiary"
+                          }`}>
+                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
                         </p>
                       </div>
 

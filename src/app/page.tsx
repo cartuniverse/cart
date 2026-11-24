@@ -179,12 +179,12 @@ export default function Home() {
           onSelectProjectName={(proj) => setActiveProjectName(proj)}
         />
 
-        <main className="flex-1 flex flex-col min-w-0 bg-bg overflow-hidden">
+        <main className="flex-1 flex flex-col min-w-0 bg-bg overflow-y-auto">
           <AnimatePresence mode="wait">
           <motion.div
             key={`${currentRoleView}-${activeNav}-${selectedProfilePerson?.id ?? ""}-${isAddingPerson}-${selectedProjectDetail?.id ?? ""}`}
             {...pageTransition}
-            className="flex-1 flex flex-col min-h-0 min-w-0"
+            className="flex-1 flex flex-col min-h-0 min-w-0 overflow-y-auto"
           >
           {/* Si estamos en la vista de Community Manager */}
           {currentRoleView === "community" ? (
