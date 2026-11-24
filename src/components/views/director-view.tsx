@@ -479,6 +479,16 @@ export function DirectorView({
   const samuelStatus = getDesignerStatus(samuelDayCompleted, samuelDayTarget)
   const miguelStatus = getDesignerStatus(miguelDayCompleted, miguelDayTarget)
 
+  // Verificación de fecha y horario: si la fecha seleccionada es hoy después de las 8:00 PM (20:00),
+  // o si es un día pasado, los creativos pendientes pasan a estar vencidos (rojo).
+  const isPast8PM = useMemo(() => {
+    const now = new Date()
+    const todayStr = formatDate(now)
+    if (selectedDateStr < todayStr) return true
+    if (selectedDateStr === todayStr && now.getHours() >= 20) return true
+    return false
+  }, [selectedDateStr])
+
   const handlePrevWeek = () => {
     const prev = new Date(currentWeekMonday)
     prev.setDate(prev.getDate() - 7)
@@ -628,11 +638,10 @@ export function DirectorView({
               <button
                 key={w.iso}
                 onClick={() => setSelectedDateStr(w.iso)}
-                className={`flex flex-col items-center justify-between p-3.5 rounded-2xl transition-all ${
-                  isSelected
-                    ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md scale-[1.02]"
-                    : "bg-surface-2 hover:bg-surface-2/80 text-text-primary shadow-xs"
-                }`}
+                className={`flex flex-col items-center justify-between p-3.5 rounded-2xl transition-all ${isSelected
+                  ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md scale-[1.02]"
+                  : "bg-surface-2 hover:bg-surface-2/80 text-text-primary shadow-xs"
+                  }`}
               >
                 <div className="flex items-center justify-between w-full text-[11px] font-semibold">
                   <span className={isSelected ? "text-slate-300 dark:text-slate-600" : "text-text-secondary"}>
@@ -644,15 +653,14 @@ export function DirectorView({
                 </div>
 
                 <div className="my-2.5 text-center">
-                  <span className={`text-xl font-bold ${
-                    isSelected
-                      ? "text-white dark:text-slate-900"
-                      : totalDayDone >= 12
+                  <span className={`text-xl font-bold ${isSelected
+                    ? "text-white dark:text-slate-900"
+                    : totalDayDone >= 12
                       ? "text-emerald-600 dark:text-emerald-400"
                       : totalDayDone > 0
-                      ? "text-amber-600 dark:text-amber-400"
-                      : "text-text-tertiary"
-                  }`}>
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-text-tertiary"
+                    }`}>
                     {totalDayDone}
                   </span>
                   <span className={`text-[10px] ml-0.5 ${isSelected ? "text-slate-400 dark:text-slate-500" : "text-text-tertiary"}`}>
@@ -743,44 +751,63 @@ export function DirectorView({
 
               {/* Formatos de Casa Luifer con Sombra Limpia */}
               <div className="grid grid-cols-2 gap-2.5">
-                {samuelClFormats.map(f => (
-                  <div
-                    key={f.key}
-                    className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
-                      f.completed
-                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                        : "bg-surface/30 text-text-tertiary"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        {f.completed ? (
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        ) : (
-                          <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
-                        )}
-                        <span className={`text-xs font-semibold ${f.completed ? "text-emerald-950 dark:text-emerald-100" : "text-text-secondary"}`}>
-                          {f.title}
-                        </span>
+                {samuelClFormats.map(f => {
+                  const isMissed = !f.completed && isPast8PM
+                  return (
+                    <div
+                      key={f.key}
+                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
+                        f.completed
+                          ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
+                          : isMissed
+                          ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
+                          : "bg-surface/30 text-text-tertiary"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          {f.completed ? (
+                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          ) : isMissed ? (
+                            <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
+                          ) : (
+                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
+                          )}
+                          <span className={`text-xs font-semibold ${
+                            f.completed
+                              ? "text-emerald-950 dark:text-emerald-100"
+                              : isMissed
+                              ? "text-rose-950 dark:text-rose-100"
+                              : "text-text-secondary"
+                          }`}>
+                            {f.title}
+                          </span>
+                        </div>
+                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${
+                          f.completed
+                            ? "text-emerald-700/80 dark:text-emerald-300/80"
+                            : isMissed
+                            ? "text-rose-700/80 dark:text-rose-300/80"
+                            : "text-text-tertiary"
+                        }`}>
+                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
+                        </p>
                       </div>
-                      <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed ? "text-emerald-700/80 dark:text-emerald-300/80" : "text-text-tertiary"}`}>
-                        {f.hint}
-                      </p>
-                    </div>
 
-                    {f.url && (
-                      <a
-                        href={f.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
-                        title="Ver imagen"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
-                ))}
+                      {f.url && (
+                        <a
+                          href={f.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
+                          title="Ver imagen"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
@@ -803,44 +830,63 @@ export function DirectorView({
 
               {/* Formatos de Montana con Sombra Limpia */}
               <div className="grid grid-cols-2 gap-2.5">
-                {samuelMtFormats.map(f => (
-                  <div
-                    key={f.key}
-                    className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
-                      f.completed
-                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                        : "bg-surface/30 text-text-tertiary"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        {f.completed ? (
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        ) : (
-                          <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
-                        )}
-                        <span className={`text-xs font-semibold ${f.completed ? "text-emerald-950 dark:text-emerald-100" : "text-text-secondary"}`}>
-                          {f.title}
-                        </span>
+                {samuelMtFormats.map(f => {
+                  const isMissed = !f.completed && isPast8PM
+                  return (
+                    <div
+                      key={f.key}
+                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
+                        f.completed
+                          ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
+                          : isMissed
+                          ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
+                          : "bg-surface/30 text-text-tertiary"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          {f.completed ? (
+                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          ) : isMissed ? (
+                            <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
+                          ) : (
+                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
+                          )}
+                          <span className={`text-xs font-semibold ${
+                            f.completed
+                              ? "text-emerald-950 dark:text-emerald-100"
+                              : isMissed
+                              ? "text-rose-950 dark:text-rose-100"
+                              : "text-text-secondary"
+                          }`}>
+                            {f.title}
+                          </span>
+                        </div>
+                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${
+                          f.completed
+                            ? "text-emerald-700/80 dark:text-emerald-300/80"
+                            : isMissed
+                            ? "text-rose-700/80 dark:text-rose-300/80"
+                            : "text-text-tertiary"
+                        }`}>
+                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
+                        </p>
                       </div>
-                      <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed ? "text-emerald-700/80 dark:text-emerald-300/80" : "text-text-tertiary"}`}>
-                        {f.hint}
-                      </p>
-                    </div>
 
-                    {f.url && (
-                      <a
-                        href={f.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
-                        title="Ver imagen"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
-                ))}
+                      {f.url && (
+                        <a
+                          href={f.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
+                          title="Ver imagen"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -922,44 +968,63 @@ export function DirectorView({
 
               {/* Formatos de Casa Luifer con Sombra Limpia */}
               <div className="grid grid-cols-2 gap-2.5">
-                {miguelClFormats.map(f => (
-                  <div
-                    key={f.key}
-                    className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
-                      f.completed
-                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                        : "bg-surface/30 text-text-tertiary"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        {f.completed ? (
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        ) : (
-                          <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
-                        )}
-                        <span className={`text-xs font-semibold ${f.completed ? "text-emerald-950 dark:text-emerald-100" : "text-text-secondary"}`}>
-                          {f.title}
-                        </span>
+                {miguelClFormats.map(f => {
+                  const isMissed = !f.completed && isPast8PM
+                  return (
+                    <div
+                      key={f.key}
+                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
+                        f.completed
+                          ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
+                          : isMissed
+                          ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
+                          : "bg-surface/30 text-text-tertiary"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          {f.completed ? (
+                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          ) : isMissed ? (
+                            <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
+                          ) : (
+                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
+                          )}
+                          <span className={`text-xs font-semibold ${
+                            f.completed
+                              ? "text-emerald-950 dark:text-emerald-100"
+                              : isMissed
+                              ? "text-rose-950 dark:text-rose-100"
+                              : "text-text-secondary"
+                          }`}>
+                            {f.title}
+                          </span>
+                        </div>
+                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${
+                          f.completed
+                            ? "text-emerald-700/80 dark:text-emerald-300/80"
+                            : isMissed
+                            ? "text-rose-700/80 dark:text-rose-300/80"
+                            : "text-text-tertiary"
+                        }`}>
+                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
+                        </p>
                       </div>
-                      <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed ? "text-emerald-700/80 dark:text-emerald-300/80" : "text-text-tertiary"}`}>
-                        {f.hint}
-                      </p>
-                    </div>
 
-                    {f.url && (
-                      <a
-                        href={f.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
-                        title="Ver imagen"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
-                ))}
+                      {f.url && (
+                        <a
+                          href={f.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
+                          title="Ver imagen"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
@@ -982,44 +1047,63 @@ export function DirectorView({
 
               {/* Formatos de Montana con Sombra Limpia */}
               <div className="grid grid-cols-2 gap-2.5">
-                {miguelMtFormats.map(f => (
-                  <div
-                    key={f.key}
-                    className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
-                      f.completed
-                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                        : "bg-surface/30 text-text-tertiary"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        {f.completed ? (
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        ) : (
-                          <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
-                        )}
-                        <span className={`text-xs font-semibold ${f.completed ? "text-emerald-950 dark:text-emerald-100" : "text-text-secondary"}`}>
-                          {f.title}
-                        </span>
+                {miguelMtFormats.map(f => {
+                  const isMissed = !f.completed && isPast8PM
+                  return (
+                    <div
+                      key={f.key}
+                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
+                        f.completed
+                          ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
+                          : isMissed
+                          ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
+                          : "bg-surface/30 text-text-tertiary"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          {f.completed ? (
+                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          ) : isMissed ? (
+                            <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
+                          ) : (
+                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
+                          )}
+                          <span className={`text-xs font-semibold ${
+                            f.completed
+                              ? "text-emerald-950 dark:text-emerald-100"
+                              : isMissed
+                              ? "text-rose-950 dark:text-rose-100"
+                              : "text-text-secondary"
+                          }`}>
+                            {f.title}
+                          </span>
+                        </div>
+                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${
+                          f.completed
+                            ? "text-emerald-700/80 dark:text-emerald-300/80"
+                            : isMissed
+                            ? "text-rose-700/80 dark:text-rose-300/80"
+                            : "text-text-tertiary"
+                        }`}>
+                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
+                        </p>
                       </div>
-                      <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed ? "text-emerald-700/80 dark:text-emerald-300/80" : "text-text-tertiary"}`}>
-                        {f.hint}
-                      </p>
-                    </div>
 
-                    {f.url && (
-                      <a
-                        href={f.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
-                        title="Ver imagen"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
-                ))}
+                      {f.url && (
+                        <a
+                          href={f.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
+                          title="Ver imagen"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -1272,11 +1356,10 @@ function DailyLineChart({
                 x={x}
                 y={height - 8}
                 textAnchor="middle"
-                className={`text-[11px] font-medium ${
-                  isSelected
-                    ? "fill-text-primary font-bold"
-                    : "fill-text-tertiary group-hover:fill-text-secondary"
-                }`}
+                className={`text-[11px] font-medium ${isSelected
+                  ? "fill-text-primary font-bold"
+                  : "fill-text-tertiary group-hover:fill-text-secondary"
+                  }`}
               >
                 {d.label}
               </text>
