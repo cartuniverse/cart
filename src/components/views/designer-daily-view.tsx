@@ -1169,11 +1169,21 @@ function FormatRow({
         <div className="relative group rounded-xl overflow-hidden border border-[var(--border)]" style={{ aspectRatio: "16/9" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={note} alt="Captura de pieza" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
-          <button type="button" onClick={() => { onNote(""); setUploadError(null); }}
-            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
-            <X className="w-3 h-3" />
-          </button>
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-start justify-end p-2">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onNote("");
+                setUploadError(null);
+              }}
+              title="Borrar imagen adjunta"
+              className="px-2 py-1 rounded-lg bg-red-600/90 hover:bg-red-600 text-white text-[11px] font-bold flex items-center gap-1 shadow-md transition cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Eliminar</span>
+            </button>
+          </div>
         </div>
       ) : (
         <div

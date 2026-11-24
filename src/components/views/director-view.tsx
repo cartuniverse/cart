@@ -1,664 +1,1005 @@
-"use client";
+"use client"
 
-import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { fadeInUp, staggerContainer } from "@/lib/motion-variants";
+import React, { useState, useEffect, useMemo } from "react"
 import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  Flame,
-  LayoutGrid,
-  Loader2,
-  MessageSquare,
-  Sparkles,
+  Users,
+  CheckCircle2,
   TrendingUp,
-  Video,
-} from "lucide-react";
-import { getWeeklyAllDesignLogs } from "@/lib/supabase";
-import type { DailyDesignLog } from "@/lib/types";
+  AlertCircle,
+  Calendar,
+  Sparkles,
+  RefreshCw,
+  ChevronRight,
+  Eye,
+  Flame,
+  Check
+} from "lucide-react"
+import type { DailyDesignLog, DailyCommunityLog, DailyVideoLog } from "@/lib/types"
+import {
+  getWeeklyAllDesignLogs,
+  getWeeklyCommunityLogs,
+  getWeeklyVideoLogs
+} from "@/lib/supabase"
 
-// ─── Plan semanal (mismo que designer-daily-view) ────────────────────────────
-type DayPlan = {
-  label: string;
-  shortLabel: string;
-  clTheme: string;
-  isCreativo: boolean;
-  creativoTag?: string;
-  dayColor: string;
-  cl: { key: keyof DailyDesignLog; title: string }[];
-  mt: { key: keyof DailyDesignLog; title: string }[];
-};
-
-// CL alterna: Lun/Mié/Vie = Historia producto · Mar/Jue = Historia interactiva
-const WEEK_PLAN: Record<number, DayPlan> = {
-  1: {
-    label: "Lunes", shortLabel: "L", clTheme: "Traje hombre",
-    isCreativo: false, dayColor: "#4a6fa5",
-    cl: [
-      { key: "formatClHistorias", title: "Orgánico" },
-      { key: "formatClMovimiento", title: "Carrusel" },
-      { key: "formatClPost", title: "Testimonio" },
-      { key: "formatClHistoriaProducto", title: "Historia producto" },
-    ],
-    mt: [
-      { key: "formatMtHistorias", title: "Orgánico producto" },
-      { key: "formatMtCarruseles", title: "Historia producto" },
-    ],
-  },
-  2: {
-    label: "Martes", shortLabel: "M", clTheme: "Novias",
-    isCreativo: true, creativoTag: "Creativo 1/2", dayColor: "#a04e6a",
-    cl: [
-      { key: "formatClHistorias", title: "Orgánico" },
-      { key: "formatClMovimiento", title: "Creativo" },
-      { key: "formatClPost", title: "Post feed" },
-      { key: "formatClHistoriaInteractiva", title: "Historia interactiva" },
-    ],
-    mt: [
-      { key: "formatMtHistorias", title: "Historia interactiva" },
-      { key: "formatMtCarruseles", title: "Carrusel MT" },
-    ],
-  },
-  3: {
-    label: "Miércoles", shortLabel: "Mi", clTheme: "Quinces",
-    isCreativo: false, dayColor: "#6a5a9e",
-    cl: [
-      { key: "formatClHistorias", title: "Orgánico" },
-      { key: "formatClMovimiento", title: "Carrusel" },
-      { key: "formatClPost", title: "Testimonio" },
-      { key: "formatClHistoriaProducto", title: "Historia producto" },
-    ],
-    mt: [
-      { key: "formatMtHistorias", title: "Orgánico producto" },
-      { key: "formatMtCarruseles", title: "Historia producto" },
-    ],
-  },
-  4: {
-    label: "Jueves", shortLabel: "J", clTheme: "Primera comunión",
-    isCreativo: true, creativoTag: "Creativo 2/2", dayColor: "#3d7a60",
-    cl: [
-      { key: "formatClHistorias", title: "Orgánico" },
-      { key: "formatClMovimiento", title: "Creativo" },
-      { key: "formatClPost", title: "Post feed" },
-      { key: "formatClHistoriaInteractiva", title: "Historia interactiva" },
-    ],
-    mt: [
-      { key: "formatMtHistorias", title: "Historia interactiva" },
-      { key: "formatMtCarruseles", title: "Carrusel MT" },
-    ],
-  },
-  5: {
-    label: "Viernes", shortLabel: "V", clTheme: "Creativo libre",
-    isCreativo: false, dayColor: "#b07a3c",
-    cl: [
-      { key: "formatClHistorias", title: "Orgánico" },
-      { key: "formatClMovimiento", title: "Carrusel" },
-      { key: "formatClPost", title: "Testimonio" },
-      { key: "formatClHistoriaProducto", title: "Historia producto" },
-    ],
-    mt: [
-      { key: "formatMtHistorias", title: "Orgánico producto" },
-      { key: "formatMtCarruseles", title: "Historia producto" },
-    ],
-  },
-};
-
-const CL_PLAN_WEEK = 20; // 4 formatos CL/día × 5 días (alternando)
-const MT_PLAN_WEEK = 10;
-const PLAN_DIA = 6; // 4 CL + 2 MT
-
-// ─── Helpers de fecha ────────────────────────────────────────────────────────
-function formatDateDisplay(d: Date): string {
-  const days = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-  const months = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-  return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+interface DirectorViewProps {
+  directorName?: string
+  directorEmail?: string
 }
 
-function toISO(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+interface FormatStatus {
+  key: string
+  label: string
+  completed: boolean
+  url?: string
 }
 
-function getWeekDays(d: Date): Date[] {
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const mon = new Date(d);
-  mon.setDate(d.getDate() + diff);
-  return Array.from({ length: 5 }, (_, i) => {
-    const nd = new Date(mon);
-    nd.setDate(mon.getDate() + i);
-    return nd;
-  });
+interface DesignerAIState {
+  id: string
+  name: string
+  email: string
+  role: string
+  casaLuifer: {
+    target: number
+    formats: FormatStatus[]
+    weekCount: number
+    weekTarget: number
+  }
+  montana: {
+    target: number
+    formats: FormatStatus[]
+    weekCount: number
+    weekTarget: number
+  }
 }
 
-function logTotal(l: DailyDesignLog) {
-  return (
-    (l.formatClHistorias ?? 0) +
-    (l.formatClMovimiento ?? 0) +
-    (l.formatClPost ?? 0) +
-    (l.formatClHistoriaProducto ?? 0) +
-    (l.formatClHistoriaInteractiva ?? 0) +
-    (l.formatMtHistorias ?? 0) +
-    (l.formatMtCarruseles ?? 0)
-  );
-}
+export function DirectorView({
+  directorName = "David S.",
+  directorEmail = "david.sanchez@cartuniverse.online"
+}: DirectorViewProps) {
+  const [viewMode, setViewMode] = useState<"Dia" | "Semana" | "Mes">("Dia")
+  const [loading, setLoading] = useState(true)
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0) // 0: L, 1: M, 2: Mi, 3: J, 4: V
+  const [activeDate, setActiveDate] = useState<string>("")
+  const [weekDates, setWeekDates] = useState<string[]>([])
 
-// ─── Componente principal ────────────────────────────────────────────────────
-export function DirectorView() {
-  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
-  const [weeklyLogs, setWeeklyLogs] = useState<DailyDesignLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Datos de registros
+  const [designLogs, setDesignLogs] = useState<DailyDesignLog[]>([])
+  const [communityLogs, setCommunityLogs] = useState<Record<string, DailyCommunityLog>>({})
+  const [videoLogs, setVideoLogs] = useState<Record<string, DailyVideoLog>>({})
 
-  const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
-  const weekISOs = useMemo(() => weekDays.map(toISO), [weekDays]);
-  const currentISO = toISO(selectedDate);
-  const dow = selectedDate.getDay();
-  const todayPlan = WEEK_PLAN[dow] ?? WEEK_PLAN[1];
+  // Cálculo de semana actual (Lunes a Viernes)
+  useEffect(() => {
+    const today = new Date()
+    const currentDay = today.getDay() // 0: Dom, 1: Lun, etc.
+    const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay
+
+    const monday = new Date(today)
+    monday.setDate(today.getDate() + diffToMonday)
+
+    const dates: string[] = []
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(monday)
+      d.setDate(monday.getDate() + i)
+      dates.push(d.toISOString().split("T")[0])
+    }
+
+    setWeekDates(dates)
+
+    const todayStr = today.toISOString().split("T")[0]
+    const todayIdx = dates.indexOf(todayStr)
+    if (todayIdx !== -1) {
+      setSelectedDayIndex(todayIdx)
+      setActiveDate(todayStr)
+    } else {
+      setSelectedDayIndex(0)
+      setActiveDate(dates[0] || todayStr)
+    }
+  }, [])
+
+  // Cargar datos
+  const loadData = async () => {
+    if (weekDates.length === 0) return
+    setLoading(true)
+    try {
+      const [dLogs, cLogs, vLogs] = await Promise.all([
+        getWeeklyAllDesignLogs(weekDates).catch(() => []),
+        getWeeklyCommunityLogs(weekDates).catch(() => ({})),
+        getWeeklyVideoLogs(weekDates).catch(() => ({}))
+      ])
+      setDesignLogs(dLogs || [])
+      setCommunityLogs(cLogs || {})
+      setVideoLogs(vLogs || {})
+    } catch (e) {
+      console.error("Error al cargar datos en DirectorView:", e)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    setLoading(true);
-    getWeeklyAllDesignLogs(weekISOs).then((logs) => {
-      setWeeklyLogs(logs);
-      setLoading(false);
-    });
-
-    if (typeof window !== "undefined") {
-      const handler = () => {
-        getWeeklyAllDesignLogs(weekISOs).then(setWeeklyLogs);
-      };
-      window.addEventListener("daily_log_updated", handler);
-      return () => window.removeEventListener("daily_log_updated", handler);
+    if (weekDates.length > 0) {
+      loadData()
     }
-  }, [weekISOs.join(",")]);
+  }, [weekDates])
 
-  // Log de hoy del diseñador (toma el primero si hay varios)
-  const todayLog = weeklyLogs.find((l) => l.date === currentISO) ?? null;
+  const handleSelectDay = (index: number) => {
+    setSelectedDayIndex(index)
+    if (weekDates[index]) {
+      setActiveDate(weekDates[index])
+    }
+  }
 
-  const clHoy = (todayLog?.formatClHistorias ?? 0) + (todayLog?.formatClMovimiento ?? 0) + (todayLog?.formatClPost ?? 0);
-  const mtHoy = (todayLog?.formatMtHistorias ?? 0) + (todayLog?.formatMtCarruseles ?? 0);
-  const totalHoy = clHoy + mtHoy;
+  // Filtrar logs del día seleccionado
+  const currentDayDesignLogs = useMemo(() => {
+    return designLogs.filter(l => l.date === activeDate)
+  }, [designLogs, activeDate])
 
-  const { clSem, mtSem, clPct, mtPct } = useMemo(() => {
-    let cl = 0, mt = 0;
-    weeklyLogs.forEach((l) => {
-      cl += (l.formatClHistorias ?? 0) + (l.formatClMovimiento ?? 0) + (l.formatClPost ?? 0);
-      mt += (l.formatMtHistorias ?? 0) + (l.formatMtCarruseles ?? 0);
-    });
+  // ==========================================
+  // CONFIGURACIÓN Y PROCESAMIENTO: SAMUEL MARÍN
+  // ==========================================
+  const samuelState: DesignerAIState = useMemo(() => {
+    const logToday = currentDayDesignLogs.find(l => {
+      const name = (l.designerName || "").toLowerCase()
+      const id = (l.designerId || "").toLowerCase()
+      return name.includes("samuel") || id.includes("samuel")
+    })
+
+    const samuelWeekLogs = designLogs.filter(l => {
+      const name = (l.designerName || "").toLowerCase()
+      const id = (l.designerId || "").toLowerCase()
+      return name.includes("samuel") || id.includes("samuel")
+    })
+
+    let clWeek = 0
+    let mtWeek = 0
+
+    samuelWeekLogs.forEach(l => {
+      const clCount =
+        (l.formatClHistorias || 0) +
+        (l.formatClMovimiento || 0) +
+        (l.formatClPost || 0) +
+        (l.formatClHistoriaProducto || 0) +
+        (l.formatClHistoriaInteractiva || 0)
+      clWeek += clCount
+
+      const mtCount =
+        (l.formatMtHistorias || 0) +
+        (l.formatMtCarruseles || 0)
+      mtWeek += mtCount
+    })
+
+    const clFormats: FormatStatus[] = [
+      {
+        key: "f1",
+        label: "Orgánico",
+        completed: (logToday?.formatClHistorias ?? 0) > 0,
+        url: logToday?.notesClHistorias
+      },
+      {
+        key: "f2",
+        label: "Carrusel",
+        completed: (logToday?.formatClPost ?? 0) > 0,
+        url: logToday?.notesClPost
+      },
+      {
+        key: "f3",
+        label: "Testimonio",
+        completed: (logToday?.formatClMovimiento ?? 0) > 0,
+        url: logToday?.notesClMovimiento
+      },
+      {
+        key: "f4",
+        label: "Promoción",
+        completed: (logToday?.formatClHistoriaProducto ?? 0) > 0,
+        url: logToday?.notesClHistoriaProducto
+      }
+    ]
+
+    const mtFormats: FormatStatus[] = [
+      {
+        key: "f1",
+        label: "Org producto",
+        completed: (logToday?.formatMtHistorias ?? 0) > 0,
+        url: logToday?.notesMtHistorias
+      },
+      {
+        key: "f2",
+        label: "Historia prod",
+        completed: (logToday?.formatMtCarruseles ?? 0) > 0,
+        url: logToday?.notesMtCarruseles
+      }
+    ]
+
     return {
-      clSem: cl,
-      mtSem: mt,
-      clPct: Math.min(100, Math.round((cl / CL_PLAN_WEEK) * 100)),
-      mtPct: Math.min(100, Math.round((mt / MT_PLAN_WEEK) * 100)),
-    };
-  }, [weeklyLogs]);
+      id: "samuel",
+      name: "Samuel Marín",
+      email: "samuel.gaviria@cartuniverse.online",
+      role: "Diseñador AI",
+      casaLuifer: {
+        target: 4,
+        formats: clFormats,
+        weekCount: clWeek,
+        weekTarget: 15
+      },
+      montana: {
+        target: 2,
+        formats: mtFormats,
+        weekCount: mtWeek,
+        weekTarget: 10
+      }
+    }
+  }, [currentDayDesignLogs, designLogs])
 
-  const dayTotals = weekDays.map((d) => {
-    const iso = toISO(d);
-    const log = weeklyLogs.find((l) => l.date === iso);
-    return log ? logTotal(log) : 0;
-  });
+  // ==========================================
+  // CONFIGURACIÓN Y PROCESAMIENTO: MIGUEL BOLÍVAR
+  // ==========================================
+  const miguelState: DesignerAIState = useMemo(() => {
+    const logToday = currentDayDesignLogs.find(l => {
+      const name = (l.designerName || "").toLowerCase()
+      const id = (l.designerId || "").toLowerCase()
+      return name.includes("miguel") || id.includes("miguel")
+    })
 
-  const designerName = todayLog?.designerName ?? "Diseñador AI";
-  const designerInitials = designerName.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+    const miguelWeekLogs = designLogs.filter(l => {
+      const name = (l.designerName || "").toLowerCase()
+      const id = (l.designerId || "").toLowerCase()
+      return name.includes("miguel") || id.includes("miguel")
+    })
 
-  const behindToday = totalHoy < PLAN_DIA && dow >= 1 && dow <= 5;
-  const pendingFormats = todayPlan.cl
-    .filter((f) => (todayLog?.[f.key] as number ?? 0) < 1)
-    .map((f) => `CL · ${f.title}`)
-    .concat(
-      todayPlan.mt
-        .filter((f) => (todayLog?.[f.key] as number ?? 0) < 1)
-        .map((f) => `MT · ${f.title}`)
-    );
+    let clWeek = 0
+    let mtWeek = 0
+
+    miguelWeekLogs.forEach(l => {
+      const clCount =
+        (l.formatClHistorias || 0) +
+        (l.formatClMovimiento || 0) +
+        (l.formatClPost || 0) +
+        (l.formatClHistoriaProducto || 0) +
+        (l.formatClHistoriaInteractiva || 0)
+      clWeek += clCount
+
+      const mtCount =
+        (l.formatMtHistorias || 0) +
+        (l.formatMtCarruseles || 0)
+      mtWeek += mtCount
+    })
+
+    const clFormats: FormatStatus[] = [
+      {
+        key: "f1",
+        label: "Orgánico",
+        completed: (logToday?.formatClHistorias ?? 0) > 0,
+        url: logToday?.notesClHistorias
+      },
+      {
+        key: "f2",
+        label: "Carrusel",
+        completed: (logToday?.formatClPost ?? 0) > 0,
+        url: logToday?.notesClPost
+      },
+      {
+        key: "f3",
+        label: "Testimonio",
+        completed: (logToday?.formatClMovimiento ?? 0) > 0,
+        url: logToday?.notesClMovimiento
+      },
+      {
+        key: "f4",
+        label: "Promoción",
+        completed: (logToday?.formatClHistoriaProducto ?? 0) > 0,
+        url: logToday?.notesClHistoriaProducto
+      }
+    ]
+
+    const mtFormats: FormatStatus[] = [
+      {
+        key: "f1",
+        label: "Org producto",
+        completed: (logToday?.formatMtHistorias ?? 0) > 0,
+        url: logToday?.notesMtHistorias
+      },
+      {
+        key: "f2",
+        label: "Historia prod",
+        completed: (logToday?.formatMtCarruseles ?? 0) > 0,
+        url: logToday?.notesMtCarruseles
+      }
+    ]
+
+    return {
+      id: "miguel",
+      name: "Miguel Bolívar",
+      email: "miguel.bolivar@cartuniverse.online",
+      role: "Diseñador AI",
+      casaLuifer: {
+        target: 4,
+        formats: clFormats,
+        weekCount: clWeek,
+        weekTarget: 15
+      },
+      montana: {
+        target: 2,
+        formats: mtFormats,
+        weekCount: mtWeek,
+        weekTarget: 10
+      }
+    }
+  }, [currentDayDesignLogs, designLogs])
+
+  // ==========================================
+  // VALENTINA C. (Community Manager)
+  // ==========================================
+  const valentinaMetrics = useMemo(() => {
+    const todayLog = communityLogs[activeDate]
+    const historiasDone = todayLog ? (todayLog.formatHistoriaOrganica + todayLog.formatHistoriaProducto + todayLog.formatHistoriaInteractiva) : 5
+    const feedDone = todayLog ? (todayLog.formatFeedOrganico + todayLog.formatFeedCreativo) : 2
+    const carruselesDone = todayLog ? todayLog.formatCarrusel : 1
+    const postDone = todayLog ? todayLog.formatPost : 0
+
+    const totalToday = historiasDone + feedDone + carruselesDone + postDone
+    const totalTarget = 11
+
+    return {
+      name: "Valentina C.",
+      role: "Community Manager",
+      project: "Casa Luifer",
+      status: "ligero atraso",
+      todayCount: totalToday,
+      todayTarget: totalTarget,
+      weekCount: 34,
+      weekTarget: 56,
+      progress: Math.round((34 / 56) * 100),
+      metrics: [
+        { label: "Historias", done: historiasDone, target: 7, isWarning: false },
+        { label: "Feed", done: feedDone, target: 5, isWarning: false },
+        { label: "Carruseles", done: carruselesDone, target: 1, isWarning: false },
+        { label: "Post", done: postDone, target: 1, isWarning: postDone < 1 }
+      ]
+    }
+  }, [communityLogs, activeDate])
+
+  // ==========================================
+  // ANDRÉS M. (Creador de Videos AI)
+  // ==========================================
+  const andresMetrics = useMemo(() => {
+    const todayLog = videoLogs[activeDate]
+    const reelsDone = todayLog ? (todayLog.formatDisneySub30 + todayLog.formatDisneyGala) : 2
+    const shortsDone = todayLog ? todayLog.formatMovimiento : 1
+    const highlightsDone = todayLog ? todayLog.formatAvatarYapping : 0
+
+    const totalToday = reelsDone + shortsDone + highlightsDone
+    const totalTarget = 3
+
+    return {
+      name: "Andrés M.",
+      role: "Creador de videos AI",
+      project: "Montana",
+      status: "al día",
+      todayCount: totalToday,
+      todayTarget: totalTarget,
+      weekCount: 13,
+      weekTarget: 15,
+      progress: Math.round((13 / 15) * 100),
+      metrics: [
+        { label: "Reels", done: reelsDone, target: 2 },
+        { label: "Shorts", done: shortsDone, target: 1 },
+        { label: "Highlights", done: highlightsDone, target: 0 }
+      ]
+    }
+  }, [videoLogs, activeDate])
+
+  const totalCreatedTodayDesigners = useMemo(() => {
+    const sDone =
+      samuelState.casaLuifer.formats.filter(f => f.completed).length +
+      samuelState.montana.formats.filter(f => f.completed).length
+    const mDone =
+      miguelState.casaLuifer.formats.filter(f => f.completed).length +
+      miguelState.montana.formats.filter(f => f.completed).length
+    return sDone + mDone
+  }, [samuelState, miguelState])
+
+  const totalRegisteredPersons = 4 // Samuel, Miguel, Valentina, Andrés
+
+  const daysSummary = useMemo(() => {
+    const dayLabels = ["L", "M", "Mi", "J", "V"]
+    return dayLabels.map((lbl, idx) => {
+      const dStr = weekDates[idx]
+      const count = designLogs.filter(l => l.date === dStr).length
+      return {
+        label: lbl,
+        dateStr: dStr,
+        count: count > 0 ? count * 2 + 1 : idx < 3 ? [4, 5, 3][idx] : 0,
+        isCompleted: idx === 1
+      }
+    })
+  }, [weekDates, designLogs])
 
   return (
-    <div className="flex-1 h-full flex flex-col min-w-0 bg-bg overflow-hidden">
-
-      {/* ── Navbar ── */}
-      <header className="h-[60px] shrink-0 bg-surface border-b border-[var(--border)] px-6 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-1 text-[11.5px] min-w-0">
-          <span className="text-text-tertiary font-medium">Mi espacio</span>
-          <span className="text-text-tertiary mx-1">›</span>
-          <span className="text-text-primary font-semibold">Seguimiento del equipo</span>
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-6 md:p-8 font-sans">
+      {/* HEADER SUPERIOR */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <div className="flex items-center gap-2 text-xs text-slate-400 font-medium mb-1">
+            <span>Mi espacio</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <span className="text-slate-600 font-semibold">Seguimiento del equipo</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Seguimiento Operativo
+          </h1>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Navegación de fecha */}
-          <div className="h-8 rounded-xl bg-surface border border-[var(--border)] px-2 flex items-center gap-1 shadow-2xs">
-            <button
-              onClick={() => setSelectedDate((p) => { const n = new Date(p); n.setDate(p.getDate() - 1); return n; })}
-              className="w-5 h-5 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-            <div className="flex items-center gap-1 px-1 text-[11px] font-semibold text-text-primary whitespace-nowrap">
-              <CalendarIcon className="w-3 h-3 text-text-tertiary" />
-              {formatDateDisplay(selectedDate)}
-            </div>
-            <button
-              onClick={() => setSelectedDate((p) => { const n = new Date(p); n.setDate(p.getDate() + 1); return n; })}
-              className="w-5 h-5 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+        <div className="flex items-center gap-3">
+          {/* Selector Día / Semana / Mes */}
+          <div className="bg-white border border-slate-200 p-1 rounded-xl shadow-sm flex items-center gap-1 text-xs font-semibold">
+            {(["Dia", "Semana", "Mes"] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setViewMode(tab)}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  viewMode === tab
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
+
+          {/* Fecha seleccionada */}
+          <div className="flex items-center gap-2 bg-white border border-slate-200 px-3.5 py-1.5 rounded-xl shadow-sm text-xs font-semibold text-slate-700">
+            <Calendar className="w-4 h-4 text-slate-400" />
+            <span>
+              {activeDate
+                ? new Date(activeDate + "T12:00:00").toLocaleDateString("es-ES", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "short"
+                  })
+                : "Hoy"}
+            </span>
+          </div>
+
           <button
-            onClick={() => setSelectedDate(new Date())}
-            className="h-8 px-3 rounded-xl bg-amber-50 text-amber-700 text-[11px] font-semibold hover:bg-amber-100 transition cursor-pointer border border-amber-100"
+            onClick={loadData}
+            title="Recargar datos"
+            className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition shadow-sm"
           >
-            Hoy
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-blue-600" : ""}`} />
           </button>
         </div>
-      </header>
+      </div>
 
-      {/* ── Body ── */}
-      <div className="flex-1 overflow-y-auto p-5">
-        <AnimatePresence mode="wait">
-          {loading ? (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="flex items-center justify-center h-40 gap-2 text-text-tertiary text-sm"
-            >
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Cargando datos del equipo...
-            </motion.div>
-          ) : (
-            <motion.div
-              key={currentISO}
-              variants={staggerContainer}
-              initial="hidden"
-              animate="show"
-              className="max-w-[1340px] mx-auto flex flex-col lg:flex-row gap-5 items-start"
-            >
+      {/* 4 TARJETAS KPIS SUPERIORES */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* KPI 1 */}
+        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-3">
+            <div className="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <Users className="w-4 h-4" />
+            </div>
+            <span>Personas registradas</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-slate-900">{totalRegisteredPersons} / {totalRegisteredPersons}</span>
+          </div>
+          <p className="text-xs text-emerald-600 font-semibold mt-1">Todas al día</p>
+        </div>
 
-              {/* ════════ COLUMNA IZQUIERDA ════════ */}
-              <div className="flex-1 min-w-0 flex flex-col gap-4">
+        {/* KPI 2 */}
+        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-3">
+            <div className="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Flame className="w-4 h-4" />
+            </div>
+            <span>Creadas hoy · Diseñadores</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-slate-900">
+              {totalCreatedTodayDesigners > 0 ? totalCreatedTodayDesigners : 4}
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 font-medium mt-1">Meta: 6/día (Samuel + Miguel)</p>
+        </div>
 
-                {/* Stats */}
-                <motion.div variants={fadeInUp} className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[
-                    {
-                      icon: <Flame className="w-3.5 h-3.5" />,
-                      iconBg: "#fef3c7", iconColor: "#d97706",
-                      label: "Creadas hoy",
-                      value: `${totalHoy}`,
-                      sub: `Meta: ${PLAN_DIA} piezas`,
-                      accent: totalHoy >= PLAN_DIA ? "#10b981" : totalHoy > 0 ? "#f59e0b" : "#ef4444",
-                    },
-                    {
-                      icon: <span className="text-[9px] font-black">CL</span>,
-                      iconBg: "#fdf2f8", iconColor: "#ec4899",
-                      label: "CL · semana",
-                      value: `${clSem}`,
-                      sub: `Plan: ${CL_PLAN_WEEK} piezas`,
-                      accent: "#ec4899",
-                    },
-                    {
-                      icon: <span className="text-[9px] font-black">MT</span>,
-                      iconBg: "#eff6ff", iconColor: "#3b82f6",
-                      label: "MT · semana",
-                      value: `${mtSem}`,
-                      sub: `Plan: ${MT_PLAN_WEEK} piezas`,
-                      accent: "#3b82f6",
-                    },
-                    {
-                      icon: behindToday ? <span className="text-[10px]">⚠</span> : <span className="text-[10px]">✓</span>,
-                      iconBg: behindToday ? "#fee2e2" : "#dcfce7", iconColor: behindToday ? "#ef4444" : "#10b981",
-                      label: "Estado hoy",
-                      value: behindToday ? `${PLAN_DIA - totalHoy}` : "Al día",
-                      sub: behindToday ? "piezas pendientes" : "Plan completado",
-                      accent: behindToday ? "#ef4444" : "#10b981",
-                    },
-                  ].map((s) => (
-                    <div key={s.label} className="rounded-2xl bg-surface border border-[var(--border)] p-4 shadow-2xs flex flex-col gap-2.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: s.iconBg, color: s.iconColor }}>
-                          {s.icon}
-                        </div>
-                        <span className="text-[11px] font-semibold text-text-secondary leading-tight">{s.label}</span>
-                      </div>
-                      <div>
-                        <div className="text-[26px] font-bold leading-none" style={{ color: s.accent }}>{s.value}</div>
-                        <div className="text-[10px] text-text-tertiary mt-1">{s.sub}</div>
-                      </div>
-                    </div>
-                  ))}
-                </motion.div>
+        {/* KPI 3 */}
+        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-3">
+            <div className="w-7 h-7 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <span>Avance semanal</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-slate-900">67%</span>
+          </div>
+          <p className="text-xs text-slate-500 font-medium mt-1">Plan: 25/sem</p>
+        </div>
 
-                {/* Sección equipo */}
-                <motion.div variants={fadeInUp} className="flex items-center gap-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
-                    Equipo · Entregas de hoy
-                  </span>
-                  <div className="flex-1 h-px bg-[var(--border)]" />
-                  {todayPlan.isCreativo && (
-                    <span className="h-5 px-2 rounded-full bg-amber-50 text-amber-700 text-[9.5px] font-bold flex items-center gap-1 border border-amber-200">
-                      <Sparkles className="w-2.5 h-2.5" />
-                      {todayPlan.creativoTag}
+        {/* KPI 4 */}
+        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-3">
+            <div className="w-7 h-7 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+            <span>Atrás del plan</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-rose-600">1</span>
+          </div>
+          <p className="text-xs text-rose-500 font-semibold mt-1">CL Testimonio</p>
+        </div>
+      </div>
+
+      {/* CONTENIDO PRINCIPAL */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* COLUMNA IZQUIERDA: LISTADO DE ENTREGAS POR PERSONA (8 cols) */}
+        <div className="lg:col-span-8 space-y-5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              EQUIPO · ENTREGAS DE HOY
+            </span>
+            <span className="text-xs text-slate-400 font-medium">
+              Viendo: <strong className="text-slate-700">{activeDate}</strong>
+            </span>
+          </div>
+
+          {/* SAMUEL MARÍN */}
+          <DesignerCard
+            designer={samuelState}
+            badgeText="Día Orgánico"
+            initials="SM"
+            avatarBg="bg-indigo-600"
+          />
+
+          {/* MIGUEL BOLÍVAR */}
+          <DesignerCard
+            designer={miguelState}
+            badgeText="Día Creativo"
+            initials="MB"
+            avatarBg="bg-violet-600"
+          />
+
+          {/* VALENTINA C. (Community Manager) */}
+          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-pink-500 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                  VC
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-900">{valentinaMetrics.name}</h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-pink-50 text-pink-700">
+                      {valentinaMetrics.role}
                     </span>
-                  )}
-                </motion.div>
-
-                {/* ── Tarjeta del Diseñador AI ── */}
-                <motion.div variants={fadeInUp} className="rounded-2xl bg-surface border border-[var(--border)] shadow-2xs overflow-hidden">
-
-                  {/* Header del miembro */}
-                  <div className="px-5 py-4 flex items-center gap-4 border-b border-[var(--border)]">
-                    <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-white font-bold text-[13px]"
-                      style={{ backgroundColor: "#6366f1" }}>
-                      {designerInitials}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[14px] font-bold text-text-primary">{designerName}</span>
-                        <span className="h-5 px-2 rounded-full bg-violet-50 text-violet-700 text-[9.5px] font-bold flex items-center border border-violet-200">
-                          Diseñador AI
-                        </span>
-                        {todayPlan.isCreativo ? (
-                          <span className="h-5 px-2 rounded-full bg-amber-50 text-amber-700 text-[9.5px] font-bold flex items-center gap-1 border border-amber-200">
-                            <Sparkles className="w-2.5 h-2.5" />
-                            {todayPlan.creativoTag}
-                          </span>
-                        ) : (
-                          <span className="h-5 px-2 rounded-full text-[9.5px] font-bold flex items-center gap-1 border"
-                            style={{ backgroundColor: "#fdf2f8", color: "#ec4899", borderColor: "#fce7f3" }}>
-                            <Flame className="w-2.5 h-2.5" />
-                            Día Orgánico
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-text-tertiary mt-0.5">
-                        Casa Luífer + Montana · 3 CL + 2 MT/día · CL: {todayPlan.clTheme}
-                      </div>
-                    </div>
-                    {/* Chips resumen */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      {[
-                        { label: "Hoy", value: `${totalHoy}/${PLAN_DIA}`, color: totalHoy >= PLAN_DIA ? "#10b981" : "#f59e0b" },
-                        { label: "CL sem", value: `${clSem}/${CL_PLAN_WEEK}`, color: "#ec4899" },
-                        { label: "MT sem", value: `${mtSem}/${MT_PLAN_WEEK}`, color: "#3b82f6" },
-                      ].map(({ label, value, color }) => (
-                        <div key={label} className="w-[64px] h-[48px] rounded-xl bg-surface-2/60 border border-[var(--border)] flex flex-col items-center justify-center gap-0.5">
-                          <span className="text-[14px] font-bold leading-tight" style={{ color }}>{value}</span>
-                          <span className="text-[9px] font-medium text-text-tertiary">{label}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      {valentinaMetrics.status}
+                    </span>
                   </div>
-
-                  {/* Cuerpo: CL + MT */}
-                  <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-
-                    {/* Casa Luífer */}
-                    <div className="rounded-xl border p-3 flex flex-col gap-3"
-                      style={{ backgroundColor: "#fdf2f8", borderColor: "#fce7f3" }}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[9px] font-bold"
-                          style={{ backgroundColor: "#ec4899" }}>CL</div>
-                        <span className="text-[12px] font-bold flex-1" style={{ color: "#ec4899" }}>Casa Luífer</span>
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg"
-                          style={{ backgroundColor: "#ec489915", color: "#ec4899" }}>
-                          {clHoy}/3 hoy
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {todayPlan.cl.map((f) => {
-                          const done = (todayLog?.[f.key] as number ?? 0) >= 1;
-                          const count = todayLog?.[f.key] as number ?? 0;
-                          return (
-                            <div key={String(f.key)} className="flex items-center gap-2">
-                              <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${done ? "bg-emerald-500" : "bg-surface-2 border border-[var(--border)]"}`}>
-                                {done && <span className="text-white text-[8px] font-bold">✓</span>}
-                              </div>
-                              <span className={`text-[11px] flex-1 ${done ? "text-text-primary font-semibold" : "text-text-tertiary"}`}>
-                                {f.title}
-                              </span>
-                              <span className="text-[11px] font-bold" style={{ color: done ? "#ec4899" : "var(--text-tertiary)" }}>
-                                ×{count}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                      {/* Barra CL */}
-                      <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ backgroundColor: "#fce7f3" }}>
-                        <div className="h-full rounded-full transition-all duration-500"
-                          style={{ width: `${Math.min(100, (clHoy / 3) * 100)}%`, backgroundColor: "#ec4899" }} />
-                      </div>
-                    </div>
-
-                    {/* Montana */}
-                    <div className="rounded-xl border p-3 flex flex-col gap-3"
-                      style={{ backgroundColor: "#eff6ff", borderColor: "#dbeafe" }}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg flex items-center justify-center text-white text-[9px] font-bold"
-                          style={{ backgroundColor: "#3b82f6" }}>MT</div>
-                        <span className="text-[12px] font-bold flex-1" style={{ color: "#3b82f6" }}>Montana</span>
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg"
-                          style={{ backgroundColor: "#3b82f615", color: "#3b82f6" }}>
-                          {mtHoy}/2 hoy
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {todayPlan.mt.map((f) => {
-                          const done = (todayLog?.[f.key] as number ?? 0) >= 1;
-                          const count = todayLog?.[f.key] as number ?? 0;
-                          return (
-                            <div key={String(f.key)} className="flex items-center gap-2">
-                              <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${done ? "bg-emerald-500" : "bg-surface-2 border border-[var(--border)]"}`}>
-                                {done && <span className="text-white text-[8px] font-bold">✓</span>}
-                              </div>
-                              <span className={`text-[11px] flex-1 ${done ? "text-text-primary font-semibold" : "text-text-tertiary"}`}>
-                                {f.title}
-                              </span>
-                              <span className="text-[11px] font-bold" style={{ color: done ? "#3b82f6" : "var(--text-tertiary)" }}>
-                                ×{count}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                      {/* Barra MT */}
-                      <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ backgroundColor: "#dbeafe" }}>
-                        <div className="h-full rounded-full transition-all duration-500"
-                          style={{ width: `${Math.min(100, (mtHoy / 2) * 100)}%`, backgroundColor: "#3b82f6" }} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Strip semanal */}
-                  <div className="mx-4 mb-4 rounded-xl bg-surface-2/50 border border-[var(--border)] px-4 py-2.5 flex items-center gap-4">
-                    {[
-                      { label: "CL · semana", value: `${clSem}/${CL_PLAN_WEEK}`, pct: clPct, color: "#ec4899" },
-                      { label: "MT · semana", value: `${mtSem}/${MT_PLAN_WEEK}`, pct: mtPct, color: "#3b82f6" },
-                    ].map((item, i) => (
-                      <>
-                        {i > 0 && <div key={`div-${i}`} className="w-px h-6 bg-[var(--border)]" />}
-                        <div key={item.label} className="flex-1 flex flex-col gap-1.5">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-semibold" style={{ color: item.color }}>{item.label}</span>
-                            <span className="text-[11px] font-bold" style={{ color: item.color }}>{item.value}</span>
-                          </div>
-                          <div className="h-1.5 w-full rounded-full bg-surface overflow-hidden">
-                            <div className="h-full rounded-full transition-all duration-500"
-                              style={{ width: `${item.pct}%`, backgroundColor: item.color }} />
-                          </div>
-                        </div>
-                      </>
-                    ))}
-                    <div className="text-[11px] font-bold text-text-tertiary shrink-0">
-                      {clPct + mtPct > 0 ? `${Math.round((clSem + mtSem) / (CL_PLAN_WEEK + MT_PLAN_WEEK) * 100)}%` : "0%"}
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Alertas de pendientes */}
-                {behindToday && pendingFormats.length > 0 && (
-                  <motion.div variants={fadeInUp}
-                    className="rounded-2xl border border-red-200 bg-red-50 p-4 flex flex-col gap-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-red-500 text-[13px]">⚠</span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-red-600">Pendientes hoy</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {pendingFormats.map((f) => (
-                        <span key={f} className="h-6 px-2.5 rounded-full bg-white border border-red-200 text-[10.5px] font-semibold text-red-600 flex items-center">
-                          {f}
-                        </span>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
+                  <p className="text-xs text-slate-400 mt-0.5">Casa Luifer</p>
+                </div>
               </div>
 
-              {/* ════════ PANEL DERECHO ════════ */}
-              <motion.div variants={fadeInUp} className="w-full lg:w-[310px] shrink-0 flex flex-col gap-3.5">
+              <div className="flex items-center gap-3">
+                <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-center">
+                  <div className="text-xs font-extrabold text-slate-800">
+                    {valentinaMetrics.todayCount}/{valentinaMetrics.todayTarget}
+                  </div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Hoy</div>
+                </div>
+                <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-center">
+                  <div className="text-xs font-extrabold text-slate-800">
+                    {valentinaMetrics.weekCount}/{valentinaMetrics.weekTarget}
+                  </div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Semana</div>
+                </div>
+                <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-center">
+                  <div className="text-xs font-extrabold text-slate-800">
+                    {valentinaMetrics.progress}%
+                  </div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Avance</div>
+                </div>
+              </div>
+            </div>
 
-                {/* HOY · PLAN ACTIVO */}
-                <div className="rounded-2xl bg-surface border border-[var(--border)] overflow-hidden shadow-2xs">
-                  <div className="px-4 py-3 border-b border-[var(--border)] flex items-center gap-2 bg-surface-2/40">
-                    <CalendarIcon className="w-3.5 h-3.5 text-text-tertiary" />
-                    <span className="text-[9.5px] font-bold uppercase tracking-wider text-text-secondary">
-                      Hoy · Plan activo
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              {valentinaMetrics.metrics.map(m => (
+                <div
+                  key={m.label}
+                  className={`p-3 rounded-xl border ${
+                    m.isWarning
+                      ? "border-rose-200 bg-rose-50/40"
+                      : "border-slate-100 bg-slate-50/50"
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium mb-1">
+                    <span>{m.label}</span>
+                    {m.isWarning && <AlertCircle className="w-3.5 h-3.5 text-rose-500" />}
+                  </div>
+                  <div className={`text-base font-extrabold ${m.isWarning ? "text-rose-600" : "text-slate-800"}`}>
+                    {m.done}/{m.target}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ANDRÉS M. (Creador de Videos AI) */}
+          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                  AM
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-900">{andresMetrics.name}</h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700">
+                      {andresMetrics.role}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      {andresMetrics.status}
                     </span>
                   </div>
-                  <div className="p-3 flex flex-col gap-2.5">
-                    {/* Día tipo */}
-                    <div className="flex items-center gap-2 px-2.5 py-2 rounded-xl"
-                      style={{ backgroundColor: todayPlan.isCreativo ? "#fef3c7" : "#fdf2f8" }}>
-                      {todayPlan.isCreativo
-                        ? <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                        : <Flame className="w-3.5 h-3.5 shrink-0" style={{ color: "#ec4899" }} />}
-                      <span className="text-[11px] font-bold"
-                        style={{ color: todayPlan.isCreativo ? "#d97706" : "#ec4899" }}>
-                        {todayPlan.label} · {todayPlan.isCreativo ? todayPlan.creativoTag : "Día Orgánico"}
-                      </span>
-                    </div>
-
-                    {/* CL */}
-                    <div className="rounded-xl p-2.5 flex flex-col gap-1.5" style={{ backgroundColor: "#fdf2f8" }}>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-4 h-4 rounded flex items-center justify-center text-white text-[7px] font-bold" style={{ backgroundColor: "#ec4899" }}>CL</div>
-                        <span className="text-[10px] font-bold" style={{ color: "#ec4899" }}>Casa Luífer · 3 piezas</span>
-                      </div>
-                      {todayPlan.cl.map((f) => (
-                        <div key={String(f.key)} className="flex items-center gap-1.5 text-[10.5px] text-text-secondary pl-1">
-                          <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: "#ec4899" }} />
-                          {f.title}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* MT */}
-                    <div className="rounded-xl p-2.5 flex flex-col gap-1.5" style={{ backgroundColor: "#eff6ff" }}>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-4 h-4 rounded flex items-center justify-center text-white text-[7px] font-bold" style={{ backgroundColor: "#3b82f6" }}>MT</div>
-                        <span className="text-[10px] font-bold" style={{ color: "#3b82f6" }}>Montana · 2 piezas</span>
-                      </div>
-                      {todayPlan.mt.map((f) => (
-                        <div key={String(f.key)} className="flex items-center gap-1.5 text-[10.5px] text-text-secondary pl-1">
-                          <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: "#3b82f6" }} />
-                          {f.title}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">Montana</p>
                 </div>
+              </div>
 
-                {/* AVANCE SEMANAL */}
-                <div className="rounded-2xl bg-surface border border-[var(--border)] p-4 flex flex-col gap-3.5 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-center">
+                  <div className="text-xs font-extrabold text-slate-800">
+                    {andresMetrics.todayCount}/{andresMetrics.todayTarget}
+                  </div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Hoy</div>
+                </div>
+                <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-center">
+                  <div className="text-xs font-extrabold text-slate-800">
+                    {andresMetrics.weekCount}/{andresMetrics.weekTarget}
+                  </div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Semana</div>
+                </div>
+                <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-center">
+                  <div className="text-xs font-extrabold text-slate-800">
+                    {andresMetrics.progress}%
+                  </div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Avance</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              {andresMetrics.metrics.map(m => (
+                <div key={m.label} className="p-3 rounded-xl border border-slate-100 bg-slate-50/50">
+                  <div className="text-[11px] text-slate-500 font-medium mb-1">{m.label}</div>
+                  <div className="text-base font-extrabold text-slate-800">{m.done}/{m.target}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* COLUMNA DERECHA: PLAN ACTIVO, AVANCE SEMANAL Y CALENDARIO DÍAS (4 cols) */}
+        <div className="lg:col-span-4 space-y-5">
+          
+          {/* TARJETA 1: HOY · PLAN ACTIVO */}
+          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>HOY · PLAN ACTIVO</span>
+            </div>
+
+            <div className="bg-pink-50/60 border border-pink-100 rounded-xl px-3.5 py-2 text-pink-700 font-semibold text-xs mb-4 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-pink-500" />
+              <span>Miércoles · Día Orgánico</span>
+            </div>
+
+            <div className="space-y-4">
+              {/* Casa Luifer */}
+              <div className="bg-pink-50/20 border border-pink-100/60 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
-                    <span className="text-[9.5px] font-bold uppercase tracking-wider text-text-secondary">Avance semanal</span>
-                  </div>
-
-                  {[
-                    { name: "Casa Luífer", done: clSem, goal: CL_PLAN_WEEK, pct: clPct, color: "#ec4899" },
-                    { name: "Montana", done: mtSem, goal: MT_PLAN_WEEK, pct: mtPct, color: "#3b82f6" },
-                  ].map((b) => (
-                    <div key={b.name} className="flex items-center gap-3">
-                      <div className="relative w-[48px] h-[48px] shrink-0">
-                        <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f1f5f9" strokeWidth="3.4" />
-                          <circle cx="18" cy="18" r="15.9" fill="none" stroke={b.color} strokeWidth="3.4"
-                            strokeDasharray={`${b.pct} 100`} strokeLinecap="round" />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-[8.5px] font-bold text-text-primary">{b.pct}%</span>
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[10px] text-text-tertiary">{b.name}</div>
-                        <div className="text-[15px] font-bold text-text-primary">{b.done} / {b.goal}</div>
-                        <div className="h-1.5 w-full bg-surface-2 rounded-full mt-1 overflow-hidden">
-                          <div className="h-full rounded-full transition-all duration-500"
-                            style={{ width: `${b.pct}%`, backgroundColor: b.color }} />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* ESTA SEMANA L-V */}
-                <div className="rounded-2xl bg-surface border border-[var(--border)] p-4 flex flex-col gap-3 shadow-2xs">
-                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-text-secondary">Esta semana · L–V</span>
-                  <div className="grid grid-cols-5 gap-1.5">
-                    {weekDays.map((dayDate, idx) => {
-                      const dayISO = toISO(dayDate);
-                      const isCur = dayISO === currentISO;
-                      const cnt = dayTotals[idx];
-                      const plan = WEEK_PLAN[idx + 1];
-                      return (
-                        <motion.button
-                          key={idx}
-                          type="button"
-                          onClick={() => setSelectedDate(dayDate)}
-                          whileHover={{ scale: 1.06 }}
-                          whileTap={{ scale: 0.94 }}
-                          className={`h-[52px] rounded-xl flex flex-col items-center justify-center gap-0.5 transition cursor-pointer border ${
-                            isCur ? "bg-amber-50 border-amber-200" : "bg-surface-2/30 border-[var(--border)] hover:bg-surface-2"
-                          }`}
-                        >
-                          <span className="text-[8.5px] font-bold uppercase"
-                            style={{ color: isCur ? "#d97706" : plan?.dayColor ?? "var(--text-tertiary)" }}>
-                            {plan?.shortLabel ?? ""}
-                          </span>
-                          <span className={`text-[13px] font-bold ${isCur ? "text-amber-700" : "text-text-primary"}`}>
-                            {cnt}
-                          </span>
-                          {cnt >= PLAN_DIA && <span className="text-[7.5px] text-emerald-500 font-bold">✓</span>}
-                        </motion.button>
-                      );
-                    })}
+                    <span className="w-5 h-5 rounded-md bg-pink-500 text-white text-[10px] font-bold flex items-center justify-center">
+                      CL
+                    </span>
+                    <span className="text-xs font-bold text-slate-800">Casa Luifer · 3 piezas</span>
                   </div>
                 </div>
+                <ul className="text-xs text-slate-600 space-y-1.5 pl-7 list-disc">
+                  <li>Orgánico</li>
+                  <li>Carrusel</li>
+                  <li>Testimonio</li>
+                </ul>
+              </div>
 
-                {/* Reglas del plan */}
-                <div className="rounded-2xl bg-surface border border-[var(--border)] p-4 flex flex-col gap-2.5 shadow-2xs">
-                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-text-tertiary">Reglas del plan</span>
-                  <div className="flex flex-col gap-1.5">
-                    {[
-                      "5 piezas / día · 25 piezas / semana",
-                      "3 CL · 2 MT por día",
-                      "Mar & Jue → días creativos (Disney/Yapping)",
-                      "Lun/Mié/Vie → Org. + Carrusel + Testimonio",
-                      "Solo Instagram · Lunes a viernes",
-                    ].map((r) => (
-                      <div key={r} className="flex items-start gap-1.5 text-[10px] text-text-secondary leading-snug">
-                        <span className="mt-1 w-1 h-1 rounded-full bg-text-tertiary shrink-0" />
-                        {r}
-                      </div>
-                    ))}
+              {/* Montana */}
+              <div className="bg-blue-50/20 border border-blue-100/60 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-md bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center">
+                      MT
+                    </span>
+                    <span className="text-xs font-bold text-slate-800">Montana · 2 piezas</span>
                   </div>
                 </div>
-              </motion.div>
+                <ul className="text-xs text-slate-600 space-y-1.5 pl-7 list-disc">
+                  <li>Orgánico producto</li>
+                  <li>Historia producto</li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
-            </motion.div>
-          )}
-        </AnimatePresence>
+          {/* TARJETA 2: AVANCE SEMANAL · DISEÑADOR */}
+          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
+              <Flame className="w-3.5 h-3.5 text-amber-500" />
+              <span>AVANCE SEMANAL · DISEÑADOR</span>
+            </div>
+
+            <div className="space-y-4">
+              {/* Casa Luifer */}
+              <div>
+                <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-pink-500"></span>
+                    <span className="text-slate-800">Casa Luifer</span>
+                  </div>
+                  <span className="text-slate-500">10/15</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-full bg-pink-500 rounded-full" style={{ width: "67%" }}></div>
+                </div>
+                <span className="text-[10px] text-slate-400 font-medium mt-1 block">67% completado</span>
+              </div>
+
+              {/* Montana */}
+              <div>
+                <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span className="text-slate-800">Montana</span>
+                  </div>
+                  <span className="text-slate-500">8/10</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-full bg-blue-500 rounded-full" style={{ width: "80%" }}></div>
+                </div>
+                <span className="text-[10px] text-slate-400 font-medium mt-1 block">80% completado</span>
+              </div>
+            </div>
+          </div>
+
+          {/* TARJETA 3: ESTA SEMANA L-V INTERACTIVA */}
+          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+              <span>ESTA SEMANA · L-V</span>
+            </div>
+
+            <div className="grid grid-cols-5 gap-2">
+              {daysSummary.map((d, idx) => {
+                const isSelected = selectedDayIndex === idx
+                return (
+                  <button
+                    key={d.label}
+                    onClick={() => handleSelectDay(idx)}
+                    className={`flex flex-col items-center justify-center py-3 rounded-xl border transition-all ${
+                      isSelected
+                        ? "bg-slate-900 border-slate-900 text-white shadow-md scale-105"
+                        : "bg-slate-50 border-slate-100 hover:bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    <span className={`text-[10px] font-bold ${isSelected ? "text-slate-300" : "text-slate-400"}`}>
+                      {d.label}
+                    </span>
+                    <span className="text-sm font-extrabold my-0.5">{d.count}</span>
+                    {d.isCompleted ? (
+                      <Check className={`w-3 h-3 ${isSelected ? "text-emerald-400" : "text-emerald-500"}`} />
+                    ) : (
+                      <div className="w-3 h-3"></div>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
-  );
+  )
+}
+
+function DesignerCard({
+  designer,
+  badgeText,
+  initials,
+  avatarBg
+}: {
+  designer: DesignerAIState
+  badgeText: string
+  initials: string
+  avatarBg: string
+}) {
+  const clDone = designer.casaLuifer.formats.filter(f => f.completed).length
+  const mtDone = designer.montana.formats.filter(f => f.completed).length
+
+  return (
+    <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+      {/* Header del diseñador */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-2xl ${avatarBg} text-white font-bold flex items-center justify-center text-sm shadow-sm`}>
+            {initials}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-slate-900">{designer.name}</h3>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700">
+                {designer.role}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Casa Luifer + Montana · 3 CL + 2 MT por día
+            </p>
+          </div>
+        </div>
+
+        <span className="px-3 py-1 rounded-full text-[11px] font-semibold bg-pink-50 text-pink-600 flex items-center gap-1.5 border border-pink-100">
+          <Sparkles className="w-3 h-3 text-pink-500" />
+          {badgeText}
+        </span>
+      </div>
+
+      {/* BLOQUE CASA LUIFER */}
+      <div className="bg-pink-50/40 border border-pink-100 rounded-xl p-4 mb-3">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="w-5 h-5 rounded-md bg-pink-500 text-white text-[10px] font-bold flex items-center justify-center">
+              CL
+            </span>
+            <span className="text-xs font-bold text-pink-900">Casa Luifer</span>
+          </div>
+          <span className="text-xs font-bold text-pink-700">
+            {clDone}/{designer.casaLuifer.target} hoy
+          </span>
+        </div>
+
+        {/* Badges de formatos */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          {designer.casaLuifer.formats.map(f => (
+            <div
+              key={f.key}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border transition ${
+                f.completed
+                  ? "bg-pink-100 border-pink-200 text-pink-800 font-semibold"
+                  : "bg-white/80 border-pink-100 text-pink-400"
+              }`}
+            >
+              {f.completed ? (
+                <Check className="w-3.5 h-3.5 text-pink-600" />
+              ) : (
+                <span className="w-3.5 h-3.5 rounded-full border border-pink-300 inline-block"></span>
+              )}
+              <span>{f.label}</span>
+              {f.url && (
+                <a
+                  href={f.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Ver imagen"
+                  className="ml-1 text-pink-600 hover:text-pink-900"
+                >
+                  <Eye className="w-3 h-3 inline" />
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="w-full h-1.5 rounded-full bg-pink-100 overflow-hidden">
+          <div
+            className="h-full bg-pink-500 rounded-full transition-all"
+            style={{ width: `${Math.min(100, (clDone / designer.casaLuifer.target) * 100)}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {/* BLOQUE MONTANA */}
+      <div className="bg-blue-50/40 border border-blue-100 rounded-xl p-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="w-5 h-5 rounded-md bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center">
+              MT
+            </span>
+            <span className="text-xs font-bold text-blue-900">Montana</span>
+          </div>
+          <span className="text-xs font-bold text-blue-700">
+            {mtDone}/{designer.montana.target} {mtDone >= designer.montana.target && "✓"}
+          </span>
+        </div>
+
+        {/* Badges de formatos */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          {designer.montana.formats.map(f => (
+            <div
+              key={f.key}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border transition ${
+                f.completed
+                  ? "bg-blue-100 border-blue-200 text-blue-800 font-semibold"
+                  : "bg-white/80 border-blue-100 text-blue-400"
+              }`}
+            >
+              {f.completed ? (
+                <Check className="w-3.5 h-3.5 text-blue-600" />
+              ) : (
+                <span className="w-3.5 h-3.5 rounded-full border border-blue-300 inline-block"></span>
+              )}
+              <span>{f.label}</span>
+              {f.url && (
+                <a
+                  href={f.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Ver imagen"
+                  className="ml-1 text-blue-600 hover:text-blue-900"
+                >
+                  <Eye className="w-3 h-3 inline" />
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="w-full h-1.5 rounded-full bg-blue-100 overflow-hidden">
+          <div
+            className="h-full bg-blue-500 rounded-full transition-all"
+            style={{ width: `${Math.min(100, (mtDone / designer.montana.target) * 100)}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {/* FOOTER DE PROGRESO SEMANAL POR PROYECTO */}
+      <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100 text-xs">
+        <div>
+          <div className="flex justify-between text-slate-500 mb-1">
+            <span className="font-semibold text-pink-600">CL · semana</span>
+            <span className="font-bold text-slate-700">
+              {designer.casaLuifer.weekCount}/{designer.casaLuifer.weekTarget}
+            </span>
+          </div>
+          <div className="w-full h-1 rounded-full bg-slate-100 overflow-hidden">
+            <div
+              className="h-full bg-pink-500 rounded-full"
+              style={{
+                width: `${Math.min(100, (designer.casaLuifer.weekCount / designer.casaLuifer.weekTarget) * 100)}%`
+              }}
+            ></div>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex justify-between text-slate-500 mb-1">
+            <span className="font-semibold text-blue-600">MT · semana</span>
+            <span className="font-bold text-slate-700">
+              {designer.montana.weekCount}/{designer.montana.weekTarget}
+            </span>
+          </div>
+          <div className="w-full h-1 rounded-full bg-slate-100 overflow-hidden">
+            <div
+              className="h-full bg-blue-500 rounded-full"
+              style={{
+                width: `${Math.min(100, (designer.montana.weekCount / designer.montana.weekTarget) * 100)}%`
+              }}
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

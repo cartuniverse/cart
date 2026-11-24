@@ -37,15 +37,20 @@ export default function Home() {
   const [selectedProfilePerson, setSelectedProfilePerson] = useState<Person | null>(null);
 
   // Vista derivada estrictamente del rol del usuario autenticado
+  const isDirectorUser =
+    profile?.role === "director_area" ||
+    profile?.email?.toLowerCase().includes("david.sanchez") ||
+    profile?.email?.toLowerCase().includes("david");
+
   const currentRoleView: "admin" | "audiovisual" | "community" | "designer" | "director" =
-    profile?.role === "creador_audiovisual"
+    isDirectorUser
+      ? "director"
+      : profile?.role === "creador_audiovisual"
       ? "audiovisual"
       : profile?.role === "community_manager"
       ? "community"
       : profile?.role === "disenador_ai"
       ? "designer"
-      : profile?.role === "director_area"
-      ? "director"
       : "admin";
 
   const [activeProjectName, setActiveProjectName] = useState<string>("Casa Luifer");
@@ -60,7 +65,14 @@ export default function Home() {
         return;
       }
       setProfile(p);
-      if (
+      const isDirector =
+        p.role === "director_area" ||
+        p.email?.toLowerCase().includes("david.sanchez") ||
+        p.email?.toLowerCase().includes("david");
+
+      if (isDirector) {
+        setActiveNav("seguimiento");
+      } else if (
         p.role === "creador_audiovisual" ||
         p.role === "community_manager"
       ) {
@@ -68,8 +80,6 @@ export default function Home() {
         if (p.projectName) setActiveProjectName(p.projectName);
       } else if (p.role === "disenador_ai") {
         setActiveNav("plan_continuo");
-      } else if (p.role === "director_area") {
-        setActiveNav("seguimiento");
       } else {
         setActiveNav("organigrama");
       }
@@ -205,8 +215,11 @@ export default function Home() {
               designerEmail={profile.email}
               designerId={profile.id || profile.name?.toLowerCase().replace(/\s+/g, "-") || "designer"}
             />
-          ) : currentRoleView === "director" && activeNav === "seguimiento" ? (
-            <DirectorView />
+          ) : currentRoleView === "director" ? (
+            <DirectorView
+              directorName={profile.name || "David S."}
+              directorEmail={profile.email}
+            />
           ) : selectedProfilePerson ? (
             <FullProfileView
               person={selectedProfilePerson}
