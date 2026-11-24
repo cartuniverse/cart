@@ -233,236 +233,108 @@ export function Sidebar({
 
       {/* Si está en la vista de Community Manager */}
       {isCommunity ? (
-        <div className="flex flex-col gap-6 flex-1 overflow-y-auto">
-          {/* Sección: ESPACIO */}
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              ESPACIO
-            </div>
-
-            {/* Dashboard */}
-            <button
-              onClick={() => onSelectNav?.("dashboard")}
-              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${activeNav === "dashboard"
-                ? "bg-pink-50/80 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 font-bold border border-pink-200/60 dark:border-pink-900/50 shadow-xs"
-                : "text-text-secondary font-medium hover:bg-surface-2"
-                }`}
-            >
-              <LayoutDashboard className="w-[18px] h-[18px] text-pink-500" />
-              <span className="text-[13px] flex-1">Dashboard</span>
-            </button>
-
-            {/* Diario de hoy */}
-            <button
-              onClick={() => onSelectNav?.("diario_hoy")}
-              className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${activeNav === "diario_hoy"
-                ? "bg-pink-50/80 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 font-bold border border-pink-200/60 dark:border-pink-900/50 shadow-xs"
-                : "text-text-secondary font-medium hover:bg-surface-2"
-                }`}
-            >
-              <div className="flex items-center gap-3">
-                <Calendar className="w-[18px] h-[18px] text-pink-500" />
-                <span className="text-[13px]">Diario de hoy</span>
-              </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100/80 text-pink-600 border border-pink-200/50">
-                {cmTodayCount}/{cmDailyTarget}
-              </span>
-            </button>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
+            VISTAS
           </div>
 
-          {/* Sección: MARCAS */}
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              MARCAS
+          {/* Dashboard */}
+          <button
+            onClick={() => onSelectNav?.("dashboard")}
+            className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
+              activeNav === "dashboard"
+                ? "bg-accent-soft text-text-primary font-bold shadow-xs"
+                : "text-text-secondary font-medium hover:bg-surface-2"
+            }`}
+          >
+            <LayoutDashboard className="w-[18px] h-[18px] text-pink-500" />
+            <span className="text-[13px] flex-1">Dashboard</span>
+          </button>
+
+          {/* Diario de hoy */}
+          <button
+            onClick={() => onSelectNav?.("diario_hoy")}
+            className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
+              activeNav === "diario_hoy"
+                ? "bg-accent-soft text-text-primary font-bold shadow-xs"
+                : "text-text-secondary font-medium hover:bg-surface-2"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Calendar className="w-[18px] h-[18px] text-pink-500" />
+              <span className="text-[13px]">Diario de hoy</span>
             </div>
-            {[
-              { name: "Casa Luifer", target: "56 / sem", color: "#ec4899" },
-              { name: "Montana", target: "39 / sem", color: "#3b82f6" },
-            ].map((brand) => {
-              const isSelected = activeProjectName === brand.name;
-              return (
-                <button
-                  key={brand.name}
-                  onClick={() => onSelectProjectName?.(brand.name)}
-                  className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer text-[12.5px] ${isSelected
-                    ? "bg-surface-2 text-text-primary font-bold"
-                    : "text-text-secondary font-medium hover:bg-surface-2"
-                    }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: brand.color }}
-                    />
-                    <span className="truncate">{brand.name}</span>
-                  </div>
-                  <span className="text-[11px] text-text-tertiary font-medium">
-                    {brand.target}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100/80 text-pink-600 border border-pink-200/50">
+              {cmTodayCount}/{cmDailyTarget}
+            </span>
+          </button>
         </div>
       ) : isDesigner ? (
-        <div className="flex flex-col gap-6 flex-1">
-          {/* Tarjeta de usuario del diseñador */}
-          <div className="rounded-2xl bg-violet-50/70 border border-violet-100 dark:bg-violet-950/30 dark:border-violet-900/50 p-3 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center text-white shadow-2xs shrink-0">
-              <Palette className="w-5 h-5" />
-            </div>
-            <div className="leading-tight min-w-0">
-              <div className="text-[13.5px] font-bold text-text-primary truncate">
-                {displayName}
-              </div>
-              <div className="text-[11px] font-semibold text-violet-600 truncate">
-                Diseñador AI
-              </div>
-            </div>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
+            VISTAS
           </div>
 
-          {/* MI DÍA */}
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              MI DÍA
+          {/* Plan continuo */}
+          <button
+            onClick={() => onSelectNav?.("plan_continuo")}
+            className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
+              activeNav === "plan_continuo"
+                ? "bg-accent-soft text-text-primary font-bold shadow-xs"
+                : "text-text-secondary font-medium hover:bg-surface-2"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Flame className="w-[18px] h-[18px] text-amber-500" />
+              <span className="text-[13px]">Plan continuo</span>
             </div>
-
-            {/* Plan continuo */}
-            <button
-              onClick={() => onSelectNav?.("plan_continuo")}
-              className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
-                activeNav === "plan_continuo"
-                  ? "bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 font-bold border border-violet-200/60 dark:border-violet-900/50 shadow-xs"
-                  : "text-text-secondary font-medium hover:bg-surface-2"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Flame className="w-[18px] h-[18px] text-amber-500" />
-                <span className="text-[13px]">Plan continuo</span>
-              </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-700 border border-amber-200/50">
-                {designerTodayCount}/6
-              </span>
-            </button>
-          </div>
-
-          {/* MARCAS DEL PLAN */}
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              MARCAS DEL PLAN
-            </div>
-            {[
-              { name: "Casa Luifer", perWeek: "15 / sem", color: "#ec4899" },
-              { name: "Montana", perWeek: (profile?.email?.toLowerCase().includes("miguel") || profile?.name?.toLowerCase().includes("miguel")) ? "9 / sem" : "10 / sem", color: "#3b82f6" },
-            ].map((brand) => (
-              <div
-                key={brand.name}
-                className="h-10 rounded-[10px] flex items-center justify-between px-3 text-left text-[12.5px] text-text-secondary"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: brand.color }}
-                  />
-                  <span className="truncate font-medium">{brand.name}</span>
-                </div>
-                <span className="text-[11px] text-text-tertiary font-medium">
-                  {brand.perWeek}
-                </span>
-              </div>
-            ))}
-          </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-700 border border-amber-200/50">
+              {designerTodayCount}/6
+            </span>
+          </button>
         </div>
       ) : isAudiovisual ? (
-        <div className="flex flex-col gap-6 flex-1">
-          {/* Tarjeta de usuario destacada de Andrés M. con icono Cámara */}
-          <div className="rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 p-3 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-2xs shrink-0">
-              <Video className="w-5 h-5" />
-            </div>
-            <div className="leading-tight min-w-0">
-              <div className="text-[13.5px] font-bold text-text-primary truncate">
-                Andrés M.
-              </div>
-              <div className="text-[11px] font-semibold text-indigo-600 truncate">
-                Creador Audiovisual AI
-              </div>
-            </div>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
+            VISTAS
           </div>
 
-          {/* Sección: MI DÍA */}
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              MI DÍA
-            </div>
-            {/* Botón Dashboard */}
-            <button
-              onClick={() => onSelectNav?.("dashboard")}
-              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${activeNav === "dashboard"
+          {/* Botón Dashboard */}
+          <button
+            onClick={() => onSelectNav?.("dashboard")}
+            className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
+              activeNav === "dashboard"
                 ? "bg-accent-soft text-text-primary font-bold shadow-xs"
                 : "text-text-secondary font-medium hover:bg-surface-2"
-                }`}
-            >
-              <LayoutDashboard className="w-[18px] h-[18px]" />
-              <span className="text-[13px] flex-1">Dashboard</span>
-            </button>
+            }`}
+          >
+            <LayoutDashboard className="w-[18px] h-[18px] text-indigo-500" />
+            <span className="text-[13px] flex-1">Dashboard</span>
+          </button>
 
-            {/* Botón Diario de hoy */}
-            <button
-              onClick={() => onSelectNav?.("diario_hoy")}
-              className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${activeNav === "diario_hoy"
+          {/* Botón Diario de hoy */}
+          <button
+            onClick={() => onSelectNav?.("diario_hoy")}
+            className={`h-10 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${
+              activeNav === "diario_hoy"
                 ? "bg-accent-soft text-text-primary font-bold shadow-xs"
                 : "text-text-secondary font-medium hover:bg-surface-2"
-                }`}
-            >
-              <div className="flex items-center gap-3">
-                <Calendar className="w-[18px] h-[18px]" />
-                <span className="text-[13px]">Diario de hoy</span>
-              </div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-2 text-text-secondary border border-border">
-                {avTodayCount}/3
-              </span>
-            </button>
-          </div>
-
-          {/* Sección: MIS PROYECTOS */}
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              MIS PROYECTOS
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Calendar className="w-[18px] h-[18px] text-indigo-500" />
+              <span className="text-[13px]">Diario de hoy</span>
             </div>
-            {["Casa Luifer"].map((proj) => {
-              const isSelected = activeProjectName === proj;
-              return (
-                <button
-                  key={proj}
-                  onClick={() => onSelectProjectName?.(proj)}
-                  className={`h-9 rounded-[10px] flex items-center gap-2.5 px-3 text-left transition cursor-pointer text-[12.5px] ${isSelected
-                    ? "bg-surface-2 text-text-primary font-bold"
-                    : "text-text-secondary font-medium hover:bg-surface-2"
-                    }`}
-                >
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{
-                      background:
-                        proj === "Casa Luifer"
-                          ? "#ec4899"
-                          : proj === "Cart"
-                            ? "#6366f1"
-                            : "#10b981",
-                    }}
-                  />
-                  <span className="truncate">{proj}</span>
-                </button>
-              );
-            })}
-          </div>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-2 text-text-secondary border border-border">
+              {avTodayCount}/3
+            </span>
+          </button>
         </div>
       ) : isDirector ? (
         /* Navegación del Director de Área (David) simplificada */
         <div className="flex flex-col gap-1 flex-1">
           <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-            VISTA GENERAL
+            VISTAS
           </div>
 
           <button
