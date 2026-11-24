@@ -752,7 +752,10 @@ export async function getDailyCommunityLog(
       .maybeSingle();
 
     if (error) {
-      console.error("Error fetching daily community log:", error);
+      // Si la tabla no existe en supabase o falla el select, silenciar el console.error ruidoso y retornar fallback
+      if (error?.message) {
+        console.warn("Notice: daily_community_logs fallback to local storage:", error.message);
+      }
       return fallbackLog;
     }
 
@@ -771,6 +774,7 @@ export async function getDailyCommunityLog(
         formatVideoTestimonio: data.format_video_testimonio ?? 0,
         formatCarrusel: data.format_carrusel ?? 0,
         formatPost: data.format_post ?? 0,
+        formatTiktok: data.format_tiktok ?? 0,
         updatedAt: data.updated_at,
       };
 
@@ -900,7 +904,9 @@ export async function getWeeklyCommunityLogs(
       .eq("cm_id", cmId);
 
     if (error) {
-      console.error("Error fetching weekly community logs:", error);
+      if (error?.message) {
+        console.warn("Notice: getWeeklyCommunityLogs fallback to local storage:", error.message);
+      }
       return result;
     }
 
@@ -920,6 +926,7 @@ export async function getWeeklyCommunityLogs(
           formatVideoTestimonio: d.format_video_testimonio ?? 0,
           formatCarrusel: d.format_carrusel ?? 0,
           formatPost: d.format_post ?? 0,
+          formatTiktok: d.format_tiktok ?? 0,
           updatedAt: d.updated_at,
         };
         result[d.date] = item;

@@ -2,14 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Check,
   ChevronLeft,
   ChevronRight,
   Eye,
   Film,
-  FolderKanban,
-  HelpCircle,
   Image as ImageIcon,
   LayoutGrid,
   Loader2,
@@ -17,32 +15,14 @@ import {
   Mic,
   Minus,
   Plus,
-  Radio,
   Share2,
   Sparkles,
   Trash2,
   Tv,
   Upload,
+  Video,
+  X,
 } from "lucide-react";
-
-// Icono SVG de Instagram
-function InstagramIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-    </svg>
-  );
-}
 import {
   getDailyCommunityLog,
   getWeeklyCommunityLogs,
@@ -56,18 +36,6 @@ interface CommunityDailyViewProps {
   onProjectChange?: (project: string) => void;
 }
 
-// Configuración de los 8 formatos
-interface FormatConfig {
-  key: keyof CommunityDailyCounts;
-  label: string;
-  icon: any;
-  iconBg: string;
-  iconColor: string;
-  barColor: string;
-  // Metas semanales por proyecto
-  weeklyTargets: Record<string, number>;
-}
-
 export type CommunityDailyCounts = {
   historiaOrganica: number;
   historiaProducto: number;
@@ -77,90 +45,111 @@ export type CommunityDailyCounts = {
   videoTestimonio: number;
   carrusel: number;
   post: number;
+  tiktok: number;
 };
 
-const FORMATS: FormatConfig[] = [
+interface FormatItemConfig {
+  key: keyof CommunityDailyCounts;
+  label: string;
+  category: "historias" | "feed" | "tiktok";
+  icon: any;
+  color: string;
+  bgSoft: string;
+  weeklyTargets: Record<string, number>;
+}
+
+const ALL_FORMATS: FormatItemConfig[] = [
+  // Historias
   {
     key: "historiaOrganica",
-    label: "Historias · videos orgánicos",
+    label: "Orgánicos (Video)",
+    category: "historias",
     icon: Film,
-    iconBg: "bg-pink-50",
-    iconColor: "text-pink-500",
-    barColor: "#ec4899", // Rosa
+    color: "#ec4899",
+    bgSoft: "bg-pink-500/10 text-pink-500",
     weeklyTargets: { "Casa Luifer": 7, Montana: 5 },
   },
   {
     key: "historiaProducto",
-    label: "Historias · producto",
+    label: "Producto (Foto)",
+    category: "historias",
     icon: ImageIcon,
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-500",
-    barColor: "#f59e0b", // Naranja
+    color: "#f59e0b",
+    bgSoft: "bg-amber-500/10 text-amber-500",
     weeklyTargets: { "Casa Luifer": 7, Montana: 5 },
   },
   {
     key: "historiaInteractiva",
-    label: "Historias · interactivas",
+    label: "Interactivas",
+    category: "historias",
     icon: MessageSquare,
-    iconBg: "bg-pink-50",
-    iconColor: "text-pink-400",
-    barColor: "#f59e0b", // Naranja/Ámbar
+    color: "#f97316",
+    bgSoft: "bg-orange-500/10 text-orange-500",
     weeklyTargets: { "Casa Luifer": 7, Montana: 5 },
   },
+  // Feed
   {
     key: "feedOrganico",
-    label: "Feed · videos orgánicos",
+    label: "Video Orgánico",
+    category: "feed",
     icon: Tv,
-    iconBg: "bg-indigo-50",
-    iconColor: "text-indigo-500",
-    barColor: "#6366f1", // Azul/Índigo
+    color: "#6366f1",
+    bgSoft: "bg-indigo-500/10 text-indigo-500",
     weeklyTargets: { "Casa Luifer": 12, Montana: 8 },
   },
   {
     key: "feedCreativo",
-    label: "Feed · videos creativos",
+    label: "Video Creativo",
+    category: "feed",
     icon: Sparkles,
-    iconBg: "bg-purple-50",
-    iconColor: "text-purple-500",
-    barColor: "#8b5cf6", // Violeta
+    color: "#8b5cf6",
+    bgSoft: "bg-purple-500/10 text-purple-500",
     weeklyTargets: { "Casa Luifer": 9, Montana: 6 },
   },
   {
     key: "videoTestimonio",
-    label: "Videos testimonios",
+    label: "Testimonios",
+    category: "feed",
     icon: Mic,
-    iconBg: "bg-blue-50",
-    iconColor: "text-blue-500",
-    barColor: "#f59e0b", // Naranja
+    color: "#14b8a6",
+    bgSoft: "bg-teal-500/10 text-teal-500",
     weeklyTargets: { "Casa Luifer": 7, Montana: 5 },
   },
   {
     key: "carrusel",
     label: "Carruseles",
+    category: "feed",
     icon: LayoutGrid,
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-500",
-    barColor: "#10b981", // Verde esmeralda
+    color: "#10b981",
+    bgSoft: "bg-emerald-500/10 text-emerald-500",
     weeklyTargets: { "Casa Luifer": 4, Montana: 3 },
   },
   {
     key: "post",
-    label: "Post",
+    label: "Post imagen",
+    category: "feed",
     icon: Share2,
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-500",
-    barColor: "#f59e0b", // Naranja/Mostaza
+    color: "#3b82f6",
+    bgSoft: "bg-blue-500/10 text-blue-500",
     weeklyTargets: { "Casa Luifer": 3, Montana: 2 },
+  },
+  // TikToks específicos por proyecto
+  {
+    key: "tiktok",
+    label: "Videos TikTok",
+    category: "tiktok",
+    icon: Video,
+    color: "#06b6d4",
+    bgSoft: "bg-cyan-500/10 text-cyan-500",
+    weeklyTargets: { "Casa Luifer": 5, Montana: 5 },
   },
 ];
 
-// Metas semanales totales por marca
 const PROJECT_TARGETS: Record<string, number> = {
-  "Casa Luifer": 56,
-  Montana: 39,
+  "Casa Luifer": 61, // 56 instagram + 5 tiktok
+  Montana: 44, // 39 instagram + 5 tiktok
 };
 
-// Generar días de Lunes a Viernes para una fecha dada
 function getMondayToFriday(date: Date): Date[] {
   const d = new Date(date);
   const day = d.getDay();
@@ -184,32 +173,13 @@ function toISODate(d: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-const MONTHS_ES = [
-  "ene",
-  "feb",
-  "mar",
-  "abr",
-  "may",
-  "jun",
-  "jul",
-  "ago",
-  "sep",
-  "oct",
-  "nov",
-  "dic",
+const MONTH_NAMES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
 ];
 
-const DAYS_ES = [
-  "Domingo",
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-];
-
-const DAY_INITIALS = ["L", "M", "M", "J", "V"];
+const DAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const DAY_LETTERS = ["L", "M", "M", "J", "V"];
 
 export function CommunityDailyView({
   initialProjectName = "Casa Luifer",
@@ -217,34 +187,25 @@ export function CommunityDailyView({
 }: CommunityDailyViewProps) {
   const [currentProjectName, setCurrentProjectName] = useState(initialProjectName);
 
-  // Sincronizar si la prop cambia desde el exterior
   useEffect(() => {
     if (initialProjectName && initialProjectName !== currentProjectName) {
       setCurrentProjectName(initialProjectName);
-      // Resetear a 0 de inmediato para no mezclar datos de marcas
-      setCounts({
-        historiaOrganica: 0,
-        historiaProducto: 0,
-        historiaInteractiva: 0,
-        feedOrganico: 0,
-        feedCreativo: 0,
-        videoTestimonio: 0,
-        carrusel: 0,
-        post: 0,
-      });
-      setWeeklyLogs({});
     }
   }, [initialProjectName]);
 
-  // Fecha seleccionada (Hoy real)
+  const handleSelectProject = (proj: string) => {
+    setCurrentProjectName(proj);
+    onProjectChange?.(proj);
+  };
+
+  // Fecha seleccionada y Calendario
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
+  const [showCalendarPopover, setShowCalendarPopover] = useState(false);
 
-  // Captura de pantalla de Historias (solo para Historias de Casa Luifer o Montana)
-  const [storyCaptureUrl, setStoryCaptureUrl] = useState<string>("");
-  const [uploadingStory, setUploadingStory] = useState(false);
-  const storyInputRef = useRef<HTMLInputElement>(null);
+  // Tab activo: "diario" o "resumen_semanal"
+  const [activeTab, setActiveTab] = useState<"diario" | "resumen">("diario");
 
-  // Contadores diarios de los 8 formatos
+  // Contadores diarios
   const [counts, setCounts] = useState<CommunityDailyCounts>({
     historiaOrganica: 0,
     historiaProducto: 0,
@@ -254,23 +215,28 @@ export function CommunityDailyView({
     videoTestimonio: 0,
     carrusel: 0,
     post: 0,
+    tiktok: 0,
   });
 
-  // Logs guardados de la semana (Lunes a Viernes)
+  // Logs semanales
   const [weeklyLogs, setWeeklyLogs] = useState<Record<string, DailyCommunityLog>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  // Fechas de Lunes a Viernes
+  // Captura de pantalla de historias (SOLAMENTE historias)
+  const [storyCaptureUrl, setStoryCaptureUrl] = useState<string>("");
+  const [uploadingStory, setUploadingStory] = useState(false);
+  const [previewModal, setPreviewModal] = useState<string | null>(null);
+  const storyInputRef = useRef<HTMLInputElement>(null);
+
   const weekDays = useMemo(() => getMondayToFriday(selectedDate), [selectedDate]);
   const weekISOStrings = useMemo(() => weekDays.map((d) => toISODate(d)), [weekDays]);
   const currentIso = useMemo(() => toISODate(selectedDate), [selectedDate]);
 
-  // Cargar registro del día y registros de la semana
+  // Cargar registro de hoy y semana
   useEffect(() => {
     let active = true;
 
-    // 1. Cargar el log de hoy
     getDailyCommunityLog(currentIso, currentProjectName).then((log) => {
       if (!active) return;
       if (log) {
@@ -283,6 +249,7 @@ export function CommunityDailyView({
           videoTestimonio: log.formatVideoTestimonio ?? 0,
           carrusel: log.formatCarrusel ?? 0,
           post: log.formatPost ?? 0,
+          tiktok: log.formatTiktok ?? 0,
         });
       } else {
         setCounts({
@@ -294,26 +261,73 @@ export function CommunityDailyView({
           videoTestimonio: 0,
           carrusel: 0,
           post: 0,
+          tiktok: 0,
         });
       }
     });
 
-    // 2. Cargar semana (Lunes a Viernes)
     getWeeklyCommunityLogs(weekISOStrings, currentProjectName).then((res) => {
       if (!active) return;
       setWeeklyLogs(res);
     });
 
-    // 3. Cargar captura de Historias del día
+    // Cargar captura de historia guardada
     if (typeof window !== "undefined") {
-      const savedCapture = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}`) || "";
-      setStoryCaptureUrl(savedCapture);
+      const stored = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}`) || "";
+      setStoryCaptureUrl(stored);
     }
 
     return () => {
       active = false;
     };
   }, [currentIso, currentProjectName, weekISOStrings]);
+
+  const handleIncrement = (key: keyof CommunityDailyCounts) => {
+    setCounts((prev) => ({ ...prev, [key]: prev[key] + 1 }));
+  };
+
+  const handleDecrement = (key: keyof CommunityDailyCounts) => {
+    setCounts((prev) => ({ ...prev, [key]: Math.max(0, prev[key] - 1) }));
+  };
+
+  const handleSaveDay = async () => {
+    setIsSaving(true);
+    setSavedSuccess(false);
+
+    try {
+      const saved = await saveDailyCommunityLog({
+        date: currentIso,
+        cmId: "valentina-c",
+        cmName: "Lizz",
+        projectName: currentProjectName,
+        formatHistoriaOrganica: counts.historiaOrganica,
+        formatHistoriaProducto: counts.historiaProducto,
+        formatHistoriaInteractiva: counts.historiaInteractiva,
+        formatFeedOrganico: counts.feedOrganico,
+        formatFeedCreativo: counts.feedCreativo,
+        formatVideoTestimonio: counts.videoTestimonio,
+        formatCarrusel: counts.carrusel,
+        formatPost: counts.post,
+        formatTiktok: counts.tiktok,
+      });
+
+      setWeeklyLogs((prev) => ({
+        ...prev,
+        [currentIso]: saved,
+      }));
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("daily_log_updated"));
+      }
+
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 2500);
+    } catch (err) {
+      console.error("Error al guardar día:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleStoryUpload = async (file: File) => {
     setUploadingStory(true);
@@ -325,6 +339,7 @@ export function CommunityDailyView({
         window.dispatchEvent(new Event("daily_log_updated"));
       }
     };
+
     if (url) {
       saveUrl(url);
     } else {
@@ -345,93 +360,7 @@ export function CommunityDailyView({
     }
   };
 
-  // Manejo de conteos
-  const handleIncrement = (key: keyof CommunityDailyCounts) => {
-    setCounts((prev) => ({ ...prev, [key]: prev[key] + 1 }));
-  };
-
-  const handleDecrement = (key: keyof CommunityDailyCounts) => {
-    setCounts((prev) => ({ ...prev, [key]: Math.max(0, prev[key] - 1) }));
-  };
-
-  // Guardar día en Supabase y sincronizar estado
-  const handleSaveDay = async () => {
-    setIsSaving(true);
-    setSavedSuccess(false);
-
-    try {
-      const saved = await saveDailyCommunityLog({
-        date: currentIso,
-        cmId: "valentina-c",
-        cmName: "Lizz",
-        projectName: currentProjectName,
-        formatHistoriaOrganica: counts.historiaOrganica,
-        formatHistoriaProducto: counts.historiaProducto,
-        formatHistoriaInteractiva: counts.historiaInteractiva,
-        formatFeedOrganico: counts.feedOrganico,
-        formatFeedCreativo: counts.feedCreativo,
-        formatVideoTestimonio: counts.videoTestimonio,
-        formatCarrusel: counts.carrusel,
-        formatPost: counts.post,
-      });
-
-      // Actualizar mapa semanal de inmediato
-      setWeeklyLogs((prev) => ({
-        ...prev,
-        [currentIso]: saved,
-      }));
-
-      // Notificar al sidebar para actualizar el badge de hoy
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("daily_log_updated"));
-      }
-
-      setSavedSuccess(true);
-      setTimeout(() => setSavedSuccess(false), 2500);
-    } catch (err) {
-      console.error("Error al guardar día:", err);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Navegación de fechas
-  const handlePrevDay = () => {
-    setSelectedDate((prev) => {
-      const next = new Date(prev);
-      next.setDate(next.getDate() - 1);
-      return next;
-    });
-  };
-
-  const handleNextDay = () => {
-    setSelectedDate((prev) => {
-      const next = new Date(prev);
-      next.setDate(next.getDate() + 1);
-      return next;
-    });
-  };
-
-  // Cambio de proyecto
-  const handleSelectProject = (proj: string) => {
-    if (proj === currentProjectName) return;
-    // Resetear inmediatamente los datos de la pantalla a 0
-    setCounts({
-      historiaOrganica: 0,
-      historiaProducto: 0,
-      historiaInteractiva: 0,
-      feedOrganico: 0,
-      feedCreativo: 0,
-      videoTestimonio: 0,
-      carrusel: 0,
-      post: 0,
-    });
-    setWeeklyLogs({});
-    setCurrentProjectName(proj);
-    onProjectChange?.(proj);
-  };
-
-  // Cálculos acumulados de la semana (Lunes a Viernes)
+  // Totales acumulados de la semana por formato
   const weeklyTotalsByFormat = useMemo(() => {
     const totals: Record<keyof CommunityDailyCounts, number> = {
       historiaOrganica: 0,
@@ -442,11 +371,11 @@ export function CommunityDailyView({
       videoTestimonio: 0,
       carrusel: 0,
       post: 0,
+      tiktok: 0,
     };
 
-    weekISOStrings.forEach((d) => {
-      if (d === currentIso) {
-        // Usar los valores actuales en pantalla
+    weekISOStrings.forEach((dateKey) => {
+      if (dateKey === currentIso) {
         totals.historiaOrganica += counts.historiaOrganica;
         totals.historiaProducto += counts.historiaProducto;
         totals.historiaInteractiva += counts.historiaInteractiva;
@@ -455,8 +384,9 @@ export function CommunityDailyView({
         totals.videoTestimonio += counts.videoTestimonio;
         totals.carrusel += counts.carrusel;
         totals.post += counts.post;
+        totals.tiktok += counts.tiktok;
       } else {
-        const log = weeklyLogs[d];
+        const log = weeklyLogs[dateKey];
         if (log) {
           totals.historiaOrganica += log.formatHistoriaOrganica ?? 0;
           totals.historiaProducto += log.formatHistoriaProducto ?? 0;
@@ -466,6 +396,7 @@ export function CommunityDailyView({
           totals.videoTestimonio += log.formatVideoTestimonio ?? 0;
           totals.carrusel += log.formatCarrusel ?? 0;
           totals.post += log.formatPost ?? 0;
+          totals.tiktok += log.formatTiktok ?? 0;
         }
       }
     });
@@ -473,76 +404,68 @@ export function CommunityDailyView({
     return totals;
   }, [weekISOStrings, currentIso, counts, weeklyLogs]);
 
-  // Total de publicaciones hoy
   const totalHoy = useMemo(() => {
-    return Object.values(counts).reduce((a, b) => a + b, 0);
+    return Object.values(counts).reduce((acc, v) => acc + v, 0);
   }, [counts]);
 
-  // Total de publicaciones en la semana
   const totalSemana = useMemo(() => {
-    return Object.values(weeklyTotalsByFormat).reduce((a, b) => a + b, 0);
+    return Object.values(weeklyTotalsByFormat).reduce((acc, v) => acc + v, 0);
   }, [weeklyTotalsByFormat]);
 
   const metaSemanalTotal = PROJECT_TARGETS[currentProjectName] ?? 56;
-  const piezasRestantes = Math.max(0, metaSemanalTotal - totalSemana);
-  const avanceSemanalPct = Math.round((totalSemana / metaSemanalTotal) * 100);
+  const avanceSemanalPct = Math.min(100, Math.round((totalSemana / metaSemanalTotal) * 100));
 
-  // Formatos que se publicaron hoy (conteo > 0) para la card "Publicado hoy"
-  const publicadosHoy = useMemo(() => {
-    return FORMATS.filter((f) => counts[f.key] > 0);
-  }, [counts]);
-
-  // Rango de texto de la semana (ej: NOV 10-14)
-  const weekLabelRange = useMemo(() => {
-    if (weekDays.length < 5) return "";
-    const first = weekDays[0];
-    const last = weekDays[4];
-    const month = MONTHS_ES[first.getMonth()].toUpperCase();
-    return `${month} ${first.getDate()}-${last.getDate()}`;
-  }, [weekDays]);
-
-  // Formato de fecha legible para el navbar (ej: "Lunes, 10 nov")
-  const dateFormattedNavbar = useMemo(() => {
-    const dayName = DAYS_ES[selectedDate.getDay()];
-    const dayNum = selectedDate.getDate();
-    const monthName = MONTHS_ES[selectedDate.getMonth()];
-    return `${dayName}, ${dayNum} ${monthName}`;
-  }, [selectedDate]);
-
-  // Donut SVG circumference calculation
-  const radius = 38;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset =
-    circumference - (Math.min(100, avanceSemanalPct) / 100) * circumference;
+  // Título dinámico para el formato TikTok según la marca
+  const tiktokLabel =
+    currentProjectName === "Casa Luifer" ? "Videos TikTok Casa Luifer" : "Videos TikTok Montana";
 
   return (
-    <div className="flex-1 h-full flex flex-col min-w-0 bg-bg overflow-y-auto">
-      {/* Top Navbar */}
-      <header className="h-[70px] shrink-0 bg-surface border-b border-[var(--border)] px-8 flex items-center justify-between gap-4">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-[13px]">
-          <span className="text-text-tertiary">Mi espacio</span>
-          <span className="text-text-tertiary">›</span>
-          <span className="text-text-secondary">{currentProjectName}</span>
-          <span className="text-text-tertiary">›</span>
-          <span className="font-bold text-text-primary">Diario de hoy</span>
+    <div className="flex-1 flex flex-col min-w-0 bg-bg overflow-y-auto pb-12">
+      {/* ── HEADER SUPERIOR ── */}
+      <header className="h-[60px] bg-surface border-b border-[var(--border)] px-6 lg:px-8 flex items-center justify-between shrink-0 sticky top-0 z-20">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-[12.5px] font-medium text-text-tertiary">
+            <span>Mi espacio</span>
+            <span>›</span>
+            <span className="text-text-primary font-semibold">Diario de hoy</span>
+          </div>
+
+          {/* Toggle de vistas: Diario vs Resumen Semanal */}
+          <div className="hidden sm:flex items-center p-0.5 rounded-xl bg-surface-2 ml-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab("diario")}
+              className={`px-3 py-1 rounded-lg text-[12px] font-semibold transition cursor-pointer ${
+                activeTab === "diario" ? "bg-surface text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-secondary"
+              }`}
+            >
+              Registro diario
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("resumen")}
+              className={`px-3 py-1 rounded-lg text-[12px] font-semibold transition cursor-pointer ${
+                activeTab === "resumen" ? "bg-surface text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-secondary"
+              }`}
+            >
+              Resumen semanal
+            </button>
+          </div>
         </div>
 
-        {/* Acciones del Navbar */}
+        {/* Controles de marca, fecha y guardado */}
         <div className="flex items-center gap-3">
-          {/* Switch de Marcas (Pill Toggle) */}
-          <div className="h-9 p-1 rounded-full bg-surface-2 border border-[var(--border)] flex items-center gap-1">
+          {/* Selector de Proyecto */}
+          <div className="flex items-center bg-surface-2 p-0.5 rounded-xl">
             {["Casa Luifer", "Montana"].map((proj) => {
-              const isActive = currentProjectName === proj;
+              const isActive = proj === currentProjectName;
               return (
                 <button
                   key={proj}
                   type="button"
                   onClick={() => handleSelectProject(proj)}
-                  className={`h-7 px-3.5 rounded-full text-[12px] font-semibold transition cursor-pointer ${
-                    isActive
-                      ? "bg-surface text-text-primary shadow-xs"
-                      : "text-text-tertiary hover:text-text-secondary"
+                  className={`h-7 px-3 rounded-lg text-[12px] font-semibold transition cursor-pointer ${
+                    isActive ? "bg-surface text-text-primary shadow-xs" : "text-text-tertiary hover:text-text-secondary"
                   }`}
                 >
                   {proj}
@@ -551,38 +474,84 @@ export function CommunityDailyView({
             })}
           </div>
 
-          {/* Navegador de Fecha */}
-          <div className="flex items-center bg-surface border border-[var(--border)] rounded-xl h-9 px-2 shadow-2xs">
-            <button
-              type="button"
-              onClick={handlePrevDay}
-              className="p-1 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
-              title="Día anterior"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+          {/* CALENDARIO Y NAVEGADOR DE FECHA */}
+          <div className="relative">
+            <div className="flex items-center bg-surface border border-[var(--border)] rounded-xl h-9 px-1.5 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => {
+                  const prev = new Date(selectedDate);
+                  prev.setDate(prev.getDate() - 1);
+                  setSelectedDate(prev);
+                }}
+                className="p-1 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
+                title="Día anterior"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
 
-            <div className="flex items-center gap-2 px-2 text-[12.5px] font-semibold text-text-primary select-none">
-              <Calendar className="w-3.5 h-3.5 text-pink-500" />
-              <span>{dateFormattedNavbar}</span>
+              <button
+                type="button"
+                onClick={() => setShowCalendarPopover(!showCalendarPopover)}
+                className="flex items-center gap-2 px-2 text-[12px] font-semibold text-text-primary hover:text-pink-500 transition cursor-pointer"
+              >
+                <CalendarIcon className="w-3.5 h-3.5 text-pink-500" />
+                <span className="capitalize">
+                  {selectedDate.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const next = new Date(selectedDate);
+                  next.setDate(next.getDate() + 1);
+                  setSelectedDate(next);
+                }}
+                className="p-1 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
+                title="Día siguiente"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
 
-            <button
-              type="button"
-              onClick={handleNextDay}
-              className="p-1 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
-              title="Día siguiente"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            {/* POPOVER CALENDARIO */}
+            {showCalendarPopover && (
+              <div className="absolute right-0 mt-2 z-50 bg-surface rounded-2xl p-4 shadow-xl border border-[var(--border)] w-64">
+                <div className="text-[11px] font-bold text-text-tertiary uppercase tracking-wider mb-2">
+                  Seleccionar día
+                </div>
+                <input
+                  type="date"
+                  value={currentIso}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setSelectedDate(new Date(e.target.value + "T12:00:00"));
+                      setShowCalendarPopover(false);
+                    }
+                  }}
+                  className="w-full text-xs p-2.5 bg-surface-2 rounded-xl mb-3 text-text-primary focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDate(new Date());
+                    setShowCalendarPopover(false);
+                  }}
+                  className="w-full text-center text-xs font-semibold bg-pink-500 text-white hover:bg-pink-600 py-2 rounded-xl transition shadow-xs cursor-pointer"
+                >
+                  Ir a Hoy
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Botón Guardar Día */}
+          {/* Botón Guardar */}
           <button
             type="button"
             onClick={handleSaveDay}
             disabled={isSaving}
-            className={`h-9 px-4 rounded-xl text-[12.5px] font-semibold flex items-center gap-2 transition shadow-sm cursor-pointer ${
+            className={`h-9 px-4 rounded-xl text-[12px] font-semibold flex items-center gap-2 transition shadow-xs cursor-pointer ${
               savedSuccess
                 ? "bg-emerald-600 text-white"
                 : "bg-[#111113] text-white dark:bg-white dark:text-[#111113] hover:opacity-90 active:scale-95"
@@ -608,351 +577,547 @@ export function CommunityDailyView({
         </div>
       </header>
 
-      {/* Contenido Principal */}
-      <div className="p-8 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
+      {/* ── CONTENIDO PRINCIPAL ── */}
+      <div className="p-6 lg:p-8 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
         {/* Banner Hero */}
-        <div className="rounded-2xl bg-surface border border-[var(--border)] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xs">
+        <div className="rounded-2xl bg-surface p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
           <div className="flex items-center gap-4">
-            {/* Avatar Círculo Rosa Iniciales */}
-            <div className="w-12 h-12 rounded-full bg-pink-100/70 border border-pink-200 flex items-center justify-center shrink-0">
-              <span className="text-[15px] font-bold text-pink-600">
-                {currentProjectName === "Casa Luifer" ? "CL" : "MO"}
-              </span>
+            <div className="w-12 h-12 rounded-2xl bg-pink-500/10 text-pink-500 flex items-center justify-center font-bold text-base shrink-0">
+              {currentProjectName === "Casa Luifer" ? "CL" : "MT"}
             </div>
-            <div className="flex flex-col gap-0.5">
+            <div>
               <h1 className="text-[20px] font-bold text-text-primary tracking-tight">
-                Lo que publicaste en Instagram hoy
+                {activeTab === "diario" ? "Registro diario de publicaciones" : "Resumen Semanal de Publicaciones"}
               </h1>
               <p className="text-[13px] text-text-secondary">
-                {currentProjectName} · solo Instagram · meta semanal: {metaSemanalTotal} piezas
+                {currentProjectName} · Meta semanal: {metaSemanalTotal} piezas ({metaSemanalTotal - 5} Instagram + 5 TikTok)
               </p>
             </div>
           </div>
 
-          {/* 3 Pills de resumen en Hero */}
-          <div className="flex items-center gap-3 shrink-0 self-stretch md:self-auto justify-end">
-            <div className="w-[88px] h-[64px] rounded-xl bg-surface-2/60 border border-[var(--border)] flex flex-col items-center justify-center">
-              <span className="text-[20px] font-bold text-pink-500 leading-tight">
-                {totalHoy}
-              </span>
-              <span className="text-[10.5px] font-medium text-text-tertiary">
-                Hoy
-              </span>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="w-24 h-16 rounded-xl bg-surface-2 p-2 flex flex-col items-center justify-center">
+              <span className="text-[22px] font-bold text-pink-500 leading-none">{totalHoy}</span>
+              <span className="text-[11px] font-medium text-text-tertiary mt-1">Hoy</span>
             </div>
-
-            <div className="w-[88px] h-[64px] rounded-xl bg-surface-2/60 border border-[var(--border)] flex flex-col items-center justify-center">
-              <span className="text-[20px] font-bold text-text-primary leading-tight">
-                {totalSemana}
-              </span>
-              <span className="text-[10.5px] font-medium text-text-tertiary">
-                Semana
-              </span>
+            <div className="w-24 h-16 rounded-xl bg-surface-2 p-2 flex flex-col items-center justify-center">
+              <span className="text-[22px] font-bold text-text-primary leading-none">{totalSemana}</span>
+              <span className="text-[11px] font-medium text-text-tertiary mt-1">Semana</span>
             </div>
-
-            <div className="w-[88px] h-[64px] rounded-xl bg-surface-2/60 border border-[var(--border)] flex flex-col items-center justify-center">
-              <span className="text-[20px] font-bold text-emerald-500 leading-tight">
-                {avanceSemanalPct}%
-              </span>
-              <span className="text-[10.5px] font-medium text-text-tertiary">
-                Meta
-              </span>
+            <div className="w-24 h-16 rounded-xl bg-surface-2 p-2 flex flex-col items-center justify-center">
+              <span className="text-[22px] font-bold text-emerald-500 leading-none">{avanceSemanalPct}%</span>
+              <span className="text-[11px] font-medium text-text-tertiary mt-1">Meta</span>
             </div>
           </div>
         </div>
 
-        {/* Sección de 2 Columnas: Tabla de Formatos (Izquierda) + Widgets (Derecha) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Columna Izquierda: Tabla de Formatos (8 cols) */}
-          <div className="lg:col-span-8 flex flex-col gap-3">
-            {/* Título de la tabla */}
-            <div className="text-[11px] font-bold tracking-wider text-text-tertiary uppercase">
-              Formatos de {currentProjectName} · Metas semanales
-            </div>
-
-            {/* Contenedor tipo tabla redondeado */}
-            <div className="rounded-2xl bg-surface border border-[var(--border)] overflow-hidden shadow-2xs">
-              {/* Encabezado de la tabla */}
-              <div className="grid grid-cols-12 px-6 py-3.5 bg-surface-2/30 border-b border-[var(--border)] text-[10.5px] font-bold text-text-tertiary uppercase tracking-wider">
-                <div className="col-span-4">Formato</div>
-                <div className="col-span-2 text-center">Meta Sem.</div>
-                <div className="col-span-2 text-center">Hoy</div>
-                <div className="col-span-2 text-center">Semana</div>
-                <div className="col-span-2 text-right">Progreso</div>
-              </div>
-
-              {/* Filas de Formatos */}
-              <div className="divide-y divide-[var(--border)]">
-                {FORMATS.map((fmt) => {
-                  const Icon = fmt.icon;
-                  const target = fmt.weeklyTargets[currentProjectName] ?? 5;
-                  const hoyVal = counts[fmt.key];
-                  const semanaVal = weeklyTotalsByFormat[fmt.key];
-                  const pct = target > 0 ? Math.round((semanaVal / target) * 100) : 0;
-
-                  return (
-                    <div
-                      key={fmt.key}
-                      className="grid grid-cols-12 px-6 py-3.5 items-center hover:bg-surface-2/20 transition"
-                    >
-                      {/* Columna Formato con Icono */}
-                      <div className="col-span-4 flex items-center gap-3">
-                        <div
-                          className={`w-8 h-8 rounded-lg ${fmt.iconBg} flex items-center justify-center shrink-0`}
-                        >
-                          <Icon className={`w-4 h-4 ${fmt.iconColor}`} />
-                        </div>
-                        <span className="text-[13px] font-medium text-text-primary">
-                          {fmt.label}
-                        </span>
-                      </div>
-
-                      {/* Meta Semanal */}
-                      <div className="col-span-2 text-center text-[13px] font-medium text-text-secondary">
-                        {target}
-                      </div>
-
-                      {/* Selector Hoy: [-] [valor] [+] */}
-                      <div className="col-span-2 flex items-center justify-center">
-                        <div className="inline-flex items-center rounded-lg bg-surface-2/60 border border-[var(--border)] p-0.5">
-                          <button
-                            type="button"
-                            onClick={() => handleDecrement(fmt.key)}
-                            className="w-6 h-6 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface transition cursor-pointer"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <span className="w-8 text-center text-[13px] font-bold text-text-primary select-none">
-                            {hoyVal}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleIncrement(fmt.key)}
-                            className="w-6 h-6 rounded bg-[#111113] flex items-center justify-center text-white hover:opacity-90 active:scale-95 transition cursor-pointer"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Semana Acumulada */}
-                      <div className="col-span-2 text-center text-[13px] font-bold text-text-primary">
-                        {semanaVal} / {target}
-                      </div>
-
-                      {/* Progreso: Barra + % */}
-                      <div className="col-span-2 flex items-center justify-end gap-3">
-                        <div className="w-20 h-1.5 rounded-full bg-surface-2 overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-300"
-                            style={{
-                              width: `${Math.min(100, pct)}%`,
-                              backgroundColor: fmt.barColor,
-                            }}
-                          />
-                        </div>
-                        <span className="text-[11.5px] font-medium text-text-tertiary w-8 text-right">
-                          {pct}%
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Fila Total Semanal */}
-                <div className="grid grid-cols-12 px-6 py-4 items-center bg-surface-2/30 font-semibold">
-                  <div className="col-span-4 flex items-center gap-2.5">
-                    <span className="text-[14px]">🚩</span>
-                    <span className="text-[13px] font-bold text-text-primary">
-                      Total semanal
-                    </span>
-                  </div>
-
-                  {/* Meta Total en Rosa */}
-                  <div className="col-span-2 text-center text-[13.5px] font-bold text-pink-500">
-                    {metaSemanalTotal}
-                  </div>
-
-                  {/* Hoy Total */}
-                  <div className="col-span-2 text-center text-[13px] font-bold text-text-primary">
-                    {totalHoy} hoy
-                  </div>
-
-                  {/* Semana Total en Rosa */}
-                  <div className="col-span-2 text-center text-[13.5px] font-bold text-pink-500">
-                    {totalSemana} / {metaSemanalTotal}
-                  </div>
-
-                  {/* Progreso Total */}
-                  <div className="col-span-2 flex items-center justify-end gap-3">
-                    <div className="w-20 h-2 rounded-full bg-surface-2 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-pink-500 transition-all duration-300"
-                        style={{
-                          width: `${Math.min(100, avanceSemanalPct)}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="text-[12px] font-bold text-pink-500 w-8 text-right">
-                      {avanceSemanalPct}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Columna Derecha: Widgets (4 cols) */}
-          <div className="lg:col-span-4 flex flex-col gap-5">
-            {/* Card 1: ESTA SEMANA (Lunes a Viernes) */}
-            <div className="rounded-2xl bg-surface border border-[var(--border)] p-6 flex flex-col gap-5 shadow-2xs">
-              {/* Header */}
-              <div className="flex items-center gap-2 text-[11px] font-bold text-text-tertiary tracking-wider uppercase">
-                <Calendar className="w-3.5 h-3.5 text-pink-500" />
-                <span>Esta semana · {weekLabelRange}</span>
-              </div>
-
-              {/* Donut Chart de Progreso Semanal */}
-              <div className="flex flex-col items-center justify-center py-2">
-                <div className="relative w-36 h-36 flex items-center justify-center">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    {/* Círculo de fondo tenue */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r={radius}
-                      fill="transparent"
-                      stroke="currentColor"
-                      className="text-pink-100 dark:text-pink-950/40"
-                      strokeWidth="8"
-                    />
-                    {/* Círculo de progreso en rosa */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r={radius}
-                      fill="transparent"
-                      stroke="#ec4899"
-                      strokeWidth="8"
-                      strokeDasharray={circumference}
-                      strokeDashoffset={strokeDashoffset}
-                      strokeLinecap="round"
-                      className="transition-all duration-500 ease-out"
-                    />
-                  </svg>
-
-                  {/* Texto dentro del Donut */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
-                    <span className="text-[20px] font-bold text-text-primary leading-tight">
-                      {totalSemana} / {metaSemanalTotal}
-                    </span>
-                    <span className="text-[10px] text-text-tertiary font-medium">
-                      piezas publicadas
-                    </span>
-                    <span className="text-[10.5px] font-semibold text-amber-500 mt-0.5">
-                      {piezasRestantes} piezas restantes
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Fila de Días: Lunes a Viernes exclusivamente */}
-              <div className="grid grid-cols-5 gap-2">
-                {weekDays.map((dayDate, idx) => {
-                  const dayIso = toISODate(dayDate);
-                  const isCurrentSelected = dayIso === currentIso;
-
-                  // Calcular publicaciones de este día
-                  let dayPublications = 0;
-                  if (dayIso === currentIso) {
-                    dayPublications = totalHoy;
-                  } else if (weeklyLogs[dayIso]) {
-                    const l = weeklyLogs[dayIso];
-                    dayPublications =
-                      (l.formatHistoriaOrganica ?? 0) +
+        {/* SELECTOR DE DÍAS L-V */}
+        <div className="grid grid-cols-5 gap-2.5">
+          {weekDays.map((d, idx) => {
+            const iso = weekISOStrings[idx];
+            const isSelected = iso === currentIso;
+            const count = iso === currentIso
+              ? counts.historiaOrganica +
+                counts.historiaProducto +
+                counts.historiaInteractiva +
+                counts.feedOrganico +
+                counts.feedCreativo +
+                counts.videoTestimonio +
+                counts.carrusel +
+                counts.post +
+                counts.tiktok
+              : (() => {
+                  const l = weeklyLogs[iso];
+                  return l
+                    ? (l.formatHistoriaOrganica ?? 0) +
                       (l.formatHistoriaProducto ?? 0) +
                       (l.formatHistoriaInteractiva ?? 0) +
                       (l.formatFeedOrganico ?? 0) +
                       (l.formatFeedCreativo ?? 0) +
                       (l.formatVideoTestimonio ?? 0) +
                       (l.formatCarrusel ?? 0) +
-                      (l.formatPost ?? 0);
-                  }
+                      (l.formatPost ?? 0) +
+                      (l.formatTiktok ?? 0)
+                    : 0;
+                })();
+
+            return (
+              <button
+                key={iso}
+                type="button"
+                onClick={() => setSelectedDate(new Date(iso + "T12:00:00"))}
+                className={`rounded-xl p-3 flex flex-col items-center gap-1 transition cursor-pointer shadow-2xs ${
+                  isSelected
+                    ? "bg-pink-500 text-white font-bold"
+                    : "bg-surface hover:bg-surface-2 text-text-secondary"
+                }`}
+              >
+                <span className="text-[11px] uppercase tracking-wider">{DAY_LETTERS[idx]}</span>
+                <span className={`text-[17px] font-bold ${isSelected ? "text-white" : "text-text-primary"}`}>
+                  {count}
+                </span>
+                <span className={`text-[10px] ${isSelected ? "text-white/80" : "text-text-tertiary"}`}>
+                  {d.getDate()} {MONTH_NAMES[d.getMonth()].slice(0, 3)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── VISTA 1: REGISTRO DIARIO ── */}
+        {activeTab === "diario" && (
+          <div className="flex flex-col gap-6">
+            {/* SECCIÓN 1: HISTORIAS (CON CAPTURA DE PANTALLA) */}
+            <div className="rounded-2xl bg-surface p-5 shadow-sm flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-pink-500/10 text-pink-500 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-[14px] font-bold text-text-primary">
+                      1. Historias Instagram · {currentProjectName}
+                    </h2>
+                    <p className="text-[11px] text-text-tertiary">
+                      Registra los formatos y adjunta la captura de historias de hoy
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-pink-500/10 text-pink-500">
+                  {counts.historiaOrganica + counts.historiaProducto + counts.historiaInteractiva} historias hoy
+                </span>
+              </div>
+
+              {/* Cards de formatos de historias */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {ALL_FORMATS.filter((f) => f.category === "historias").map((fmt) => {
+                  const Icon = fmt.icon;
+                  const target = fmt.weeklyTargets[currentProjectName] ?? 5;
+                  const hoyVal = counts[fmt.key];
+                  const semanaVal = weeklyTotalsByFormat[fmt.key];
 
                   return (
-                    <button
-                      key={dayIso}
-                      type="button"
-                      onClick={() => setSelectedDate(dayDate)}
-                      className={`h-[64px] rounded-xl flex flex-col items-center justify-center gap-1 transition cursor-pointer border ${
-                        isCurrentSelected
-                          ? "bg-pink-50 dark:bg-pink-950/40 border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-400"
-                          : "bg-surface-2/40 border-[var(--border)] text-text-secondary hover:bg-surface-2"
+                    <div
+                      key={fmt.key}
+                      className={`rounded-xl p-3.5 flex flex-col justify-between gap-3 transition shadow-2xs ${
+                        hoyVal > 0 ? "bg-pink-500/10" : "bg-surface-2/60"
                       }`}
                     >
-                      <span className="text-[11px] font-bold text-text-tertiary">
-                        {DAY_INITIALS[idx]}
-                      </span>
-                      <span
-                        className={`text-[15px] font-bold ${
-                          isCurrentSelected ? "text-pink-600 dark:text-pink-400" : "text-text-primary"
-                        }`}
-                      >
-                        {dayPublications}
-                      </span>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-surface flex items-center justify-center shrink-0 shadow-2xs">
+                            <Icon className="w-3.5 h-3.5" style={{ color: fmt.color }} />
+                          </div>
+                          <span className="text-[12.5px] font-bold text-text-primary leading-tight">
+                            {fmt.label}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-semibold text-text-tertiary shrink-0">
+                          {semanaVal}/{target}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between bg-surface rounded-xl p-1 shadow-2xs">
+                        <button
+                          type="button"
+                          onClick={() => handleDecrement(fmt.key)}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-2 transition cursor-pointer"
+                        >
+                          <Minus className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="text-[17px] font-bold text-text-primary select-none">
+                          {hoyVal}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleIncrement(fmt.key)}
+                          className="w-8 h-8 rounded-lg bg-[#111113] dark:bg-white text-white dark:text-[#111113] flex items-center justify-center hover:opacity-90 active:scale-95 transition cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* CAPTURA DE PANTALLA EXCLUSIVA DE HISTORIAS */}
+              <div className="pt-3 border-t border-[var(--border)]">
+                <input
+                  ref={storyInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleStoryUpload(file);
+                    e.target.value = "";
+                  }}
+                />
+
+                {storyCaptureUrl ? (
+                  <div className="rounded-xl bg-surface-2/70 p-3 flex items-center justify-between gap-3 shadow-2xs">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={storyCaptureUrl}
+                        alt="Captura Historias"
+                        className="w-14 h-14 rounded-lg object-cover shrink-0 cursor-pointer border border-border"
+                        onClick={() => setPreviewModal(storyCaptureUrl)}
+                      />
+                      <div className="min-w-0">
+                        <div className="text-[12.5px] font-bold text-text-primary flex items-center gap-1.5">
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
+                          Captura de Historias ({currentProjectName})
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewModal(storyCaptureUrl)}
+                          className="text-[11px] text-pink-500 hover:underline flex items-center gap-1 mt-0.5 cursor-pointer"
+                        >
+                          <Eye className="w-3 h-3" /> Ver en grande
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleRemoveStoryCapture}
+                      className="h-8 px-2.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center gap-1.5 text-[11px] font-semibold transition cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Cambiar</span>
                     </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => storyInputRef.current?.click()}
+                    disabled={uploadingStory}
+                    className="w-full py-3.5 px-4 rounded-xl bg-surface-2/60 hover:bg-surface-2 text-text-secondary hover:text-text-primary flex items-center justify-center gap-2 text-[12px] font-semibold transition cursor-pointer border border-dashed border-border"
+                  >
+                    {uploadingStory ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-pink-500" />
+                        <span>Subiendo captura de historias...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 text-pink-500" />
+                        <span>Adjuntar captura de pantalla de las Historias publicadas hoy</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* SECCIÓN 2: FEED INSTAGRAM */}
+            <div className="rounded-2xl bg-surface p-5 shadow-sm flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                    <LayoutGrid className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-[14px] font-bold text-text-primary">
+                      2. Feed Instagram · {currentProjectName}
+                    </h2>
+                    <p className="text-[11px] text-text-tertiary">
+                      Videos orgánicos, creativos, testimonios, carruseles y posts
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-500">
+                  {counts.feedOrganico + counts.feedCreativo + counts.videoTestimonio + counts.carrusel + counts.post} piezas hoy
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {ALL_FORMATS.filter((f) => f.category === "feed").map((fmt) => {
+                  const Icon = fmt.icon;
+                  const target = fmt.weeklyTargets[currentProjectName] ?? 5;
+                  const hoyVal = counts[fmt.key];
+                  const semanaVal = weeklyTotalsByFormat[fmt.key];
+
+                  return (
+                    <div
+                      key={fmt.key}
+                      className={`rounded-xl p-3 flex flex-col justify-between gap-3 transition shadow-2xs ${
+                        hoyVal > 0 ? "bg-indigo-500/10" : "bg-surface-2/60"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-6 h-6 rounded-lg bg-surface flex items-center justify-center shrink-0 shadow-2xs">
+                            <Icon className="w-3.5 h-3.5" style={{ color: fmt.color }} />
+                          </div>
+                          <span className="text-[12px] font-bold text-text-primary leading-tight truncate">
+                            {fmt.label}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-semibold text-text-tertiary shrink-0">
+                          {semanaVal}/{target}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between bg-surface rounded-xl p-1 shadow-2xs">
+                        <button
+                          type="button"
+                          onClick={() => handleDecrement(fmt.key)}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-2 transition cursor-pointer"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-[16px] font-bold text-text-primary select-none">
+                          {hoyVal}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleIncrement(fmt.key)}
+                          className="w-7 h-7 rounded-lg bg-[#111113] dark:bg-white text-white dark:text-[#111113] flex items-center justify-center hover:opacity-90 active:scale-95 transition cursor-pointer"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Card 2: ALCANCE */}
-            <div className="rounded-2xl bg-pink-50/50 dark:bg-pink-950/20 border border-pink-100 dark:border-pink-900/40 p-5 flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-[11px] font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider">
-                <Eye className="w-3.5 h-3.5 text-pink-500" />
-                <span>Alcance</span>
-              </div>
-              <p className="text-[12.5px] text-pink-950 dark:text-pink-200 font-medium leading-relaxed">
-                Solo Instagram/facebook. No incluye TikTok por el momento
-              </p>
-            </div>
-
-            {/* Card 3: PUBLICADO HOY */}
-            <div className="rounded-2xl bg-surface border border-[var(--border)] p-6 flex flex-col gap-3.5 shadow-2xs">
-              <div className="flex items-center gap-2 text-[11px] font-bold text-text-tertiary tracking-wider uppercase">
-                <InstagramIcon className="w-3.5 h-3.5 text-pink-500" />
-                <span>Publicado hoy</span>
-              </div>
-
-              {publicadosHoy.length > 0 ? (
-                <div className="flex flex-col gap-2.5">
-                  {publicadosHoy.map((fmt) => (
-                    <div
-                      key={fmt.key}
-                      className="flex items-center gap-2 text-[13px] text-text-secondary"
-                    >
-                      <span
-                        className="w-2 h-2 rounded-full shrink-0"
-                        style={{ backgroundColor: fmt.barColor }}
-                      />
-                      <span className="font-medium text-text-primary">
-                        {fmt.label}
-                      </span>
-                      <span className="text-[11px] text-text-tertiary ml-auto font-semibold">
-                        {counts[fmt.key]}x
-                      </span>
-                    </div>
-                  ))}
+            {/* SECCIÓN 3: TIKTOK (NUEVO CREATIVO POR PROYECTO) */}
+            <div className="rounded-2xl bg-surface p-5 shadow-sm flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
+                    <Video className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-[14px] font-bold text-text-primary">
+                      3. TikTok · {currentProjectName}
+                    </h2>
+                    <p className="text-[11px] text-text-tertiary">
+                      Registro de videos publicados en la cuenta de TikTok
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <p className="text-[12px] text-text-tertiary font-medium">
-                  Aún no has registrado publicaciones hoy. Usa los controles [+] de la tabla para registrar.
-                </p>
-              )}
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-500">
+                  {counts.tiktok} tiktok hoy
+                </span>
+              </div>
+
+              <div className="max-w-md">
+                <div
+                  className={`rounded-xl p-4 flex items-center justify-between gap-4 transition shadow-2xs ${
+                    counts.tiktok > 0 ? "bg-cyan-500/10" : "bg-surface-2/60"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-surface flex items-center justify-center shrink-0 shadow-2xs text-cyan-500">
+                      <Video className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-bold text-text-primary">
+                        {tiktokLabel}
+                      </div>
+                      <div className="text-[11px] text-text-tertiary">
+                        Semana: {weeklyTotalsByFormat.tiktok} / 5 videos
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center bg-surface rounded-xl p-1 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => handleDecrement("tiktok")}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-2 transition cursor-pointer"
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="w-9 text-center text-[17px] font-bold text-text-primary select-none">
+                      {counts.tiktok}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleIncrement("tiktok")}
+                      className="w-8 h-8 rounded-lg bg-[#111113] dark:bg-white text-white dark:text-[#111113] flex items-center justify-center hover:opacity-90 active:scale-95 transition cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* ── VISTA 2: RESUMEN SEMANAL CLARO Y CON NÚMEROS PUNTUALES ── */}
+        {activeTab === "resumen" && (
+          <div className="flex flex-col gap-6">
+            <div className="rounded-2xl bg-surface p-6 shadow-sm flex flex-col gap-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[var(--border)]">
+                <div>
+                  <h2 className="text-[16px] font-bold text-text-primary">
+                    Resumen Semanal Consolidado · {currentProjectName}
+                  </h2>
+                  <p className="text-[12px] text-text-tertiary">
+                    Auditoría puntual de cada formato y día de la semana
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="px-3 py-1.5 rounded-xl bg-pink-500/10 text-pink-500 font-bold text-[12px]">
+                    Total: {totalSemana} de {metaSemanalTotal} piezas ({avanceSemanalPct}%)
+                  </div>
+                </div>
+              </div>
+
+              {/* TABLA RESUMEN CON NÚMEROS PUNTUALES */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[12.5px]">
+                  <thead>
+                    <tr className="border-b border-[var(--border)] text-text-tertiary uppercase text-[10px] tracking-wider">
+                      <th className="py-3 px-3">Formato creativo</th>
+                      {weekDays.map((d, i) => (
+                        <th key={d.toISOString()} className="py-3 px-2 text-center">
+                          {DAY_LETTERS[i]} ({d.getDate()})
+                        </th>
+                      ))}
+                      <th className="py-3 px-3 text-center font-bold text-text-primary">Semana</th>
+                      <th className="py-3 px-3 text-center">Meta</th>
+                      <th className="py-3 px-3 text-right">Cumplimiento</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)]">
+                    {ALL_FORMATS.map((fmt) => {
+                      const target = fmt.weeklyTargets[currentProjectName] ?? 5;
+                      const totalFormat = weeklyTotalsByFormat[fmt.key];
+                      const pct = target > 0 ? Math.min(100, Math.round((totalFormat / target) * 100)) : 0;
+                      const label = fmt.key === "tiktok" ? tiktokLabel : fmt.label;
+
+                      return (
+                        <tr key={fmt.key} className="hover:bg-surface-2/40 transition">
+                          <td className="py-3 px-3 font-semibold text-text-primary flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: fmt.color }} />
+                            <span>{label}</span>
+                          </td>
+                          {weekISOStrings.map((iso) => {
+                            const isSelected = iso === currentIso;
+                            const count = isSelected
+                              ? counts[fmt.key]
+                              : (weeklyLogs[iso] as any)?.[`format${fmt.key.charAt(0).toUpperCase() + fmt.key.slice(1)}`] ??
+                                (weeklyLogs[iso] as any)?.[fmt.key] ??
+                                0;
+
+                            return (
+                              <td key={iso} className="py-3 px-2 text-center">
+                                <span
+                                  className={`inline-block w-7 py-0.5 rounded-md text-[11.5px] font-bold ${
+                                    count > 0 ? "bg-surface-2 text-text-primary" : "text-text-tertiary"
+                                  }`}
+                                >
+                                  {count}
+                                </span>
+                              </td>
+                            );
+                          })}
+                          <td className="py-3 px-3 text-center font-bold text-text-primary">
+                            {totalFormat}
+                          </td>
+                          <td className="py-3 px-3 text-center font-medium text-text-secondary">
+                            {target}
+                          </td>
+                          <td className="py-3 px-3 text-right font-bold text-pink-500">
+                            {pct}%
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {/* Fila Total General */}
+                    <tr className="bg-surface-2/60 font-bold text-text-primary text-[13px]">
+                      <td className="py-3.5 px-3">TOTAL GENERAL</td>
+                      {weekDays.map((_, i) => {
+                        const iso = weekISOStrings[i];
+                        const count = iso === currentIso
+                          ? counts.historiaOrganica +
+                            counts.historiaProducto +
+                            counts.historiaInteractiva +
+                            counts.feedOrganico +
+                            counts.feedCreativo +
+                            counts.videoTestimonio +
+                            counts.carrusel +
+                            counts.post +
+                            counts.tiktok
+                          : (() => {
+                              const l = weeklyLogs[iso];
+                              return l
+                                ? (l.formatHistoriaOrganica ?? 0) +
+                                  (l.formatHistoriaProducto ?? 0) +
+                                  (l.formatHistoriaInteractiva ?? 0) +
+                                  (l.formatFeedOrganico ?? 0) +
+                                  (l.formatFeedCreativo ?? 0) +
+                                  (l.formatVideoTestimonio ?? 0) +
+                                  (l.formatCarrusel ?? 0) +
+                                  (l.formatPost ?? 0) +
+                                  (l.formatTiktok ?? 0)
+                                : 0;
+                            })();
+                        return (
+                          <td key={iso} className="py-3.5 px-2 text-center text-pink-500 font-bold">
+                            {count}
+                          </td>
+                        );
+                      })}
+                      <td className="py-3.5 px-3 text-center text-[15px] text-pink-500 font-bold">
+                        {totalSemana}
+                      </td>
+                      <td className="py-3.5 px-3 text-center text-[14px]">
+                        {metaSemanalTotal}
+                      </td>
+                      <td className="py-3.5 px-3 text-right text-[14px] text-emerald-500 font-bold">
+                        {avanceSemanalPct}%
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Modal para ver captura de Historias en pantalla completa */}
+      {previewModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setPreviewModal(null)}
+        >
+          <div
+            className="relative max-w-lg w-full bg-surface rounded-3xl p-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3 px-1">
+              <span className="text-sm font-bold text-text-primary">
+                Captura de Historias · {currentProjectName}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewModal(null)}
+                className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewModal}
+              alt="Preview Historias"
+              className="w-full max-h-[75vh] object-contain rounded-2xl bg-black/5"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-

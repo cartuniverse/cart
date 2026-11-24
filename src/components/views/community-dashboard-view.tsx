@@ -3,14 +3,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Bell,
-  Calendar,
+  Calendar as CalendarIcon,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Eye,
   Film,
   Image as ImageIcon,
   Layers,
   Sparkles,
   TrendingUp,
+  Video,
   X,
 } from "lucide-react";
 import { getWeeklyCommunityLogs } from "@/lib/supabase";
@@ -90,7 +93,8 @@ function sumLog(log?: DailyCommunityLog): number {
     (log.formatFeedCreativo ?? 0) +
     (log.formatVideoTestimonio ?? 0) +
     (log.formatCarrusel ?? 0) +
-    (log.formatPost ?? 0)
+    (log.formatPost ?? 0) +
+    (log.formatTiktok ?? 0)
   );
 }
 
@@ -111,6 +115,7 @@ const FORMAT_META: {
     | "formatVideoTestimonio"
     | "formatCarrusel"
     | "formatPost"
+    | "formatTiktok"
   >;
   label: string;
   shortLabel: string;
@@ -124,15 +129,18 @@ const FORMAT_META: {
   { key: "formatVideoTestimonio", label: "Feed · videos testimonio", shortLabel: "Testimonios", color: "#14b8a6" },
   { key: "formatCarrusel", label: "Carruseles", shortLabel: "Carruseles", color: "#10b981" },
   { key: "formatPost", label: "Posts", shortLabel: "Posts", color: "#3b82f6" },
+  { key: "formatTiktok", label: "TikToks", shortLabel: "TikToks", color: "#06b6d4" },
 ];
 
 export function CommunityDashboardView({
   onGoToDailyView,
   cmName = "Lizz",
 }: CommunityDashboardViewProps) {
-  const referenceDate = useMemo(() => new Date(), []);
-  const todayIso = useMemo(() => toISODate(referenceDate), [referenceDate]);
-  const weekDays = useMemo(() => getWeekDays(referenceDate), [referenceDate]);
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  const todayIso = useMemo(() => toISODate(selectedDate), [selectedDate]);
+  const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
   const weekISODates = useMemo(() => weekDays.map((d) => toISODate(d)), [weekDays]);
 
   const [weeklyLogsCL, setWeeklyLogsCL] = useState<Record<string, DailyCommunityLog>>({});
@@ -166,16 +174,16 @@ export function CommunityDashboardView({
     }
   }, [loadData]);
 
-  // Cálculos reales de Casa Luifer (Meta 56)
-  const metaCL = 56;
+  // Cálculos reales de Casa Luifer (Meta 61: 56 IG + 5 TikTok)
+  const metaCL = 61;
   const semanaCL = useMemo(
     () => Object.values(weeklyLogsCL).reduce((acc, log) => acc + sumLog(log), 0),
     [weeklyLogsCL]
   );
   const avanceCLPct = Math.min(100, Math.round((semanaCL / metaCL) * 100));
 
-  // Cálculos reales de Montana (Meta 39)
-  const metaMT = 39;
+  // Cálculos reales de Montana (Meta 44: 39 IG + 5 TikTok)
+  const metaMT = 44;
   const semanaMT = useMemo(
     () => Object.values(weeklyLogsMT).reduce((acc, log) => acc + sumLog(log), 0),
     [weeklyLogsMT]
@@ -213,10 +221,6 @@ export function CommunityDashboardView({
 
   const maxFormatoVal = Math.max(...formatBreakdown.map((f) => f.value), 5);
 
-  const dateStrNavbar = `${DAYS_SHORT_ES[referenceDate.getDay()]}, ${referenceDate.getDate()} ${
-    MONTHS_ES[referenceDate.getMonth()]
-  } ${referenceDate.getFullYear()}`;
-
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
 
@@ -236,8 +240,8 @@ export function CommunityDashboardView({
 
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-bg overflow-y-auto pb-12">
-      {/* Navbar superior */}
-      <header className="h-[60px] bg-surface border-b border-[var(--border)] px-6 lg:px-8 flex items-center justify-between shrink-0">
+      {/* ── NAVBAR SUPERIOR CON CALENDARIO INTERACTIVO ── */}
+      <header className="h-[60px] bg-surface border-b border-[var(--border)] px-6 lg:px-8 flex items-center justify-between shrink-0 sticky top-0 z-20">
         <div className="flex items-center gap-2 text-[12.5px] font-medium text-text-tertiary">
           <span>Mi espacio</span>
           <span>›</span>
@@ -245,9 +249,76 @@ export function CommunityDashboardView({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 h-8 px-3 rounded-lg bg-surface-2 text-[12px] font-medium text-text-secondary">
-            <Calendar className="w-3.5 h-3.5 text-pink-500" />
-            <span>{dateStrNavbar}</span>
+          {/* CALENDARIO Y NAVEGADOR DE FECHA */}
+          <div className="relative">
+            <div className="flex items-center bg-surface border border-[var(--border)] rounded-xl h-9 px-1.5 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => {
+                  const prev = new Date(selectedDate);
+                  prev.setDate(prev.getDate() - 1);
+                  setSelectedDate(prev);
+                }}
+                className="p-1 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
+                title="Día anterior"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowCalendar(!showCalendar)}
+                className="flex items-center gap-2 px-2 text-[12px] font-semibold text-text-primary hover:text-pink-500 transition cursor-pointer"
+              >
+                <CalendarIcon className="w-3.5 h-3.5 text-pink-500" />
+                <span className="capitalize">
+                  {selectedDate.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const next = new Date(selectedDate);
+                  next.setDate(next.getDate() + 1);
+                  setSelectedDate(next);
+                }}
+                className="p-1 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-2 transition cursor-pointer"
+                title="Día siguiente"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* POPOVER CALENDARIO */}
+            {showCalendar && (
+              <div className="absolute right-0 mt-2 z-50 bg-surface rounded-2xl p-4 shadow-xl border border-[var(--border)] w-64">
+                <div className="text-[11px] font-bold text-text-tertiary uppercase tracking-wider mb-2">
+                  Seleccionar día
+                </div>
+                <input
+                  type="date"
+                  value={todayIso}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setSelectedDate(new Date(e.target.value + "T12:00:00"));
+                      setShowCalendar(false);
+                    }
+                  }}
+                  className="w-full text-xs p-2.5 bg-surface-2 rounded-xl mb-3 text-text-primary focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDate(new Date());
+                    setShowCalendar(false);
+                  }}
+                  className="w-full text-center text-xs font-semibold bg-pink-500 text-white hover:bg-pink-600 py-2 rounded-xl transition shadow-xs cursor-pointer"
+                >
+                  Ir a Hoy
+                </button>
+              </div>
+            )}
           </div>
 
           <button
@@ -268,7 +339,7 @@ export function CommunityDashboardView({
         </div>
       </header>
 
-      {/* Contenido Principal */}
+      {/* ── CONTENIDO PRINCIPAL ── */}
       <div className="p-6 lg:p-8 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
         {/* Saludo */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -277,7 +348,7 @@ export function CommunityDashboardView({
               Hola, {cmName}
             </h1>
             <p className="text-[13px] text-text-secondary">
-              Aquí tienes el resumen real de tu producción semanal y lo publicado hoy en Instagram.
+              Resumen en tiempo real de producción semanal, Instagram y TikTok.
             </p>
           </div>
           <div className="flex items-center gap-2 text-[11.5px] font-semibold text-text-secondary bg-surface px-3.5 py-2 rounded-xl shadow-xs">
@@ -295,7 +366,7 @@ export function CommunityDashboardView({
               </div>
               <div>
                 <h2 className="text-[15px] font-bold text-text-primary">
-                  Publicado hoy · Registro rápido
+                  Publicado hoy · Registro rápido ({todayIso})
                 </h2>
                 <p className="text-[11.5px] text-text-tertiary">
                   Desglose inmediato de piezas registradas hoy ({postsHoy} en total)
@@ -332,7 +403,7 @@ export function CommunityDashboardView({
             ].map((brand) => {
               const items = FORMAT_META.map((fm) => ({
                 ...fm,
-                count: brand.log ? brand.log[fm.key] ?? 0 : 0,
+                count: brand.log ? (brand.log as any)[fm.key] ?? 0 : 0,
               })).filter((i) => i.count > 0);
 
               return (
@@ -375,7 +446,7 @@ export function CommunityDashboardView({
                     </div>
                   ) : (
                     <p className="text-[12px] text-text-tertiary italic">
-                      Aún no hay piezas registradas hoy para {brand.name}.
+                      Aún no hay piezas registradas en esta fecha para {brand.name}.
                     </p>
                   )}
 
@@ -392,7 +463,7 @@ export function CommunityDashboardView({
                       <div className="flex-1 min-w-0">
                         <div className="text-[11.5px] font-semibold text-text-primary flex items-center gap-1">
                           <ImageIcon className="w-3.5 h-3.5 text-pink-500" />
-                          Captura de Historia adjunta
+                          Captura de Historias adjunta
                         </div>
                         <button
                           type="button"
@@ -497,7 +568,7 @@ export function CommunityDashboardView({
             <div className="flex items-start justify-between">
               <div className="flex flex-col gap-1">
                 <span className="text-[14px] font-bold text-text-primary">Publicaciones hoy</span>
-                <span className="text-[11.5px] text-text-tertiary">Ambas marcas · Instagram</span>
+                <span className="text-[11.5px] text-text-tertiary">Instagram + TikTok</span>
               </div>
               <div className="w-9 h-9 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
                 <Sparkles className="w-4 h-4" />
@@ -523,7 +594,7 @@ export function CommunityDashboardView({
           </div>
         </div>
 
-        {/* 3. GRÁFICAS: TENDENCIA DIARIA (L-V) + PRODUCCIÓN POR FORMATO */}
+        {/* 3. GRÁFICAS: TENDENCIA DIARIA + PRODUCCIÓN POR FORMATO */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Gráfica Lineal Diaria */}
           <div className="rounded-2xl bg-surface p-6 shadow-sm flex flex-col gap-4">

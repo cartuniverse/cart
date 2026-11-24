@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS daily_community_logs (
   format_video_testimonio INTEGER NOT NULL DEFAULT 0,
   format_carrusel INTEGER NOT NULL DEFAULT 0,
   format_post INTEGER NOT NULL DEFAULT 0,
+  format_tiktok INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

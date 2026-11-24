@@ -85,7 +85,8 @@ export type CommunityFormatKey =
   | "feedCreativo"
   | "videoTestimonio"
   | "carrusel"
-  | "post";
+  | "post"
+  | "tiktok";
 
 export type DailyCommunityLog = {
   id: string;
@@ -101,6 +102,7 @@ export type DailyCommunityLog = {
   formatVideoTestimonio: number;
   formatCarrusel: number;
   formatPost: number;
+  formatTiktok?: number;
   updatedAt?: string;
 };
 
