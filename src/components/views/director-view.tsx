@@ -1131,6 +1131,7 @@ function CreativeItemCard({
 }: CreativeItemCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const isMissed = !item.completed && isPast8PM
+  const isInProgress = !item.completed && !isPast8PM
 
   return (
     <div
@@ -1146,7 +1147,7 @@ function CreativeItemCard({
           ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs hover:bg-emerald-500/25"
           : isMissed
           ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
-          : "bg-surface/30 text-text-tertiary"
+          : "bg-amber-500/15 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 shadow-xs"
       }`}
     >
       <div>
@@ -1156,7 +1157,7 @@ function CreativeItemCard({
           ) : isMissed ? (
             <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
           ) : (
-            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
+            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
           )}
           <span
             className={`text-xs font-semibold ${
@@ -1164,7 +1165,7 @@ function CreativeItemCard({
                 ? "text-emerald-950 dark:text-emerald-100"
                 : isMissed
                 ? "text-rose-950 dark:text-rose-100"
-                : "text-text-secondary"
+                : "text-amber-950 dark:text-amber-100"
             }`}
           >
             {item.title}
@@ -1176,10 +1177,10 @@ function CreativeItemCard({
               ? "text-emerald-700/80 dark:text-emerald-300/80"
               : isMissed
               ? "text-rose-700/80 dark:text-rose-300/80"
-              : "text-text-tertiary"
+              : "text-amber-700/80 dark:text-amber-300/80"
           }`}
         >
-          {isMissed ? "No entregado a las 8:00 PM" : item.hint}
+          {isMissed ? "No entregado a las 8:00 PM" : isInProgress ? "En progreso" : item.hint}
         </p>
       </div>
 

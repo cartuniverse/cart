@@ -459,68 +459,23 @@ export function Sidebar({
           </div>
         </div>
       ) : isDirector ? (
-        /* Navegación del Director de Área (David) */
-        <div className="flex flex-col gap-6 flex-1">
-          {/* Tarjeta de usuario del director */}
-          <div className="rounded-2xl bg-[#111113] text-white p-3.5 flex items-center gap-3 shadow-sm border border-neutral-800">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-2xs shrink-0">
-              <Crown className="w-5 h-5" />
-            </div>
-            <div className="leading-tight min-w-0">
-              <div className="text-[13.5px] font-bold truncate text-white">
-                {displayName}
-              </div>
-              <div className="text-[11px] font-semibold text-indigo-400 truncate">
-                Director operativo
-              </div>
-            </div>
+        /* Navegación del Director de Área (David) simplificada */
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
+            VISTA GENERAL
           </div>
 
-          {/* VISTA GENERAL */}
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              VISTA GENERAL
-            </div>
-
-            <button
-              onClick={() => onSelectNav?.("seguimiento")}
-              className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
-                activeNav === "seguimiento"
-                  ? "bg-accent-soft text-text-primary font-bold shadow-xs border border-[var(--border)]"
-                  : "text-text-secondary font-medium hover:bg-surface-2"
-              }`}
-            >
-              <Activity className="w-[18px] h-[18px] text-indigo-500" />
-              <span className="text-[13px] flex-1">Seguimiento</span>
-            </button>
-          </div>
-
-          {/* PROYECTOS ACTIVOS */}
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-              PROYECTOS ACTIVOS
-            </div>
-            {[
-              { name: "Casa Luifer", progress: "34/56", color: "#ec4899" },
-              { name: "Montana", progress: "21/39", color: "#3b82f6" },
-            ].map((p) => (
-              <div
-                key={p.name}
-                className="rounded-xl p-2.5 flex flex-col gap-1.5 bg-surface-2/40 border border-[var(--border)]"
-              >
-                <div className="flex items-center justify-between text-[11.5px]">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-                    <span className="font-semibold text-text-primary">{p.name}</span>
-                  </div>
-                  <span className="text-[10.5px] font-bold text-text-tertiary">{p.progress}</span>
-                </div>
-                <div className="h-1 w-full bg-surface-2 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: "60%", backgroundColor: p.color }} />
-                </div>
-              </div>
-            ))}
-          </div>
+          <button
+            onClick={() => onSelectNav?.("seguimiento")}
+            className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${
+              activeNav === "seguimiento"
+                ? "bg-accent-soft text-text-primary font-bold shadow-xs"
+                : "text-text-secondary font-medium hover:bg-surface-2"
+            }`}
+          >
+            <Activity className="w-[18px] h-[18px] text-indigo-500" />
+            <span className="text-[13px] flex-1">Seguimiento</span>
+          </button>
         </div>
       ) : (
         /* Navegación estándar de Administrador */
