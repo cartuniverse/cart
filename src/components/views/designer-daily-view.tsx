@@ -18,6 +18,7 @@ import {
   Plus,
   Save,
   Sparkles,
+  Trash2,
   Video,
   X,
 } from "lucide-react";
@@ -1169,7 +1170,7 @@ function FormatRow({
         <div className="relative group rounded-xl overflow-hidden border border-[var(--border)]" style={{ aspectRatio: "16/9" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={note} alt="Captura de pieza" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-start justify-end p-2">
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-start justify-end p-2 pointer-events-none group-hover:pointer-events-auto">
             <button
               type="button"
               onClick={(e) => {
@@ -1178,10 +1179,9 @@ function FormatRow({
                 setUploadError(null);
               }}
               title="Borrar imagen adjunta"
-              className="px-2 py-1 rounded-lg bg-red-600/90 hover:bg-red-600 text-white text-[11px] font-bold flex items-center gap-1 shadow-md transition cursor-pointer"
+              className="opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 w-7 h-7 rounded-lg bg-black/70 hover:bg-rose-600 text-white flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer"
             >
-              <X className="w-3.5 h-3.5" />
-              <span>Eliminar</span>
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

@@ -20,7 +20,8 @@ import {
   XCircle,
   Clock,
   Layers,
-  FileText
+  FileText,
+  X
 } from "lucide-react"
 import type { DailyDesignLog } from "@/lib/types"
 import { getWeeklyAllDesignLogs } from "@/lib/supabase"
@@ -247,6 +248,21 @@ export function DirectorView({
   const [selectedDateStr, setSelectedDateStr] = useState<string>(() => formatDate(new Date()))
   const [showCalendarPopover, setShowCalendarPopover] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  // Estado para visualización de imagen en pantalla completa (Lightbox)
+  const [previewModal, setPreviewModal] = useState<{
+    isOpen: boolean
+    url: string
+    title: string
+    designerName: string
+    projectName: string
+  }>({
+    isOpen: false,
+    url: "",
+    title: "",
+    designerName: "",
+    projectName: ""
+  })
 
   const [weekLogs, setWeekLogs] = useState<DailyDesignLog[]>([])
 
@@ -749,62 +765,26 @@ export function DirectorView({
                 </span>
               </div>
 
-              {/* Formatos de Casa Luifer con Sombra Limpia */}
+              {/* Formatos de Casa Luifer con Sombra Limpia y Preview */}
               <div className="grid grid-cols-2 gap-2.5">
-                {samuelClFormats.map(f => {
-                  const isMissed = !f.completed && isPast8PM
-                  return (
-                    <div
-                      key={f.key}
-                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${f.completed
-                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                        : isMissed
-                          ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
-                          : "bg-surface/30 text-text-tertiary"
-                        }`}
-                    >
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          {f.completed ? (
-                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          ) : isMissed ? (
-                            <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
-                          ) : (
-                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
-                          )}
-                          <span className={`text-xs font-semibold ${f.completed
-                            ? "text-emerald-950 dark:text-emerald-100"
-                            : isMissed
-                              ? "text-rose-950 dark:text-rose-100"
-                              : "text-text-secondary"
-                            }`}>
-                            {f.title}
-                          </span>
-                        </div>
-                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed
-                          ? "text-emerald-700/80 dark:text-emerald-300/80"
-                          : isMissed
-                            ? "text-rose-700/80 dark:text-rose-300/80"
-                            : "text-text-tertiary"
-                          }`}>
-                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
-                        </p>
-                      </div>
-
-                      {f.url && (
-                        <a
-                          href={f.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
-                          title="Ver imagen"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                    </div>
-                  )
-                })}
+                {samuelClFormats.map(f => (
+                  <CreativeItemCard
+                    key={f.key}
+                    item={f}
+                    isPast8PM={isPast8PM}
+                    designerName="Samuel Marín"
+                    projectName="Casa Luifer"
+                    onOpenPreview={(url, title, desName, projName) =>
+                      setPreviewModal({
+                        isOpen: true,
+                        url,
+                        title,
+                        designerName: desName,
+                        projectName: projName
+                      })
+                    }
+                  />
+                ))}
               </div>
             </div>
 
@@ -825,62 +805,26 @@ export function DirectorView({
                 </span>
               </div>
 
-              {/* Formatos de Montana con Sombra Limpia */}
+              {/* Formatos de Montana con Sombra Limpia y Preview */}
               <div className="grid grid-cols-2 gap-2.5">
-                {samuelMtFormats.map(f => {
-                  const isMissed = !f.completed && isPast8PM
-                  return (
-                    <div
-                      key={f.key}
-                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${f.completed
-                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                        : isMissed
-                          ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
-                          : "bg-surface/30 text-text-tertiary"
-                        }`}
-                    >
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          {f.completed ? (
-                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          ) : isMissed ? (
-                            <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
-                          ) : (
-                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
-                          )}
-                          <span className={`text-xs font-semibold ${f.completed
-                            ? "text-emerald-950 dark:text-emerald-100"
-                            : isMissed
-                              ? "text-rose-950 dark:text-rose-100"
-                              : "text-text-secondary"
-                            }`}>
-                            {f.title}
-                          </span>
-                        </div>
-                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed
-                          ? "text-emerald-700/80 dark:text-emerald-300/80"
-                          : isMissed
-                            ? "text-rose-700/80 dark:text-rose-300/80"
-                            : "text-text-tertiary"
-                          }`}>
-                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
-                        </p>
-                      </div>
-
-                      {f.url && (
-                        <a
-                          href={f.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
-                          title="Ver imagen"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                    </div>
-                  )
-                })}
+                {samuelMtFormats.map(f => (
+                  <CreativeItemCard
+                    key={f.key}
+                    item={f}
+                    isPast8PM={isPast8PM}
+                    designerName="Samuel Marín"
+                    projectName="Montana"
+                    onOpenPreview={(url, title, desName, projName) =>
+                      setPreviewModal({
+                        isOpen: true,
+                        url,
+                        title,
+                        designerName: desName,
+                        projectName: projName
+                      })
+                    }
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -960,62 +904,26 @@ export function DirectorView({
                 </span>
               </div>
 
-              {/* Formatos de Casa Luifer con Sombra Limpia */}
+              {/* Formatos de Casa Luifer con Sombra Limpia y Preview */}
               <div className="grid grid-cols-2 gap-2.5">
-                {miguelClFormats.map(f => {
-                  const isMissed = !f.completed && isPast8PM
-                  return (
-                    <div
-                      key={f.key}
-                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${f.completed
-                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                        : isMissed
-                          ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
-                          : "bg-surface/30 text-text-tertiary"
-                        }`}
-                    >
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          {f.completed ? (
-                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          ) : isMissed ? (
-                            <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
-                          ) : (
-                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
-                          )}
-                          <span className={`text-xs font-semibold ${f.completed
-                            ? "text-emerald-950 dark:text-emerald-100"
-                            : isMissed
-                              ? "text-rose-950 dark:text-rose-100"
-                              : "text-text-secondary"
-                            }`}>
-                            {f.title}
-                          </span>
-                        </div>
-                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed
-                          ? "text-emerald-700/80 dark:text-emerald-300/80"
-                          : isMissed
-                            ? "text-rose-700/80 dark:text-rose-300/80"
-                            : "text-text-tertiary"
-                          }`}>
-                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
-                        </p>
-                      </div>
-
-                      {f.url && (
-                        <a
-                          href={f.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
-                          title="Ver imagen"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                    </div>
-                  )
-                })}
+                {miguelClFormats.map(f => (
+                  <CreativeItemCard
+                    key={f.key}
+                    item={f}
+                    isPast8PM={isPast8PM}
+                    designerName="Miguel Bolívar"
+                    projectName="Casa Luifer"
+                    onOpenPreview={(url, title, desName, projName) =>
+                      setPreviewModal({
+                        isOpen: true,
+                        url,
+                        title,
+                        designerName: desName,
+                        projectName: projName
+                      })
+                    }
+                  />
+                ))}
               </div>
             </div>
 
@@ -1036,62 +944,26 @@ export function DirectorView({
                 </span>
               </div>
 
-              {/* Formatos de Montana con Sombra Limpia */}
+              {/* Formatos de Montana con Sombra Limpia y Preview */}
               <div className="grid grid-cols-2 gap-2.5">
-                {miguelMtFormats.map(f => {
-                  const isMissed = !f.completed && isPast8PM
-                  return (
-                    <div
-                      key={f.key}
-                      className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${f.completed
-                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
-                        : isMissed
-                          ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
-                          : "bg-surface/30 text-text-tertiary"
-                        }`}
-                    >
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          {f.completed ? (
-                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          ) : isMissed ? (
-                            <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
-                          ) : (
-                            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
-                          )}
-                          <span className={`text-xs font-semibold ${f.completed
-                            ? "text-emerald-950 dark:text-emerald-100"
-                            : isMissed
-                              ? "text-rose-950 dark:text-rose-100"
-                              : "text-text-secondary"
-                            }`}>
-                            {f.title}
-                          </span>
-                        </div>
-                        <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed
-                          ? "text-emerald-700/80 dark:text-emerald-300/80"
-                          : isMissed
-                            ? "text-rose-700/80 dark:text-rose-300/80"
-                            : "text-text-tertiary"
-                          }`}>
-                          {isMissed ? "No entregado a las 8:00 PM" : f.hint}
-                        </p>
-                      </div>
-
-                      {f.url && (
-                        <a
-                          href={f.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
-                          title="Ver imagen"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                    </div>
-                  )
-                })}
+                {miguelMtFormats.map(f => (
+                  <CreativeItemCard
+                    key={f.key}
+                    item={f}
+                    isPast8PM={isPast8PM}
+                    designerName="Miguel Bolívar"
+                    projectName="Montana"
+                    onOpenPreview={(url, title, desName, projName) =>
+                      setPreviewModal({
+                        isOpen: true,
+                        url,
+                        title,
+                        designerName: desName,
+                        projectName: projName
+                      })
+                    }
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -1184,6 +1056,162 @@ export function DirectorView({
 
       </div>
 
+      {/* ======================================================== */}
+      {/* 5. MODAL LIGHTBOX PARA VER CAPTURA EN PANTALLA COMPLETA   */}
+      {/* ======================================================== */}
+      {previewModal.isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-md transition-all animate-fadeIn"
+          onClick={() => setPreviewModal(prev => ({ ...prev, isOpen: false }))}
+        >
+          <div
+            className="relative max-w-4xl w-full max-h-[90vh] bg-surface rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header del Lightbox */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-text-tertiary uppercase tracking-wider">
+                    {previewModal.projectName}
+                  </span>
+                  <span className="text-text-tertiary">·</span>
+                  <span className="text-xs font-semibold text-text-secondary">
+                    {previewModal.designerName}
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-text-primary mt-0.5">
+                  {previewModal.title}
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPreviewModal(prev => ({ ...prev, isOpen: false }))}
+                className="w-9 h-9 rounded-full bg-surface-2 hover:bg-border text-text-secondary flex items-center justify-center transition cursor-pointer"
+                title="Cerrar vista"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Imagen Grande */}
+            <div className="flex-1 overflow-auto bg-black/5 dark:bg-black/40 flex items-center justify-center p-4 min-h-[300px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewModal.url}
+                alt={previewModal.title}
+                className="max-h-[75vh] w-auto max-w-full object-contain rounded-xl shadow-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  )
+}
+
+// ========================================================
+// COMPONENTE TARJETA DE CREATIVO CON PREVIEW EN HOVER
+// ========================================================
+interface CreativeItemCardProps {
+  item: FormatItem
+  isPast8PM: boolean
+  designerName: string
+  projectName: string
+  onOpenPreview: (url: string, title: string, designerName: string, projectName: string) => void
+}
+
+function CreativeItemCard({
+  item,
+  isPast8PM,
+  designerName,
+  projectName,
+  onOpenPreview
+}: CreativeItemCardProps) {
+  const [isHovered, setIsHovered] = useState(false)
+  const isMissed = !item.completed && isPast8PM
+
+  return (
+    <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={() => {
+        if (item.url) {
+          onOpenPreview(item.url, item.title, designerName, projectName)
+        }
+      }}
+      className={`relative p-3 rounded-xl transition flex items-start justify-between gap-1.5 cursor-pointer group ${
+        item.completed
+          ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs hover:bg-emerald-500/25"
+          : isMissed
+          ? "bg-rose-500/15 dark:bg-rose-500/20 text-rose-900 dark:text-rose-200 shadow-xs"
+          : "bg-surface/30 text-text-tertiary"
+      }`}
+    >
+      <div>
+        <div className="flex items-center gap-1.5">
+          {item.completed ? (
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          ) : isMissed ? (
+            <XCircle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
+          ) : (
+            <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
+          )}
+          <span
+            className={`text-xs font-semibold ${
+              item.completed
+                ? "text-emerald-950 dark:text-emerald-100"
+                : isMissed
+                ? "text-rose-950 dark:text-rose-100"
+                : "text-text-secondary"
+            }`}
+          >
+            {item.title}
+          </span>
+        </div>
+        <p
+          className={`text-[10px] pl-5 mt-0.5 truncate ${
+            item.completed
+              ? "text-emerald-700/80 dark:text-emerald-300/80"
+              : isMissed
+              ? "text-rose-700/80 dark:text-rose-300/80"
+              : "text-text-tertiary"
+          }`}
+        >
+          {isMissed ? "No entregado a las 8:00 PM" : item.hint}
+        </p>
+      </div>
+
+      {item.url && (
+        <div className="relative shrink-0">
+          <span
+            className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition inline-flex items-center"
+            title="Click para ver en pantalla completa"
+          >
+            <Eye className="w-3.5 h-3.5" />
+          </span>
+
+          {/* Miniatura emergente en hover */}
+          {isHovered && (
+            <div className="absolute right-0 bottom-full mb-2 z-40 w-44 rounded-2xl overflow-hidden shadow-2xl bg-surface border border-border p-1.5 pointer-events-none transform animate-fadeIn">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.url}
+                alt={item.title}
+                className="w-full h-28 object-cover rounded-xl"
+              />
+              <div className="px-1 py-1 text-center">
+                <span className="text-[10px] font-bold text-text-primary block truncate">
+                  {item.title}
+                </span>
+                <span className="text-[9px] text-text-tertiary block">Click para expandir</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
