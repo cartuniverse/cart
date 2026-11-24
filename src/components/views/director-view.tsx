@@ -181,17 +181,16 @@ const MIGUEL_PLAN: Record<number, { clTheme: string; isCreativo: boolean; cl: { 
     ],
   },
   5: {
-    clTheme: "Creativo (Disney)",
+    clTheme: "Creativo",
     isCreativo: true,
     cl: [
-      { key: "clHistorias", title: "Orgánico gala", hint: "Vestido gala · story CL" },
-      { key: "clMovimiento", title: "Creativo (Disney)", hint: "Video creativo Disney CL" },
+      { key: "clHistorias", title: "Orgánico", hint: "Creativo libre · story CL" },
+      { key: "clMovimiento", title: "Creativo", hint: "Video creativo CL · Viernes" },
       { key: "clPost", title: "Post", hint: "Publicación feed" },
       { key: "clHistoriaProducto", title: "Historia producto", hint: "Historia producto CL" },
     ],
     mt: [
-      { key: "mtHistorias", title: "Creativo (yapping)", hint: "Video creativo Yapping MT" },
-      { key: "mtCarruseles", title: "Carrusel", hint: "5–7 slides editorial MT" },
+      { key: "mtHistorias", title: "Imagen interactiva", hint: "Trivia o encuesta MT" },
     ],
   },
 }
