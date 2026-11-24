@@ -444,7 +444,7 @@ export function DirectorView({
     })
   }, [weekDays, weekLogs])
 
-  // Semáforo de estado sutil, sobrio y elegante (sin bordes saturados)
+  // Semáforo de estado sin bordes (solo texto y fondo sutil con sombra)
   const getDesignerStatus = (completed: number, target: number) => {
     if (completed >= target && target > 0) {
       return {
@@ -519,19 +519,19 @@ export function DirectorView({
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-text-primary flex items-center gap-2">
             Control de Producción Creativa
-            <span className="text-xs bg-surface-2 text-text-secondary font-medium px-2.5 py-0.5 rounded-full">
+            <span className="text-xs bg-surface-2 text-text-secondary font-medium px-2.5 py-0.5 rounded-full shadow-xs">
               Samuel & Miguel
             </span>
           </h1>
         </div>
 
-        {/* CONTROLES DE FECHA Y CALENDARIO */}
+        {/* CONTROLES DE FECHA Y CALENDARIO SIN BORDES */}
         <div className="flex items-center gap-2 relative flex-wrap">
           {/* Navegación de semana */}
-          <div className="flex items-center bg-surface border border-border rounded-xl shadow-xs p-1">
+          <div className="flex items-center bg-surface rounded-2xl shadow-sm p-1.5">
             <button
               onClick={handlePrevWeek}
-              className="p-1.5 hover:bg-surface-2 rounded-lg text-text-secondary transition"
+              className="p-1.5 hover:bg-surface-2 rounded-xl text-text-secondary transition"
               title="Semana anterior"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -542,7 +542,7 @@ export function DirectorView({
             </span>
             <button
               onClick={handleNextWeek}
-              className="p-1.5 hover:bg-surface-2 rounded-lg text-text-secondary transition"
+              className="p-1.5 hover:bg-surface-2 rounded-xl text-text-secondary transition"
               title="Semana siguiente"
             >
               <ChevronRight className="w-4 h-4" />
@@ -553,7 +553,7 @@ export function DirectorView({
           <div className="relative">
             <button
               onClick={() => setShowCalendarPopover(!showCalendarPopover)}
-              className="flex items-center gap-2 bg-surface border border-border hover:border-border-strong px-3.5 py-2 rounded-xl shadow-xs text-xs font-semibold text-text-primary transition"
+              className="flex items-center gap-2 bg-surface hover:bg-surface-2 px-3.5 py-2.5 rounded-2xl shadow-sm text-xs font-semibold text-text-primary transition"
             >
               <CalendarIcon className="w-4 h-4 text-text-tertiary" />
               <span>
@@ -566,7 +566,7 @@ export function DirectorView({
             </button>
 
             {showCalendarPopover && (
-              <div className="absolute right-0 mt-2 z-50 bg-surface border border-border rounded-2xl p-4 shadow-xl w-64 backdrop-blur-md">
+              <div className="absolute right-0 mt-2 z-50 bg-surface rounded-2xl p-4 shadow-xl w-64 backdrop-blur-md">
                 <div className="text-xs font-bold text-text-tertiary uppercase tracking-wider mb-2">
                   Seleccionar día
                 </div>
@@ -576,14 +576,14 @@ export function DirectorView({
                   onChange={(e) => {
                     if (e.target.value) handleDateSelect(e.target.value)
                   }}
-                  className="w-full text-xs p-2 bg-surface-2 border border-border rounded-xl mb-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-border-strong"
+                  className="w-full text-xs p-2.5 bg-surface-2 rounded-xl mb-3 text-text-primary focus:outline-none"
                 />
                 <button
                   onClick={() => {
                     const todayStr = formatDate(new Date())
                     handleDateSelect(todayStr)
                   }}
-                  className="w-full text-center text-xs font-medium bg-surface-2 text-text-primary hover:bg-border/60 py-1.5 rounded-lg transition"
+                  className="w-full text-center text-xs font-medium bg-surface-2 text-text-primary hover:bg-border/60 py-2 rounded-xl transition shadow-xs"
                 >
                   Ir a Hoy
                 </button>
@@ -594,7 +594,7 @@ export function DirectorView({
           <button
             onClick={loadWeekData}
             title="Recargar datos"
-            className="p-2 bg-surface border border-border rounded-xl hover:bg-surface-2 text-text-secondary transition shadow-xs"
+            className="p-2.5 bg-surface rounded-2xl hover:bg-surface-2 text-text-secondary transition shadow-sm"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-text-primary" : ""}`} />
           </button>
@@ -602,9 +602,9 @@ export function DirectorView({
       </div>
 
       {/* ======================================================== */}
-      {/* 2. SELECTOR INTERACTIVO DE DÍAS (L - V)                  */}
+      {/* 2. SELECTOR INTERACTIVO DE DÍAS (L - V) SIN BORDES       */}
       {/* ======================================================== */}
-      <div className="bg-surface border border-border rounded-2xl p-4 shadow-xs mb-6">
+      <div className="bg-surface rounded-3xl p-5 shadow-sm mb-6">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-bold uppercase tracking-wider text-text-tertiary">
             Días de la semana · Producción
@@ -614,7 +614,7 @@ export function DirectorView({
           </span>
         </div>
 
-        <div className="grid grid-cols-5 gap-2.5">
+        <div className="grid grid-cols-5 gap-3">
           {weekDays.map(w => {
             const isSelected = w.iso === selectedDateStr
             const sLog = weekLogs.find(l => l.date === w.iso && ((l.designerName || "").toLowerCase().includes("samuel") || (l.designerId || "").toLowerCase().includes("samuel")))
@@ -628,10 +628,10 @@ export function DirectorView({
               <button
                 key={w.iso}
                 onClick={() => setSelectedDateStr(w.iso)}
-                className={`flex flex-col items-center justify-between p-3 rounded-xl transition-all ${
+                className={`flex flex-col items-center justify-between p-3.5 rounded-2xl transition-all ${
                   isSelected
-                    ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm"
-                    : "bg-surface-2 hover:bg-border/40 text-text-primary"
+                    ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md scale-[1.02]"
+                    : "bg-surface-2 hover:bg-surface-2/80 text-text-primary shadow-xs"
                 }`}
               >
                 <div className="flex items-center justify-between w-full text-[11px] font-semibold">
@@ -643,7 +643,7 @@ export function DirectorView({
                   </span>
                 </div>
 
-                <div className="my-2 text-center">
+                <div className="my-2.5 text-center">
                   <span className={`text-xl font-bold ${
                     isSelected
                       ? "text-white dark:text-slate-900"
@@ -661,10 +661,10 @@ export function DirectorView({
                 </div>
 
                 <div className="flex items-center gap-1.5 text-[10px] font-medium">
-                  <span className={`px-1.5 py-0.5 rounded ${isSelected ? "bg-white/10 dark:bg-black/10 text-white dark:text-slate-900" : "bg-surface text-text-secondary"}`}>
+                  <span className={`px-2 py-0.5 rounded-lg ${isSelected ? "bg-white/10 dark:bg-black/10 text-white dark:text-slate-900" : "bg-surface text-text-secondary shadow-2xs"}`}>
                     S: {sDone}
                   </span>
-                  <span className={`px-1.5 py-0.5 rounded ${isSelected ? "bg-white/10 dark:bg-black/10 text-white dark:text-slate-900" : "bg-surface text-text-secondary"}`}>
+                  <span className={`px-2 py-0.5 rounded-lg ${isSelected ? "bg-white/10 dark:bg-black/10 text-white dark:text-slate-900" : "bg-surface text-text-secondary shadow-2xs"}`}>
                     M: {mDone}
                   </span>
                 </div>
@@ -682,18 +682,18 @@ export function DirectorView({
         {/* ==================================================== */}
         {/* TARJETA 1: SAMUEL MARÍN                              */}
         {/* ==================================================== */}
-        <div className="bg-surface border border-border rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+        <div className="bg-surface rounded-3xl p-6 shadow-sm flex flex-col justify-between">
           <div>
             {/* Header Diseñador */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-surface-2 text-text-primary font-bold flex items-center justify-center text-sm border border-border">
+                <div className="w-11 h-11 rounded-2xl bg-surface-2 text-text-primary font-bold flex items-center justify-center text-sm shadow-xs">
                   SM
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-text-primary">Samuel Marín</h3>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-surface-2 text-text-secondary">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-surface-2 text-text-secondary shadow-2xs">
                       Diseñador AI
                     </span>
                   </div>
@@ -709,7 +709,7 @@ export function DirectorView({
                   </span>
                   <span className="text-xs text-text-tertiary font-medium">/ {samuelDayTarget} hoy</span>
                 </div>
-                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium mt-0.5 ${samuelStatus.badgeBg}`}>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium mt-0.5 ${samuelStatus.badgeBg}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${samuelStatus.dotColor}`}></span>
                   {samuelStatus.label}
                 </span>
@@ -724,11 +724,11 @@ export function DirectorView({
               ></div>
             </div>
 
-            {/* PROYECTO CASA LUIFER */}
-            <div className="bg-surface-2/50 rounded-2xl p-4 mb-4">
+            {/* PROYECTO CASA LUIFER SIN BORDES */}
+            <div className="bg-surface-2/60 rounded-2xl p-4 mb-4 shadow-xs">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center border border-border">
+                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center shadow-xs">
                     CL
                   </span>
                   <div>
@@ -741,15 +741,15 @@ export function DirectorView({
                 </span>
               </div>
 
-              {/* Formatos de Casa Luifer con Estilo Minimalista */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* Formatos de Casa Luifer con Sombra Limpia */}
+              <div className="grid grid-cols-2 gap-2.5">
                 {samuelClFormats.map(f => (
                   <div
                     key={f.key}
-                    className={`p-2.5 rounded-xl transition flex items-start justify-between gap-1.5 ${
+                    className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
                         ? "bg-surface shadow-xs text-text-primary"
-                        : "bg-surface/40 text-text-tertiary"
+                        : "bg-surface/30 text-text-tertiary"
                     }`}
                   >
                     <div>
@@ -757,7 +757,7 @@ export function DirectorView({
                         {f.completed ? (
                           <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         ) : (
-                          <div className="w-3.5 h-3.5 rounded-full border border-border-strong shrink-0"></div>
+                          <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                         )}
                         <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
                           {f.title}
@@ -782,11 +782,11 @@ export function DirectorView({
               </div>
             </div>
 
-            {/* PROYECTO MONTANA */}
-            <div className="bg-surface-2/50 rounded-2xl p-4">
+            {/* PROYECTO MONTANA SIN BORDES */}
+            <div className="bg-surface-2/60 rounded-2xl p-4 shadow-xs">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center border border-border">
+                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center shadow-xs">
                     MT
                   </span>
                   <div>
@@ -799,15 +799,15 @@ export function DirectorView({
                 </span>
               </div>
 
-              {/* Formatos de Montana */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* Formatos de Montana con Sombra Limpia */}
+              <div className="grid grid-cols-2 gap-2.5">
                 {samuelMtFormats.map(f => (
                   <div
                     key={f.key}
-                    className={`p-2.5 rounded-xl transition flex items-start justify-between gap-1.5 ${
+                    className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
                         ? "bg-surface shadow-xs text-text-primary"
-                        : "bg-surface/40 text-text-tertiary"
+                        : "bg-surface/30 text-text-tertiary"
                     }`}
                   >
                     <div>
@@ -815,7 +815,7 @@ export function DirectorView({
                         {f.completed ? (
                           <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         ) : (
-                          <div className="w-3.5 h-3.5 rounded-full border border-border-strong shrink-0"></div>
+                          <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                         )}
                         <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
                           {f.title}
@@ -842,13 +842,13 @@ export function DirectorView({
           </div>
 
           {/* Resumen Semanal Samuel */}
-          <div className="mt-5 pt-4 border-t border-border flex items-center justify-between text-xs">
+          <div className="mt-5 pt-4 flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 text-text-secondary">
               <Flame className="w-4 h-4 text-amber-500" />
               <span>Avance semanal:</span>
               <strong className="text-text-primary">{samuelWeekTotal} / {weekTargetTotal} piezas</strong>
             </div>
-            <span className="font-semibold text-text-primary bg-surface-2 px-2.5 py-0.5 rounded-full">
+            <span className="font-semibold text-text-primary bg-surface-2 px-2.5 py-1 rounded-full shadow-2xs">
               {samuelWeekPct}% meta
             </span>
           </div>
@@ -857,18 +857,18 @@ export function DirectorView({
         {/* ==================================================== */}
         {/* TARJETA 2: MIGUEL BOLÍVAR                            */}
         {/* ==================================================== */}
-        <div className="bg-surface border border-border rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+        <div className="bg-surface rounded-3xl p-6 shadow-sm flex flex-col justify-between">
           <div>
             {/* Header Diseñador */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-surface-2 text-text-primary font-bold flex items-center justify-center text-sm border border-border">
+                <div className="w-11 h-11 rounded-2xl bg-surface-2 text-text-primary font-bold flex items-center justify-center text-sm shadow-xs">
                   MB
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-text-primary">Miguel Bolívar</h3>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-surface-2 text-text-secondary">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-surface-2 text-text-secondary shadow-2xs">
                       Diseñador AI
                     </span>
                   </div>
@@ -884,7 +884,7 @@ export function DirectorView({
                   </span>
                   <span className="text-xs text-text-tertiary font-medium">/ {miguelDayTarget} hoy</span>
                 </div>
-                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium mt-0.5 ${miguelStatus.badgeBg}`}>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium mt-0.5 ${miguelStatus.badgeBg}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${miguelStatus.dotColor}`}></span>
                   {miguelStatus.label}
                 </span>
@@ -899,11 +899,11 @@ export function DirectorView({
               ></div>
             </div>
 
-            {/* PROYECTO CASA LUIFER */}
-            <div className="bg-surface-2/50 rounded-2xl p-4 mb-4">
+            {/* PROYECTO CASA LUIFER SIN BORDES */}
+            <div className="bg-surface-2/60 rounded-2xl p-4 mb-4 shadow-xs">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center border border-border">
+                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center shadow-xs">
                     CL
                   </span>
                   <div>
@@ -916,15 +916,15 @@ export function DirectorView({
                 </span>
               </div>
 
-              {/* Formatos de Casa Luifer con Estilo Minimalista */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* Formatos de Casa Luifer con Sombra Limpia */}
+              <div className="grid grid-cols-2 gap-2.5">
                 {miguelClFormats.map(f => (
                   <div
                     key={f.key}
-                    className={`p-2.5 rounded-xl transition flex items-start justify-between gap-1.5 ${
+                    className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
                         ? "bg-surface shadow-xs text-text-primary"
-                        : "bg-surface/40 text-text-tertiary"
+                        : "bg-surface/30 text-text-tertiary"
                     }`}
                   >
                     <div>
@@ -932,7 +932,7 @@ export function DirectorView({
                         {f.completed ? (
                           <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         ) : (
-                          <div className="w-3.5 h-3.5 rounded-full border border-border-strong shrink-0"></div>
+                          <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                         )}
                         <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
                           {f.title}
@@ -957,11 +957,11 @@ export function DirectorView({
               </div>
             </div>
 
-            {/* PROYECTO MONTANA */}
-            <div className="bg-surface-2/50 rounded-2xl p-4">
+            {/* PROYECTO MONTANA SIN BORDES */}
+            <div className="bg-surface-2/60 rounded-2xl p-4 shadow-xs">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center border border-border">
+                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center shadow-xs">
                     MT
                   </span>
                   <div>
@@ -974,15 +974,15 @@ export function DirectorView({
                 </span>
               </div>
 
-              {/* Formatos de Montana */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* Formatos de Montana con Sombra Limpia */}
+              <div className="grid grid-cols-2 gap-2.5">
                 {miguelMtFormats.map(f => (
                   <div
                     key={f.key}
-                    className={`p-2.5 rounded-xl transition flex items-start justify-between gap-1.5 ${
+                    className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
                         ? "bg-surface shadow-xs text-text-primary"
-                        : "bg-surface/40 text-text-tertiary"
+                        : "bg-surface/30 text-text-tertiary"
                     }`}
                   >
                     <div>
@@ -990,7 +990,7 @@ export function DirectorView({
                         {f.completed ? (
                           <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         ) : (
-                          <div className="w-3.5 h-3.5 rounded-full border border-border-strong shrink-0"></div>
+                          <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                         )}
                         <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
                           {f.title}
@@ -1017,13 +1017,13 @@ export function DirectorView({
           </div>
 
           {/* Resumen Semanal Miguel */}
-          <div className="mt-5 pt-4 border-t border-border flex items-center justify-between text-xs">
+          <div className="mt-5 pt-4 flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 text-text-secondary">
               <Flame className="w-4 h-4 text-amber-500" />
               <span>Avance semanal:</span>
               <strong className="text-text-primary">{miguelWeekTotal} / {weekTargetTotal} piezas</strong>
             </div>
-            <span className="font-semibold text-text-primary bg-surface-2 px-2.5 py-0.5 rounded-full">
+            <span className="font-semibold text-text-primary bg-surface-2 px-2.5 py-1 rounded-full shadow-2xs">
               {miguelWeekPct}% meta
             </span>
           </div>
@@ -1032,12 +1032,12 @@ export function DirectorView({
       </div>
 
       {/* ======================================================== */}
-      {/* 4. DOS GRÁFICAS LINEALES SUAVES Y ELEGANTES              */}
+      {/* 4. DOS GRÁFICAS LINEALES SIN BORDES (SOLO SOMBRA ELEGANTE)*/}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* GRÁFICA LINEAL 1: PRODUCCIÓN DIARIA (L a V) */}
-        <div className="bg-surface border border-border rounded-3xl p-6 shadow-xs">
+        <div className="bg-surface rounded-3xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold text-text-tertiary uppercase tracking-wider">
@@ -1060,7 +1060,7 @@ export function DirectorView({
                 <span className="text-text-secondary">Miguel</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 border-t border-dashed border-border-strong inline-block"></span>
+                <span className="w-3 h-0.5 border-t border-dashed border-text-tertiary/40 inline-block"></span>
                 <span className="text-text-tertiary">Meta (6)</span>
               </div>
             </div>
@@ -1070,7 +1070,7 @@ export function DirectorView({
         </div>
 
         {/* GRÁFICA LINEAL 2: PRODUCCIÓN ACUMULADA SEMANAL */}
-        <div className="bg-surface border border-border rounded-3xl p-6 shadow-xs">
+        <div className="bg-surface rounded-3xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold text-text-tertiary uppercase tracking-wider">
@@ -1093,7 +1093,7 @@ export function DirectorView({
                 <span className="text-text-secondary">Miguel</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 border-t border-dashed border-border-strong inline-block"></span>
+                <span className="w-3 h-0.5 border-t border-dashed border-text-tertiary/40 inline-block"></span>
                 <span className="text-text-tertiary">Ideal</span>
               </div>
             </div>
@@ -1165,9 +1165,9 @@ function DailyLineChart({
                 x2={width - paddingX}
                 y2={y}
                 stroke="currentColor"
-                className="text-border opacity-50"
+                className="text-text-tertiary/20"
                 strokeDasharray={tick === 6 ? "3 3" : undefined}
-                strokeWidth={tick === 6 ? "1.5" : "1"}
+                strokeWidth={tick === 6 ? "1.2" : "0.8"}
               />
               <text
                 x={paddingX - 10}
@@ -1222,7 +1222,7 @@ function DailyLineChart({
                   x2={x}
                   y2={paddingTop + chartHeight}
                   stroke="currentColor"
-                  className="text-text-tertiary opacity-40"
+                  className="text-text-tertiary opacity-30"
                   strokeDasharray="2 2"
                 />
               )}
@@ -1318,9 +1318,9 @@ function AccumulatedLineChart({
                 x2={width - paddingX}
                 y2={y}
                 stroke="currentColor"
-                className="text-border opacity-50"
+                className="text-text-tertiary/20"
                 strokeDasharray={tick === 30 ? "3 3" : undefined}
-                strokeWidth={tick === 30 ? "1.5" : "1"}
+                strokeWidth={tick === 30 ? "1.2" : "0.8"}
               />
               <text
                 x={paddingX - 10}
@@ -1340,7 +1340,7 @@ function AccumulatedLineChart({
           stroke="currentColor"
           strokeWidth="1.2"
           strokeDasharray="3 3"
-          className="text-text-tertiary opacity-40"
+          className="text-text-tertiary/40"
           points={targetPoints}
         />
 
