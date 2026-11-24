@@ -377,8 +377,8 @@ export function DirectorView({
     let total = 0
     sLogs.forEach(l => {
       total += (l.formatClHistorias || 0) + (l.formatClMovimiento || 0) + (l.formatClPost || 0) +
-               (l.formatClHistoriaProducto || 0) + (l.formatClHistoriaInteractiva || 0) +
-               (l.formatMtHistorias || 0) + (l.formatMtCarruseles || 0)
+        (l.formatClHistoriaProducto || 0) + (l.formatClHistoriaInteractiva || 0) +
+        (l.formatMtHistorias || 0) + (l.formatMtCarruseles || 0)
     })
     return total
   }, [weekLogs])
@@ -392,8 +392,8 @@ export function DirectorView({
     let total = 0
     mLogs.forEach(l => {
       total += (l.formatClHistorias || 0) + (l.formatClMovimiento || 0) + (l.formatClPost || 0) +
-               (l.formatClHistoriaProducto || 0) + (l.formatClHistoriaInteractiva || 0) +
-               (l.formatMtHistorias || 0) + (l.formatMtCarruseles || 0)
+        (l.formatClHistoriaProducto || 0) + (l.formatClHistoriaInteractiva || 0) +
+        (l.formatMtHistorias || 0) + (l.formatMtCarruseles || 0)
     })
     return total
   }, [weekLogs])
@@ -417,14 +417,14 @@ export function DirectorView({
 
       const sCount = sLog
         ? (sLog.formatClHistorias || 0) + (sLog.formatClMovimiento || 0) + (sLog.formatClPost || 0) +
-          (sLog.formatClHistoriaProducto || 0) + (sLog.formatClHistoriaInteractiva || 0) +
-          (sLog.formatMtHistorias || 0) + (sLog.formatMtCarruseles || 0)
+        (sLog.formatClHistoriaProducto || 0) + (sLog.formatClHistoriaInteractiva || 0) +
+        (sLog.formatMtHistorias || 0) + (sLog.formatMtCarruseles || 0)
         : 0
 
       const mCount = mLog
         ? (mLog.formatClHistorias || 0) + (mLog.formatClMovimiento || 0) + (mLog.formatClPost || 0) +
-          (mLog.formatClHistoriaProducto || 0) + (mLog.formatClHistoriaInteractiva || 0) +
-          (mLog.formatMtHistorias || 0) + (mLog.formatMtCarruseles || 0)
+        (mLog.formatClHistoriaProducto || 0) + (mLog.formatClHistoriaInteractiva || 0) +
+        (mLog.formatMtHistorias || 0) + (mLog.formatMtCarruseles || 0)
         : 0
 
       samuelAccum += sCount
@@ -506,7 +506,7 @@ export function DirectorView({
 
   return (
     <div className="min-h-screen bg-bg text-text-primary p-5 md:p-8 font-sans transition-colors duration-200">
-      
+
       {/* ======================================================== */}
       {/* 1. HEADER: TITULO, FILTRO DE CALENDARIO Y RECARGA        */}
       {/* ======================================================== */}
@@ -678,7 +678,7 @@ export function DirectorView({
       {/* 3. SEGUIMIENTO INDIVIDUAL: SAMUEL & MIGUEL (2 COLUMNAS)  */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        
+
         {/* ==================================================== */}
         {/* TARJETA 1: SAMUEL MARÍN                              */}
         {/* ==================================================== */}
@@ -748,22 +748,24 @@ export function DirectorView({
                     key={f.key}
                     className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
-                        ? "bg-surface shadow-xs text-text-primary"
+                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
                         : "bg-surface/30 text-text-tertiary"
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
                         {f.completed ? (
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         ) : (
                           <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                         )}
-                        <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
+                        <span className={`text-xs font-semibold ${f.completed ? "text-emerald-950 dark:text-emerald-100" : "text-text-secondary"}`}>
                           {f.title}
                         </span>
                       </div>
-                      <p className="text-[10px] text-text-tertiary pl-5 mt-0.5 truncate">{f.hint}</p>
+                      <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed ? "text-emerald-700/80 dark:text-emerald-300/80" : "text-text-tertiary"}`}>
+                        {f.hint}
+                      </p>
                     </div>
 
                     {f.url && (
@@ -771,7 +773,7 @@ export function DirectorView({
                         href={f.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-text-tertiary hover:text-text-primary p-1 rounded-lg transition"
+                        className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
                         title="Ver imagen"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -806,22 +808,24 @@ export function DirectorView({
                     key={f.key}
                     className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
-                        ? "bg-surface shadow-xs text-text-primary"
+                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
                         : "bg-surface/30 text-text-tertiary"
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
                         {f.completed ? (
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         ) : (
                           <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                         )}
-                        <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
+                        <span className={`text-xs font-semibold ${f.completed ? "text-emerald-950 dark:text-emerald-100" : "text-text-secondary"}`}>
                           {f.title}
                         </span>
                       </div>
-                      <p className="text-[10px] text-text-tertiary pl-5 mt-0.5 truncate">{f.hint}</p>
+                      <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed ? "text-emerald-700/80 dark:text-emerald-300/80" : "text-text-tertiary"}`}>
+                        {f.hint}
+                      </p>
                     </div>
 
                     {f.url && (
@@ -829,7 +833,7 @@ export function DirectorView({
                         href={f.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-text-tertiary hover:text-text-primary p-1 rounded-lg transition"
+                        className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
                         title="Ver imagen"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -923,22 +927,24 @@ export function DirectorView({
                     key={f.key}
                     className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
-                        ? "bg-surface shadow-xs text-text-primary"
+                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
                         : "bg-surface/30 text-text-tertiary"
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
                         {f.completed ? (
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         ) : (
                           <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                         )}
-                        <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
+                        <span className={`text-xs font-semibold ${f.completed ? "text-emerald-950 dark:text-emerald-100" : "text-text-secondary"}`}>
                           {f.title}
                         </span>
                       </div>
-                      <p className="text-[10px] text-text-tertiary pl-5 mt-0.5 truncate">{f.hint}</p>
+                      <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed ? "text-emerald-700/80 dark:text-emerald-300/80" : "text-text-tertiary"}`}>
+                        {f.hint}
+                      </p>
                     </div>
 
                     {f.url && (
@@ -946,7 +952,7 @@ export function DirectorView({
                         href={f.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-text-tertiary hover:text-text-primary p-1 rounded-lg transition"
+                        className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
                         title="Ver imagen"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -981,22 +987,24 @@ export function DirectorView({
                     key={f.key}
                     className={`p-3 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
-                        ? "bg-surface shadow-xs text-text-primary"
+                        ? "bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 shadow-xs"
                         : "bg-surface/30 text-text-tertiary"
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
                         {f.completed ? (
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         ) : (
                           <div className="w-3.5 h-3.5 rounded-full bg-surface-2 shrink-0"></div>
                         )}
-                        <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
+                        <span className={`text-xs font-semibold ${f.completed ? "text-emerald-950 dark:text-emerald-100" : "text-text-secondary"}`}>
                           {f.title}
                         </span>
                       </div>
-                      <p className="text-[10px] text-text-tertiary pl-5 mt-0.5 truncate">{f.hint}</p>
+                      <p className={`text-[10px] pl-5 mt-0.5 truncate ${f.completed ? "text-emerald-700/80 dark:text-emerald-300/80" : "text-text-tertiary"}`}>
+                        {f.hint}
+                      </p>
                     </div>
 
                     {f.url && (
@@ -1004,7 +1012,7 @@ export function DirectorView({
                         href={f.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-text-tertiary hover:text-text-primary p-1 rounded-lg transition"
+                        className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 p-1 rounded-lg transition"
                         title="Ver imagen"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -1035,7 +1043,7 @@ export function DirectorView({
       {/* 4. DOS GRÁFICAS LINEALES SIN BORDES (SOLO SOMBRA ELEGANTE)*/}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+
         {/* GRÁFICA LINEAL 1: PRODUCCIÓN DIARIA (L a V) */}
         <div className="bg-surface rounded-3xl p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
