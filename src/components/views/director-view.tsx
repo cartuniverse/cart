@@ -444,44 +444,35 @@ export function DirectorView({
     })
   }, [weekDays, weekLogs])
 
-  // Semáforo de estado de un diseñador:
-  // Verde: cumplió todo (completed == target)
-  // Amarillo: hizo parte pero le falta (completed > 0 && completed < target)
-  // Rojo: no hizo nada (completed === 0)
+  // Semáforo de estado sutil, sobrio y elegante (sin bordes saturados)
   const getDesignerStatus = (completed: number, target: number) => {
     if (completed >= target && target > 0) {
       return {
         type: "green" as const,
         label: "Día Completado",
-        colorText: "text-emerald-700 dark:text-emerald-300",
-        badgeBg: "bg-emerald-100/80 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300",
-        barColor: "bg-emerald-500 dark:bg-emerald-400",
-        bannerBg: "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300",
-        dotColor: "bg-emerald-500",
-        cardBorder: "border-emerald-300 dark:border-emerald-700/60 shadow-emerald-500/5"
+        colorText: "text-emerald-600 dark:text-emerald-400",
+        badgeBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+        barColor: "bg-emerald-500",
+        dotColor: "bg-emerald-500"
       }
     }
     if (completed > 0) {
       return {
         type: "yellow" as const,
         label: `En progreso (${target - completed} faltantes)`,
-        colorText: "text-amber-700 dark:text-amber-300",
-        badgeBg: "bg-amber-100/80 dark:bg-amber-950/70 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300",
-        barColor: "bg-amber-500 dark:bg-amber-400",
-        bannerBg: "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300",
-        dotColor: "bg-amber-500",
-        cardBorder: "border-amber-300 dark:border-amber-700/60 shadow-amber-500/5"
+        colorText: "text-amber-600 dark:text-amber-400",
+        badgeBg: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+        barColor: "bg-amber-500",
+        dotColor: "bg-amber-500"
       }
     }
     return {
       type: "red" as const,
       label: "Sin entregas hoy",
-      colorText: "text-rose-700 dark:text-rose-300",
-      badgeBg: "bg-rose-100/80 dark:bg-rose-950/70 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300",
-      barColor: "bg-rose-500 dark:bg-rose-400",
-      bannerBg: "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300",
-      dotColor: "bg-rose-500",
-      cardBorder: "border-rose-300 dark:border-rose-700/60 shadow-rose-500/5"
+      colorText: "text-rose-500 dark:text-rose-400",
+      badgeBg: "bg-rose-500/10 text-rose-500 dark:text-rose-400",
+      barColor: "bg-rose-500",
+      dotColor: "bg-rose-500"
     }
   }
 
@@ -528,7 +519,7 @@ export function DirectorView({
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-text-primary flex items-center gap-2">
             Control de Producción Creativa
-            <span className="text-xs bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-semibold px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+            <span className="text-xs bg-surface-2 text-text-secondary font-medium px-2.5 py-0.5 rounded-full">
               Samuel & Miguel
             </span>
           </h1>
@@ -564,7 +555,7 @@ export function DirectorView({
               onClick={() => setShowCalendarPopover(!showCalendarPopover)}
               className="flex items-center gap-2 bg-surface border border-border hover:border-border-strong px-3.5 py-2 rounded-xl shadow-xs text-xs font-semibold text-text-primary transition"
             >
-              <CalendarIcon className="w-4 h-4 text-indigo-500" />
+              <CalendarIcon className="w-4 h-4 text-text-tertiary" />
               <span>
                 {new Date(selectedDateStr + "T12:00:00").toLocaleDateString("es-ES", {
                   weekday: "short",
@@ -585,14 +576,14 @@ export function DirectorView({
                   onChange={(e) => {
                     if (e.target.value) handleDateSelect(e.target.value)
                   }}
-                  className="w-full text-xs p-2 bg-surface-2 border border-border rounded-xl mb-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full text-xs p-2 bg-surface-2 border border-border rounded-xl mb-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-border-strong"
                 />
                 <button
                   onClick={() => {
                     const todayStr = formatDate(new Date())
                     handleDateSelect(todayStr)
                   }}
-                  className="w-full text-center text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 py-1.5 rounded-lg transition"
+                  className="w-full text-center text-xs font-medium bg-surface-2 text-text-primary hover:bg-border/60 py-1.5 rounded-lg transition"
                 >
                   Ir a Hoy
                 </button>
@@ -605,7 +596,7 @@ export function DirectorView({
             title="Recargar datos"
             className="p-2 bg-surface border border-border rounded-xl hover:bg-surface-2 text-text-secondary transition shadow-xs"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-indigo-500" : ""}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-text-primary" : ""}`} />
           </button>
         </div>
       </div>
@@ -633,47 +624,47 @@ export function DirectorView({
             const mDone = mLog ? ((mLog.formatClHistorias || 0) + (mLog.formatClMovimiento || 0) + (mLog.formatClPost || 0) + (mLog.formatClHistoriaProducto || 0) + (mLog.formatClHistoriaInteractiva || 0) + (mLog.formatMtHistorias || 0) + (mLog.formatMtCarruseles || 0)) : 0
             const totalDayDone = sDone + mDone
 
-            // Color del status del día combinado
-            const dayStatusColor =
-              totalDayDone >= 12
-                ? "text-emerald-600 dark:text-emerald-400"
-                : totalDayDone > 0
-                ? "text-amber-600 dark:text-amber-400"
-                : "text-rose-500 dark:text-rose-400"
-
             return (
               <button
                 key={w.iso}
                 onClick={() => setSelectedDateStr(w.iso)}
-                className={`flex flex-col items-center justify-between p-3 rounded-xl border transition-all ${
+                className={`flex flex-col items-center justify-between p-3 rounded-xl transition-all ${
                   isSelected
-                    ? "bg-slate-900 dark:bg-white border-slate-900 dark:border-white text-white dark:text-slate-900 shadow-md scale-[1.02]"
-                    : "bg-surface-2 border-border hover:bg-surface text-text-primary"
+                    ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm"
+                    : "bg-surface-2 hover:bg-border/40 text-text-primary"
                 }`}
               >
                 <div className="flex items-center justify-between w-full text-[11px] font-semibold">
-                  <span className={isSelected ? "text-slate-300 dark:text-slate-700" : "text-text-secondary"}>
+                  <span className={isSelected ? "text-slate-300 dark:text-slate-600" : "text-text-secondary"}>
                     {w.label}
                   </span>
-                  <span className={`text-[10px] ${isSelected ? "text-slate-400 dark:text-slate-600" : "text-text-tertiary"}`}>
+                  <span className={`text-[10px] ${isSelected ? "text-slate-400 dark:text-slate-500" : "text-text-tertiary"}`}>
                     {w.date.getDate()} {w.date.toLocaleDateString("es-ES", { month: "short" })}
                   </span>
                 </div>
 
                 <div className="my-2 text-center">
-                  <span className={`text-xl font-black ${isSelected ? "text-white dark:text-slate-900" : dayStatusColor}`}>
+                  <span className={`text-xl font-bold ${
+                    isSelected
+                      ? "text-white dark:text-slate-900"
+                      : totalDayDone >= 12
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : totalDayDone > 0
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-text-tertiary"
+                  }`}>
                     {totalDayDone}
                   </span>
-                  <span className={`text-[10px] ml-0.5 ${isSelected ? "text-slate-400 dark:text-slate-600" : "text-text-tertiary"}`}>
+                  <span className={`text-[10px] ml-0.5 ${isSelected ? "text-slate-400 dark:text-slate-500" : "text-text-tertiary"}`}>
                     /12
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1 text-[10px] font-medium">
-                  <span className={`px-1.5 py-0.5 rounded ${isSelected ? "bg-indigo-950 dark:bg-indigo-100 text-indigo-300 dark:text-indigo-800" : "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300"}`}>
+                <div className="flex items-center gap-1.5 text-[10px] font-medium">
+                  <span className={`px-1.5 py-0.5 rounded ${isSelected ? "bg-white/10 dark:bg-black/10 text-white dark:text-slate-900" : "bg-surface text-text-secondary"}`}>
                     S: {sDone}
                   </span>
-                  <span className={`px-1.5 py-0.5 rounded ${isSelected ? "bg-violet-950 dark:bg-violet-100 text-violet-300 dark:text-violet-800" : "bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300"}`}>
+                  <span className={`px-1.5 py-0.5 rounded ${isSelected ? "bg-white/10 dark:bg-black/10 text-white dark:text-slate-900" : "bg-surface text-text-secondary"}`}>
                     M: {mDone}
                   </span>
                 </div>
@@ -691,18 +682,18 @@ export function DirectorView({
         {/* ==================================================== */}
         {/* TARJETA 1: SAMUEL MARÍN                              */}
         {/* ==================================================== */}
-        <div className={`bg-surface border rounded-3xl p-6 shadow-xs flex flex-col justify-between transition-colors ${samuelStatus.cardBorder}`}>
+        <div className="bg-surface border border-border rounded-3xl p-6 shadow-xs flex flex-col justify-between">
           <div>
             {/* Header Diseñador */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-black flex items-center justify-center text-base shadow-sm">
+                <div className="w-11 h-11 rounded-2xl bg-surface-2 text-text-primary font-bold flex items-center justify-center text-sm border border-border">
                   SM
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-text-primary">Samuel Marín</h3>
-                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                    <h3 className="text-base font-bold text-text-primary">Samuel Marín</h3>
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-surface-2 text-text-secondary">
                       Diseñador AI
                     </span>
                   </div>
@@ -710,23 +701,23 @@ export function DirectorView({
                 </div>
               </div>
 
-              {/* Cumplimiento hoy con Semáforo */}
+              {/* Cumplimiento hoy con Semáforo Sobrio */}
               <div className="text-right">
                 <div className="flex items-baseline justify-end gap-1">
-                  <span className={`text-2xl font-black ${samuelStatus.colorText}`}>
+                  <span className={`text-2xl font-bold ${samuelStatus.colorText}`}>
                     {samuelDayCompleted}
                   </span>
-                  <span className="text-xs text-text-tertiary font-bold">/ {samuelDayTarget} hoy</span>
+                  <span className="text-xs text-text-tertiary font-medium">/ {samuelDayTarget} hoy</span>
                 </div>
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border mt-0.5 ${samuelStatus.badgeBg}`}>
+                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium mt-0.5 ${samuelStatus.badgeBg}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${samuelStatus.dotColor}`}></span>
                   {samuelStatus.label}
                 </span>
               </div>
             </div>
 
-            {/* Barra de progreso hoy con color del semáforo */}
-            <div className="w-full h-2 rounded-full bg-surface-2 overflow-hidden mb-5">
+            {/* Barra de progreso hoy */}
+            <div className="w-full h-1.5 rounded-full bg-surface-2 overflow-hidden mb-5">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${samuelStatus.barColor}`}
                 style={{ width: `${Math.min(100, (samuelDayCompleted / samuelDayTarget) * 100)}%` }}
@@ -734,45 +725,45 @@ export function DirectorView({
             </div>
 
             {/* PROYECTO CASA LUIFER */}
-            <div className="bg-pink-50/40 dark:bg-pink-950/20 border border-pink-200 dark:border-pink-900/40 rounded-2xl p-4 mb-4">
+            <div className="bg-surface-2/50 rounded-2xl p-4 mb-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-pink-500 text-white text-[11px] font-black flex items-center justify-center shadow-xs">
+                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center border border-border">
                     CL
                   </span>
                   <div>
-                    <span className="text-xs font-bold text-pink-900 dark:text-pink-300 block">Casa Luifer</span>
-                    <span className="text-[10px] text-pink-600 dark:text-pink-400 font-medium">Tema: {samuelPlan.clTheme}</span>
+                    <span className="text-xs font-semibold text-text-primary block">Casa Luifer</span>
+                    <span className="text-[10px] text-text-tertiary">Tema: {samuelPlan.clTheme}</span>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-pink-700 dark:text-pink-300 bg-white/80 dark:bg-pink-900/40 px-2 py-0.5 rounded-md border border-pink-200 dark:border-pink-800">
+                <span className="text-xs font-medium text-text-secondary">
                   {samuelClFormats.filter(f => f.completed).length} / {samuelClFormats.length}
                 </span>
               </div>
 
-              {/* Formatos de Casa Luifer con Semáforo Individual */}
+              {/* Formatos de Casa Luifer con Estilo Minimalista */}
               <div className="grid grid-cols-2 gap-2">
                 {samuelClFormats.map(f => (
                   <div
                     key={f.key}
-                    className={`p-2.5 rounded-xl border transition flex items-start justify-between gap-1.5 ${
+                    className={`p-2.5 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
-                        ? "bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200"
-                        : "bg-surface border-border text-text-tertiary"
+                        ? "bg-surface shadow-xs text-text-primary"
+                        : "bg-surface/40 text-text-tertiary"
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
                         {f.completed ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         ) : (
-                          <div className="w-4 h-4 rounded-full border border-border-strong shrink-0"></div>
+                          <div className="w-3.5 h-3.5 rounded-full border border-border-strong shrink-0"></div>
                         )}
-                        <span className={`text-xs font-bold ${f.completed ? "text-emerald-900 dark:text-emerald-200" : "text-text-secondary"}`}>
+                        <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
                           {f.title}
                         </span>
                       </div>
-                      <p className="text-[10px] text-text-tertiary pl-5.5 mt-0.5 truncate">{f.hint}</p>
+                      <p className="text-[10px] text-text-tertiary pl-5 mt-0.5 truncate">{f.hint}</p>
                     </div>
 
                     {f.url && (
@@ -780,8 +771,8 @@ export function DirectorView({
                         href={f.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-pink-600 dark:text-pink-400 hover:text-pink-800 p-1 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg transition"
-                        title="Ver imagen / pieza"
+                        className="text-text-tertiary hover:text-text-primary p-1 rounded-lg transition"
+                        title="Ver imagen"
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </a>
@@ -792,45 +783,45 @@ export function DirectorView({
             </div>
 
             {/* PROYECTO MONTANA */}
-            <div className="bg-blue-50/40 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-2xl p-4">
+            <div className="bg-surface-2/50 rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-blue-500 text-white text-[11px] font-black flex items-center justify-center shadow-xs">
+                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center border border-border">
                     MT
                   </span>
                   <div>
-                    <span className="text-xs font-bold text-blue-900 dark:text-blue-300 block">Montana</span>
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Catálogo & Historias</span>
+                    <span className="text-xs font-semibold text-text-primary block">Montana</span>
+                    <span className="text-[10px] text-text-tertiary">Catálogo & Historias</span>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-white/80 dark:bg-blue-900/40 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
+                <span className="text-xs font-medium text-text-secondary">
                   {samuelMtFormats.filter(f => f.completed).length} / {samuelMtFormats.length}
                 </span>
               </div>
 
-              {/* Formatos de Montana con Semáforo Individual */}
+              {/* Formatos de Montana */}
               <div className="grid grid-cols-2 gap-2">
                 {samuelMtFormats.map(f => (
                   <div
                     key={f.key}
-                    className={`p-2.5 rounded-xl border transition flex items-start justify-between gap-1.5 ${
+                    className={`p-2.5 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
-                        ? "bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200"
-                        : "bg-surface border-border text-text-tertiary"
+                        ? "bg-surface shadow-xs text-text-primary"
+                        : "bg-surface/40 text-text-tertiary"
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
                         {f.completed ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         ) : (
-                          <div className="w-4 h-4 rounded-full border border-border-strong shrink-0"></div>
+                          <div className="w-3.5 h-3.5 rounded-full border border-border-strong shrink-0"></div>
                         )}
-                        <span className={`text-xs font-bold ${f.completed ? "text-emerald-900 dark:text-emerald-200" : "text-text-secondary"}`}>
+                        <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
                           {f.title}
                         </span>
                       </div>
-                      <p className="text-[10px] text-text-tertiary pl-5.5 mt-0.5 truncate">{f.hint}</p>
+                      <p className="text-[10px] text-text-tertiary pl-5 mt-0.5 truncate">{f.hint}</p>
                     </div>
 
                     {f.url && (
@@ -838,8 +829,8 @@ export function DirectorView({
                         href={f.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 p-1 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition"
-                        title="Ver imagen / pieza"
+                        className="text-text-tertiary hover:text-text-primary p-1 rounded-lg transition"
+                        title="Ver imagen"
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </a>
@@ -854,11 +845,11 @@ export function DirectorView({
           <div className="mt-5 pt-4 border-t border-border flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 text-text-secondary">
               <Flame className="w-4 h-4 text-amber-500" />
-              <span>Avance de la semana:</span>
+              <span>Avance semanal:</span>
               <strong className="text-text-primary">{samuelWeekTotal} / {weekTargetTotal} piezas</strong>
             </div>
-            <span className="font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
-              {samuelWeekPct}% meta semanal
+            <span className="font-semibold text-text-primary bg-surface-2 px-2.5 py-0.5 rounded-full">
+              {samuelWeekPct}% meta
             </span>
           </div>
         </div>
@@ -866,18 +857,18 @@ export function DirectorView({
         {/* ==================================================== */}
         {/* TARJETA 2: MIGUEL BOLÍVAR                            */}
         {/* ==================================================== */}
-        <div className={`bg-surface border rounded-3xl p-6 shadow-xs flex flex-col justify-between transition-colors ${miguelStatus.cardBorder}`}>
+        <div className="bg-surface border border-border rounded-3xl p-6 shadow-xs flex flex-col justify-between">
           <div>
             {/* Header Diseñador */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-violet-600 text-white font-black flex items-center justify-center text-base shadow-sm">
+                <div className="w-11 h-11 rounded-2xl bg-surface-2 text-text-primary font-bold flex items-center justify-center text-sm border border-border">
                   MB
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-text-primary">Miguel Bolívar</h3>
-                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800">
+                    <h3 className="text-base font-bold text-text-primary">Miguel Bolívar</h3>
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-surface-2 text-text-secondary">
                       Diseñador AI
                     </span>
                   </div>
@@ -885,23 +876,23 @@ export function DirectorView({
                 </div>
               </div>
 
-              {/* Cumplimiento hoy con Semáforo */}
+              {/* Cumplimiento hoy con Semáforo Sobrio */}
               <div className="text-right">
                 <div className="flex items-baseline justify-end gap-1">
-                  <span className={`text-2xl font-black ${miguelStatus.colorText}`}>
+                  <span className={`text-2xl font-bold ${miguelStatus.colorText}`}>
                     {miguelDayCompleted}
                   </span>
-                  <span className="text-xs text-text-tertiary font-bold">/ {miguelDayTarget} hoy</span>
+                  <span className="text-xs text-text-tertiary font-medium">/ {miguelDayTarget} hoy</span>
                 </div>
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border mt-0.5 ${miguelStatus.badgeBg}`}>
+                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium mt-0.5 ${miguelStatus.badgeBg}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${miguelStatus.dotColor}`}></span>
                   {miguelStatus.label}
                 </span>
               </div>
             </div>
 
-            {/* Barra de progreso hoy con color del semáforo */}
-            <div className="w-full h-2 rounded-full bg-surface-2 overflow-hidden mb-5">
+            {/* Barra de progreso hoy */}
+            <div className="w-full h-1.5 rounded-full bg-surface-2 overflow-hidden mb-5">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${miguelStatus.barColor}`}
                 style={{ width: `${Math.min(100, (miguelDayCompleted / miguelDayTarget) * 100)}%` }}
@@ -909,45 +900,45 @@ export function DirectorView({
             </div>
 
             {/* PROYECTO CASA LUIFER */}
-            <div className="bg-pink-50/40 dark:bg-pink-950/20 border border-pink-200 dark:border-pink-900/40 rounded-2xl p-4 mb-4">
+            <div className="bg-surface-2/50 rounded-2xl p-4 mb-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-pink-500 text-white text-[11px] font-black flex items-center justify-center shadow-xs">
+                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center border border-border">
                     CL
                   </span>
                   <div>
-                    <span className="text-xs font-bold text-pink-900 dark:text-pink-300 block">Casa Luifer</span>
-                    <span className="text-[10px] text-pink-600 dark:text-pink-400 font-medium">Tema: {miguelPlan.clTheme}</span>
+                    <span className="text-xs font-semibold text-text-primary block">Casa Luifer</span>
+                    <span className="text-[10px] text-text-tertiary">Tema: {miguelPlan.clTheme}</span>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-pink-700 dark:text-pink-300 bg-white/80 dark:bg-pink-900/40 px-2 py-0.5 rounded-md border border-pink-200 dark:border-pink-800">
+                <span className="text-xs font-medium text-text-secondary">
                   {miguelClFormats.filter(f => f.completed).length} / {miguelClFormats.length}
                 </span>
               </div>
 
-              {/* Formatos de Casa Luifer con Semáforo Individual */}
+              {/* Formatos de Casa Luifer con Estilo Minimalista */}
               <div className="grid grid-cols-2 gap-2">
                 {miguelClFormats.map(f => (
                   <div
                     key={f.key}
-                    className={`p-2.5 rounded-xl border transition flex items-start justify-between gap-1.5 ${
+                    className={`p-2.5 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
-                        ? "bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200"
-                        : "bg-surface border-border text-text-tertiary"
+                        ? "bg-surface shadow-xs text-text-primary"
+                        : "bg-surface/40 text-text-tertiary"
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
                         {f.completed ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         ) : (
-                          <div className="w-4 h-4 rounded-full border border-border-strong shrink-0"></div>
+                          <div className="w-3.5 h-3.5 rounded-full border border-border-strong shrink-0"></div>
                         )}
-                        <span className={`text-xs font-bold ${f.completed ? "text-emerald-900 dark:text-emerald-200" : "text-text-secondary"}`}>
+                        <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
                           {f.title}
                         </span>
                       </div>
-                      <p className="text-[10px] text-text-tertiary pl-5.5 mt-0.5 truncate">{f.hint}</p>
+                      <p className="text-[10px] text-text-tertiary pl-5 mt-0.5 truncate">{f.hint}</p>
                     </div>
 
                     {f.url && (
@@ -955,8 +946,8 @@ export function DirectorView({
                         href={f.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-pink-600 dark:text-pink-400 hover:text-pink-800 p-1 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg transition"
-                        title="Ver imagen / pieza"
+                        className="text-text-tertiary hover:text-text-primary p-1 rounded-lg transition"
+                        title="Ver imagen"
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </a>
@@ -967,45 +958,45 @@ export function DirectorView({
             </div>
 
             {/* PROYECTO MONTANA */}
-            <div className="bg-blue-50/40 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-2xl p-4">
+            <div className="bg-surface-2/50 rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-blue-500 text-white text-[11px] font-black flex items-center justify-center shadow-xs">
+                  <span className="w-5 h-5 rounded-md bg-surface text-text-primary text-[10px] font-bold flex items-center justify-center border border-border">
                     MT
                   </span>
                   <div>
-                    <span className="text-xs font-bold text-blue-900 dark:text-blue-300 block">Montana</span>
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Creativos & Carrusel</span>
+                    <span className="text-xs font-semibold text-text-primary block">Montana</span>
+                    <span className="text-[10px] text-text-tertiary">Creativos & Carrusel</span>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-white/80 dark:bg-blue-900/40 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
+                <span className="text-xs font-medium text-text-secondary">
                   {miguelMtFormats.filter(f => f.completed).length} / {miguelMtFormats.length}
                 </span>
               </div>
 
-              {/* Formatos de Montana con Semáforo Individual */}
+              {/* Formatos de Montana */}
               <div className="grid grid-cols-2 gap-2">
                 {miguelMtFormats.map(f => (
                   <div
                     key={f.key}
-                    className={`p-2.5 rounded-xl border transition flex items-start justify-between gap-1.5 ${
+                    className={`p-2.5 rounded-xl transition flex items-start justify-between gap-1.5 ${
                       f.completed
-                        ? "bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200"
-                        : "bg-surface border-border text-text-tertiary"
+                        ? "bg-surface shadow-xs text-text-primary"
+                        : "bg-surface/40 text-text-tertiary"
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
                         {f.completed ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         ) : (
-                          <div className="w-4 h-4 rounded-full border border-border-strong shrink-0"></div>
+                          <div className="w-3.5 h-3.5 rounded-full border border-border-strong shrink-0"></div>
                         )}
-                        <span className={`text-xs font-bold ${f.completed ? "text-emerald-900 dark:text-emerald-200" : "text-text-secondary"}`}>
+                        <span className={`text-xs font-medium ${f.completed ? "text-text-primary" : "text-text-secondary"}`}>
                           {f.title}
                         </span>
                       </div>
-                      <p className="text-[10px] text-text-tertiary pl-5.5 mt-0.5 truncate">{f.hint}</p>
+                      <p className="text-[10px] text-text-tertiary pl-5 mt-0.5 truncate">{f.hint}</p>
                     </div>
 
                     {f.url && (
@@ -1013,8 +1004,8 @@ export function DirectorView({
                         href={f.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 p-1 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition"
-                        title="Ver imagen / pieza"
+                        className="text-text-tertiary hover:text-text-primary p-1 rounded-lg transition"
+                        title="Ver imagen"
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </a>
@@ -1029,11 +1020,11 @@ export function DirectorView({
           <div className="mt-5 pt-4 border-t border-border flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 text-text-secondary">
               <Flame className="w-4 h-4 text-amber-500" />
-              <span>Avance de la semana:</span>
+              <span>Avance semanal:</span>
               <strong className="text-text-primary">{miguelWeekTotal} / {weekTargetTotal} piezas</strong>
             </div>
-            <span className="font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/60 px-2.5 py-0.5 rounded-full border border-violet-200 dark:border-violet-800">
-              {miguelWeekPct}% meta semanal
+            <span className="font-semibold text-text-primary bg-surface-2 px-2.5 py-0.5 rounded-full">
+              {miguelWeekPct}% meta
             </span>
           </div>
         </div>
@@ -1041,7 +1032,7 @@ export function DirectorView({
       </div>
 
       {/* ======================================================== */}
-      {/* 4. DOS GRÁFICAS LINEALES INTERACTIVAS (SAMUEL VS MIGUEL) */}
+      {/* 4. DOS GRÁFICAS LINEALES SUAVES Y ELEGANTES              */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
@@ -1050,32 +1041,31 @@ export function DirectorView({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold text-text-tertiary uppercase tracking-wider">
-                <Activity className="w-4 h-4 text-indigo-500" />
-                <span>Gráfica Lineal · Producción Diaria</span>
+                <Activity className="w-4 h-4 text-text-secondary" />
+                <span>Curva de Producción Diaria</span>
               </div>
               <h3 className="text-base font-bold text-text-primary mt-1">
-                Curva de Entregas por Día (Lunes a Viernes)
+                Entregas por Día (Lunes a Viernes)
               </h3>
             </div>
 
-            {/* Leyenda */}
-            <div className="flex items-center gap-3 text-xs font-semibold">
+            {/* Leyenda sobria */}
+            <div className="flex items-center gap-3 text-xs font-medium">
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-indigo-600 dark:bg-indigo-400 inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-slate-800 dark:bg-slate-200 inline-block"></span>
                 <span className="text-text-secondary">Samuel</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-violet-600 dark:bg-violet-400 inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>
                 <span className="text-text-secondary">Miguel</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 bg-dashed border-t-2 border-dashed border-emerald-500 inline-block"></span>
-                <span className="text-emerald-600 dark:text-emerald-400">Meta (6)</span>
+                <span className="w-3 h-0.5 border-t border-dashed border-border-strong inline-block"></span>
+                <span className="text-text-tertiary">Meta (6)</span>
               </div>
             </div>
           </div>
 
-          {/* SVG Line Chart: Producción Diaria */}
           <DailyLineChart data={dailyTrends} selectedDate={selectedDateStr} onSelectDate={setSelectedDateStr} />
         </div>
 
@@ -1084,32 +1074,31 @@ export function DirectorView({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold text-text-tertiary uppercase tracking-wider">
-                <TrendingUp className="w-4 h-4 text-violet-500" />
-                <span>Gráfica Lineal · Tendencia Acumulada</span>
+                <TrendingUp className="w-4 h-4 text-text-secondary" />
+                <span>Tendencia Acumulada</span>
               </div>
               <h3 className="text-base font-bold text-text-primary mt-1">
-                Velocidad hacia la Meta Semanal (30 piezas)
+                Avance hacia la Meta Semanal (30 piezas)
               </h3>
             </div>
 
-            {/* Leyenda */}
-            <div className="flex items-center gap-3 text-xs font-semibold">
+            {/* Leyenda sobria */}
+            <div className="flex items-center gap-3 text-xs font-medium">
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-indigo-600 dark:bg-indigo-400 inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-slate-800 dark:bg-slate-200 inline-block"></span>
                 <span className="text-text-secondary">Samuel</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-violet-600 dark:bg-violet-400 inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>
                 <span className="text-text-secondary">Miguel</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 border-t-2 border-dashed border-slate-400 inline-block"></span>
-                <span className="text-text-tertiary">Ideal (acum)</span>
+                <span className="w-3 h-0.5 border-t border-dashed border-border-strong inline-block"></span>
+                <span className="text-text-tertiary">Ideal</span>
               </div>
             </div>
           </div>
 
-          {/* SVG Line Chart: Tendencia Acumulada */}
           <AccumulatedLineChart data={dailyTrends} />
         </div>
 
@@ -1120,7 +1109,7 @@ export function DirectorView({
 }
 
 // ========================================================
-// COMPONENTES DE GRÁFICAS LINEALES SVG ADAPTABLES AL TEMA
+// COMPONENTES DE GRÁFICAS LINEALES SVG SUAVES Y MINIMALISTAS
 // ========================================================
 
 interface DayTrendPoint {
@@ -1146,40 +1135,26 @@ function DailyLineChart({
   onSelectDate: (d: string) => void
 }) {
   const width = 500
-  const height = 220
-  const paddingX = 40
+  const height = 210
+  const paddingX = 35
   const paddingTop = 25
-  const paddingBottom = 35
+  const paddingBottom = 30
 
   const chartWidth = width - paddingX * 2
   const chartHeight = height - paddingTop - paddingBottom
 
-  const maxVal = 8 // Escala máxima eje Y (0 a 8 piezas)
+  const maxVal = 8
 
   const getX = (idx: number) => paddingX + (idx / (data.length - 1)) * chartWidth
   const getY = (val: number) => paddingTop + chartHeight - (Math.min(maxVal, Math.max(0, val)) / maxVal) * chartHeight
 
-  // Coordenadas de líneas
   const samuelPoints = data.map((d, i) => `${getX(i)},${getY(d.samuel)}`).join(" ")
   const miguelPoints = data.map((d, i) => `${getX(i)},${getY(d.miguel)}`).join(" ")
-  const targetY = getY(6) // Línea de meta en 6
 
   return (
     <div className="w-full overflow-x-auto">
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto select-none overflow-visible">
-        <defs>
-          {/* Gradientes sutiles para áreas debajo de las líneas */}
-          <linearGradient id="samuelGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.0" />
-          </linearGradient>
-          <linearGradient id="miguelGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#7c3aed" stopOpacity="0.0" />
-          </linearGradient>
-        </defs>
-
-        {/* Líneas horizontales de fondo del eje Y */}
+        {/* Líneas horizontales de guía sutiles */}
         {[0, 2, 4, 6, 8].map(tick => {
           const y = getY(tick)
           return (
@@ -1190,14 +1165,15 @@ function DailyLineChart({
                 x2={width - paddingX}
                 y2={y}
                 stroke="currentColor"
-                className={tick === 6 ? "text-emerald-500/50 stroke-dasharray-[4,4]" : "text-border stroke-[1] opacity-40 dark:opacity-20"}
-                strokeDasharray={tick === 6 ? "4 4" : undefined}
+                className="text-border opacity-50"
+                strokeDasharray={tick === 6 ? "3 3" : undefined}
+                strokeWidth={tick === 6 ? "1.5" : "1"}
               />
               <text
                 x={paddingX - 10}
-                y={y + 4}
+                y={y + 3.5}
                 textAnchor="end"
-                className={`text-[10px] font-semibold fill-text-tertiary ${tick === 6 ? "fill-emerald-500" : ""}`}
+                className="text-[10px] font-medium fill-text-tertiary"
               >
                 {tick}
               </text>
@@ -1205,26 +1181,21 @@ function DailyLineChart({
           )
         })}
 
-        {/* Área rellena Samuel */}
-        <polygon
-          points={`${getX(0)},${getY(0)} ${samuelPoints} ${getX(data.length - 1)},${getY(0)}`}
-          fill="url(#samuelGrad)"
-        />
-
-        {/* Línea Samuel (Indigo) */}
+        {/* Línea Samuel (Gris Oscuro / Blanco en Dark) */}
         <polyline
           fill="none"
-          stroke="#4f46e5"
+          stroke="currentColor"
+          className="text-slate-800 dark:text-slate-200"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           points={samuelPoints}
         />
 
-        {/* Línea Miguel (Violet) */}
+        {/* Línea Miguel (Índigo Suave) */}
         <polyline
           fill="none"
-          stroke="#7c3aed"
+          stroke="#6366f1"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -1244,7 +1215,6 @@ function DailyLineChart({
               className="cursor-pointer group"
               onClick={() => onSelectDate(d.date)}
             >
-              {/* Barra vertical de selección */}
               {isSelected && (
                 <line
                   x1={x}
@@ -1252,8 +1222,8 @@ function DailyLineChart({
                   x2={x}
                   y2={paddingTop + chartHeight}
                   stroke="currentColor"
-                  className="text-text-primary stroke-1 stroke-dasharray-[3,3] opacity-60"
-                  strokeDasharray="3 3"
+                  className="text-text-tertiary opacity-40"
+                  strokeDasharray="2 2"
                 />
               )}
 
@@ -1261,14 +1231,14 @@ function DailyLineChart({
               <circle
                 cx={x}
                 cy={yS}
-                r={isSelected ? 6 : 4}
-                className="fill-indigo-600 stroke-surface stroke-2 transition-transform duration-200"
+                r={isSelected ? 5 : 3.5}
+                className="fill-slate-800 dark:fill-slate-200 stroke-surface stroke-2 transition-all"
               />
               <text
                 x={x}
                 y={yS - 8}
                 textAnchor="middle"
-                className="text-[10px] font-extrabold fill-indigo-600 dark:fill-indigo-400"
+                className="text-[10px] font-bold fill-slate-800 dark:fill-slate-200"
               >
                 {d.samuel}
               </text>
@@ -1277,26 +1247,26 @@ function DailyLineChart({
               <circle
                 cx={x}
                 cy={yM}
-                r={isSelected ? 6 : 4}
-                className="fill-violet-600 stroke-surface stroke-2 transition-transform duration-200"
+                r={isSelected ? 5 : 3.5}
+                className="fill-indigo-500 stroke-surface stroke-2 transition-all"
               />
               <text
                 x={x}
                 y={yM + 14}
                 textAnchor="middle"
-                className="text-[10px] font-extrabold fill-violet-600 dark:fill-violet-400"
+                className="text-[10px] font-bold fill-indigo-500"
               >
                 {d.miguel}
               </text>
 
-              {/* Etiqueta Eje X (Día) */}
+              {/* Etiqueta Eje X */}
               <text
                 x={x}
-                y={height - 10}
+                y={height - 8}
                 textAnchor="middle"
-                className={`text-[11px] font-bold ${
+                className={`text-[11px] font-medium ${
                   isSelected
-                    ? "fill-text-primary"
+                    ? "fill-text-primary font-bold"
                     : "fill-text-tertiary group-hover:fill-text-secondary"
                 }`}
               >
@@ -1317,15 +1287,15 @@ function AccumulatedLineChart({
   data: DayTrendPoint[]
 }) {
   const width = 500
-  const height = 220
-  const paddingX = 40
+  const height = 210
+  const paddingX = 35
   const paddingTop = 25
-  const paddingBottom = 35
+  const paddingBottom = 30
 
   const chartWidth = width - paddingX * 2
   const chartHeight = height - paddingTop - paddingBottom
 
-  const maxVal = 35 // Escala hasta 35 piezas acumuladas
+  const maxVal = 35
 
   const getX = (idx: number) => paddingX + (idx / (data.length - 1)) * chartWidth
   const getY = (val: number) => paddingTop + chartHeight - (Math.min(maxVal, Math.max(0, val)) / maxVal) * chartHeight
@@ -1348,14 +1318,15 @@ function AccumulatedLineChart({
                 x2={width - paddingX}
                 y2={y}
                 stroke="currentColor"
-                className={tick === 30 ? "text-amber-500/50 stroke-dasharray-[4,4]" : "text-border stroke-[1] opacity-40 dark:opacity-20"}
-                strokeDasharray={tick === 30 ? "4 4" : undefined}
+                className="text-border opacity-50"
+                strokeDasharray={tick === 30 ? "3 3" : undefined}
+                strokeWidth={tick === 30 ? "1.5" : "1"}
               />
               <text
                 x={paddingX - 10}
-                y={y + 4}
+                y={y + 3.5}
                 textAnchor="end"
-                className={`text-[10px] font-semibold fill-text-tertiary ${tick === 30 ? "fill-amber-500" : ""}`}
+                className="text-[10px] font-medium fill-text-tertiary"
               >
                 {tick}
               </text>
@@ -1363,37 +1334,38 @@ function AccumulatedLineChart({
           )
         })}
 
-        {/* Línea de meta teórica proyectada (Dashed) */}
+        {/* Línea meta teórica */}
         <polyline
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          className="text-text-tertiary opacity-50"
+          strokeWidth="1.2"
+          strokeDasharray="3 3"
+          className="text-text-tertiary opacity-40"
           points={targetPoints}
         />
 
-        {/* Línea Samuel (Indigo) */}
+        {/* Línea Samuel */}
         <polyline
           fill="none"
-          stroke="#4f46e5"
-          strokeWidth="3"
+          stroke="currentColor"
+          className="text-slate-800 dark:text-slate-200"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           points={samuelPoints}
         />
 
-        {/* Línea Miguel (Violet) */}
+        {/* Línea Miguel */}
         <polyline
           fill="none"
-          stroke="#7c3aed"
-          strokeWidth="3"
+          stroke="#6366f1"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           points={miguelPoints}
         />
 
-        {/* Puntos de Samuel y Miguel */}
+        {/* Puntos */}
         {data.map((d, i) => {
           const x = getX(i)
           const yS = getY(d.samuelAccum)
@@ -1405,14 +1377,14 @@ function AccumulatedLineChart({
               <circle
                 cx={x}
                 cy={yS}
-                r={4.5}
-                className="fill-indigo-600 stroke-surface stroke-2"
+                r={3.5}
+                className="fill-slate-800 dark:fill-slate-200 stroke-surface stroke-2"
               />
               <text
                 x={x}
                 y={yS - 8}
                 textAnchor="middle"
-                className="text-[10px] font-extrabold fill-indigo-600 dark:fill-indigo-400"
+                className="text-[10px] font-bold fill-slate-800 dark:fill-slate-200"
               >
                 {d.samuelAccum}
               </text>
@@ -1421,24 +1393,24 @@ function AccumulatedLineChart({
               <circle
                 cx={x}
                 cy={yM}
-                r={4.5}
-                className="fill-violet-600 stroke-surface stroke-2"
+                r={3.5}
+                className="fill-indigo-500 stroke-surface stroke-2"
               />
               <text
                 x={x}
                 y={yM + 14}
                 textAnchor="middle"
-                className="text-[10px] font-extrabold fill-violet-600 dark:fill-violet-400"
+                className="text-[10px] font-bold fill-indigo-500"
               >
                 {d.miguelAccum}
               </text>
 
-              {/* Etiqueta Eje X (Día) */}
+              {/* Etiqueta Eje X */}
               <text
                 x={x}
-                y={height - 10}
+                y={height - 8}
                 textAnchor="middle"
-                className="text-[11px] font-bold fill-text-tertiary"
+                className="text-[11px] font-medium fill-text-tertiary"
               >
                 {d.label}
               </text>
