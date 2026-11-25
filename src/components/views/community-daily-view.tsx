@@ -223,6 +223,11 @@ export function CommunityDailyView({
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Estado adicional para TikTok del otro proyecto
+  const [otherProjectTiktok, setOtherProjectTiktok] = useState<number>(0);
+  const [otherWeeklyTiktok, setOtherWeeklyTiktok] = useState<number>(0);
+  const otherProjectName = currentProjectName === "Casa Luifer" ? "Montana" : "Casa Luifer";
+
   // Captura de pantalla de historias (SOLAMENTE historias)
   const [storyCaptureUrl, setStoryCaptureUrl] = useState<string>("");
   const [uploadingStory, setUploadingStory] = useState(false);
@@ -271,6 +276,20 @@ export function CommunityDailyView({
       setWeeklyLogs(res);
     });
 
+    // Cargar también TikTok del otro proyecto
+    getDailyCommunityLog(currentIso, otherProjectName).then((log) => {
+      if (!active) return;
+      setOtherProjectTiktok(log?.formatTiktok ?? 0);
+    });
+    getWeeklyCommunityLogs(weekISOStrings, otherProjectName).then((res) => {
+      if (!active) return;
+      let sum = 0;
+      Object.values(res).forEach((l) => {
+        sum += l.formatTiktok ?? 0;
+      });
+      setOtherWeeklyTiktok(sum);
+    });
+
     // Cargar captura de historia guardada
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}`) || "";
@@ -280,7 +299,34 @@ export function CommunityDailyView({
     return () => {
       active = false;
     };
-  }, [currentIso, currentProjectName, weekISOStrings]);
+  }, [currentIso, currentProjectName, otherProjectName, weekISOStrings]);
+
+  const handleOtherTiktokChange = async (delta: number) => {
+    const newVal = Math.max(0, otherProjectTiktok + delta);
+    setOtherProjectTiktok(newVal);
+    try {
+      await saveDailyCommunityLog({
+        date: currentIso,
+        cmId: "valentina-c",
+        cmName: "Lizz",
+        projectName: otherProjectName,
+        formatHistoriaOrganica: 0,
+        formatHistoriaProducto: 0,
+        formatHistoriaInteractiva: 0,
+        formatFeedOrganico: 0,
+        formatFeedCreativo: 0,
+        formatVideoTestimonio: 0,
+        formatCarrusel: 0,
+        formatPost: 0,
+        formatTiktok: newVal,
+      });
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("daily_log_updated"));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleIncrement = (key: keyof CommunityDailyCounts) => {
     setCounts((prev) => ({ ...prev, [key]: prev[key] + 1 }));
@@ -886,7 +932,7 @@ export function CommunityDailyView({
               </div>
             </div>
 
-            {/* SECCIÓN 3: TIKTOK (NUEVO CREATIVO POR PROYECTO) */}
+            {/* SECCIÓN 3: TIKTOKS (CASA LUIFER Y MONTANA LADO A LADO) */}
             <div className="rounded-2xl bg-surface p-5 shadow-sm flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -895,52 +941,134 @@ export function CommunityDailyView({
                   </div>
                   <div>
                     <h2 className="text-[14px] font-bold text-text-primary">
-                      3. TikTok · {currentProjectName}
+                      3. TikToks de marcas
                     </h2>
                     <p className="text-[11px] text-text-tertiary">
-                      Registro de videos publicados en la cuenta de TikTok
+                      Registro de videos publicados en las cuentas de TikTok (Casa Luifer y Montana)
                     </p>
                   </div>
                 </div>
                 <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-500">
-                  {counts.tiktok} tiktok hoy
+                  {counts.tiktok + otherProjectTiktok} tiktoks hoy
                 </span>
               </div>
 
-              <div className="max-w-md">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Tarjeta TikTok Casa Luifer */}
                 <div
                   className={`rounded-xl p-4 flex items-center justify-between gap-4 transition shadow-2xs ${
-                    counts.tiktok > 0 ? "bg-cyan-500/10" : "bg-surface-2/60"
+                    (currentProjectName === "Casa Luifer" ? counts.tiktok : otherProjectTiktok) > 0
+                      ? "bg-pink-500/10 border border-pink-500/20"
+                      : "bg-surface-2/60"
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-surface flex items-center justify-center shrink-0 shadow-2xs text-cyan-500">
-                      <Video className="w-4 h-4" />
+                    <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center shrink-0 shadow-2xs text-pink-500 font-bold text-xs">
+                      CL
                     </div>
                     <div>
-                      <div className="text-[13px] font-bold text-text-primary">
-                        {tiktokLabel}
+                      <div className="text-[13.5px] font-bold text-text-primary">
+                        Videos TikTok Casa Luifer
                       </div>
                       <div className="text-[11px] text-text-tertiary">
-                        Semana: {weeklyTotalsByFormat.tiktok} / 5 videos
+                        Semana:{" "}
+                        <strong className="text-text-primary">
+                          {currentProjectName === "Casa Luifer"
+                            ? weeklyTotalsByFormat.tiktok
+                            : otherWeeklyTiktok + otherProjectTiktok}
+                        </strong>{" "}
+                        / 5 videos
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center bg-surface rounded-xl p-1 shadow-2xs">
+                  <div className="flex items-center bg-surface rounded-xl p-1 shadow-2xs shrink-0">
                     <button
                       type="button"
-                      onClick={() => handleDecrement("tiktok")}
+                      onClick={() => {
+                        if (currentProjectName === "Casa Luifer") {
+                          handleDecrement("tiktok");
+                        } else {
+                          handleOtherTiktokChange(-1);
+                        }
+                      }}
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-2 transition cursor-pointer"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="w-9 text-center text-[17px] font-bold text-text-primary select-none">
-                      {counts.tiktok}
+                      {currentProjectName === "Casa Luifer" ? counts.tiktok : otherProjectTiktok}
                     </span>
                     <button
                       type="button"
-                      onClick={() => handleIncrement("tiktok")}
+                      onClick={() => {
+                        if (currentProjectName === "Casa Luifer") {
+                          handleIncrement("tiktok");
+                        } else {
+                          handleOtherTiktokChange(1);
+                        }
+                      }}
+                      className="w-8 h-8 rounded-lg bg-[#111113] dark:bg-white text-white dark:text-[#111113] flex items-center justify-center hover:opacity-90 active:scale-95 transition cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tarjeta TikTok Montana */}
+                <div
+                  className={`rounded-xl p-4 flex items-center justify-between gap-4 transition shadow-2xs ${
+                    (currentProjectName === "Montana" ? counts.tiktok : otherProjectTiktok) > 0
+                      ? "bg-blue-500/10 border border-blue-500/20"
+                      : "bg-surface-2/60"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center shrink-0 shadow-2xs text-blue-500 font-bold text-xs">
+                      MT
+                    </div>
+                    <div>
+                      <div className="text-[13.5px] font-bold text-text-primary">
+                        Videos TikTok Montana
+                      </div>
+                      <div className="text-[11px] text-text-tertiary">
+                        Semana:{" "}
+                        <strong className="text-text-primary">
+                          {currentProjectName === "Montana"
+                            ? weeklyTotalsByFormat.tiktok
+                            : otherWeeklyTiktok + otherProjectTiktok}
+                        </strong>{" "}
+                        / 5 videos
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center bg-surface rounded-xl p-1 shadow-2xs shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (currentProjectName === "Montana") {
+                          handleDecrement("tiktok");
+                        } else {
+                          handleOtherTiktokChange(-1);
+                        }
+                      }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-2 transition cursor-pointer"
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="w-9 text-center text-[17px] font-bold text-text-primary select-none">
+                      {currentProjectName === "Montana" ? counts.tiktok : otherProjectTiktok}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (currentProjectName === "Montana") {
+                          handleIncrement("tiktok");
+                        } else {
+                          handleOtherTiktokChange(1);
+                        }
+                      }}
                       className="w-8 h-8 rounded-lg bg-[#111113] dark:bg-white text-white dark:text-[#111113] flex items-center justify-center hover:opacity-90 active:scale-95 transition cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
