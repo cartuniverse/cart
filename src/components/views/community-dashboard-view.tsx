@@ -120,16 +120,18 @@ const FORMAT_META: {
   label: string;
   shortLabel: string;
   color: string;
+  targetCL: number;
+  targetMT: number;
 }[] = [
-  { key: "formatHistoriaOrganica", label: "Historias · orgánicos", shortLabel: "Hist. orgánicas", color: "#ec4899" },
-  { key: "formatHistoriaProducto", label: "Historias · producto", shortLabel: "Hist. producto", color: "#f59e0b" },
-  { key: "formatHistoriaInteractiva", label: "Historias · interactivas", shortLabel: "Hist. interactivas", color: "#f97316" },
-  { key: "formatFeedOrganico", label: "Feed · videos orgánicos", shortLabel: "Feed orgánicos", color: "#6366f1" },
-  { key: "formatFeedCreativo", label: "Feed · videos creativos", shortLabel: "Feed creativos", color: "#8b5cf6" },
-  { key: "formatVideoTestimonio", label: "Feed · videos testimonio", shortLabel: "Testimonios", color: "#14b8a6" },
-  { key: "formatCarrusel", label: "Carruseles", shortLabel: "Carruseles", color: "#10b981" },
-  { key: "formatPost", label: "Posts", shortLabel: "Posts", color: "#3b82f6" },
-  { key: "formatTiktok", label: "TikToks", shortLabel: "TikToks", color: "#06b6d4" },
+  { key: "formatHistoriaOrganica", label: "Historias · orgánicos", shortLabel: "Hist. orgánicas", color: "#ec4899", targetCL: 7, targetMT: 5 },
+  { key: "formatHistoriaProducto", label: "Historias · producto", shortLabel: "Hist. producto", color: "#f59e0b", targetCL: 7, targetMT: 5 },
+  { key: "formatHistoriaInteractiva", label: "Historias · interactivas", shortLabel: "Hist. interactivas", color: "#f97316", targetCL: 7, targetMT: 5 },
+  { key: "formatFeedOrganico", label: "Feed · videos orgánicos", shortLabel: "Feed orgánicos", color: "#6366f1", targetCL: 12, targetMT: 8 },
+  { key: "formatFeedCreativo", label: "Feed · videos creativos", shortLabel: "Feed creativos", color: "#8b5cf6", targetCL: 9, targetMT: 6 },
+  { key: "formatVideoTestimonio", label: "Feed · videos testimonio", shortLabel: "Testimonios", color: "#14b8a6", targetCL: 7, targetMT: 5 },
+  { key: "formatCarrusel", label: "Carruseles", shortLabel: "Carruseles", color: "#10b981", targetCL: 4, targetMT: 3 },
+  { key: "formatPost", label: "Posts", shortLabel: "Posts", color: "#3b82f6", targetCL: 3, targetMT: 2 },
+  { key: "formatTiktok", label: "TikToks", shortLabel: "TikToks", color: "#06b6d4", targetCL: 5, targetMT: 5 },
 ];
 
 export function CommunityDashboardView({
@@ -245,12 +247,12 @@ export function CommunityDashboardView({
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
 
-  // Helpers para gráfica lineal SVG
+  // Helpers para gráfica lineal SVG reactiva
   const chartW = 500;
-  const chartH = 190;
-  const padX = 32;
-  const padTop = 20;
-  const padBot = 28;
+  const chartH = 340;
+  const padX = 36;
+  const padTop = 28;
+  const padBot = 36;
   const innerW = chartW - padX * 2;
   const innerH = chartH - padTop - padBot;
   const maxDaily = Math.max(...dailyTrend.map((d) => Math.max(d.cl, d.mt)), 8);
@@ -625,10 +627,10 @@ export function CommunityDashboardView({
         </div>
 
         {/* 3. GRÁFICAS: TENDENCIA DIARIA + PRODUCCIÓN POR FORMATO */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           {/* Gráfica Lineal Diaria */}
-          <div className="rounded-2xl bg-surface p-6 shadow-sm flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+          <div className="rounded-2xl bg-surface p-6 shadow-sm flex flex-col justify-between gap-4 h-full">
+            <div className="flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-pink-500" />
                 <span className="text-[14px] font-bold text-text-primary">
@@ -645,52 +647,74 @@ export function CommunityDashboardView({
               </div>
             </div>
 
-            <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full h-auto select-none overflow-visible">
-              {[0, Math.round(maxDaily / 2), maxDaily].map((tick) => {
-                const y = getY(tick);
-                return (
-                  <g key={tick}>
-                    <line
-                      x1={padX} y1={y} x2={chartW - padX} y2={y}
-                      stroke="currentColor" className="text-text-tertiary/20" strokeWidth="0.8"
-                    />
-                    <text x={padX - 8} y={y + 3.5} textAnchor="end" className="text-[10px] fill-text-tertiary">
-                      {tick}
-                    </text>
-                  </g>
-                );
-              })}
+            <div className="flex-1 flex items-center justify-center min-h-[300px] w-full">
+              <svg
+                viewBox={`0 0 ${chartW} ${chartH}`}
+                preserveAspectRatio="none"
+                className="w-full h-full max-h-[480px] select-none overflow-visible"
+              >
+                {[0, Math.round(maxDaily / 2), maxDaily].map((tick) => {
+                  const y = getY(tick);
+                  return (
+                    <g key={tick}>
+                      <line
+                        x1={padX} y1={y} x2={chartW - padX} y2={y}
+                        stroke="currentColor" className="text-text-tertiary/20" strokeWidth="0.8" strokeDasharray="3 3"
+                      />
+                      <text x={padX - 8} y={y + 3.5} textAnchor="end" className="text-[11px] font-semibold fill-text-tertiary">
+                        {tick}
+                      </text>
+                    </g>
+                  );
+                })}
 
-              <polyline fill="none" stroke="#ec4899" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={clPoints} />
-              <polyline fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={mtPoints} />
+                {/* Área sutil bajo las líneas */}
+                <polyline fill="none" stroke="#ec4899" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" points={clPoints} />
+                <polyline fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" points={mtPoints} />
 
-              {dailyTrend.map((d, i) => {
-                const x = getX(i);
-                const yCL = getY(d.cl);
-                const yMT = getY(d.mt);
-                const isToday = d.iso === todayIso;
-                return (
-                  <g key={d.iso}>
-                    <circle cx={x} cy={yCL} r={isToday ? 4.5 : 3.5} className="fill-pink-500 stroke-surface stroke-2" />
-                    <text x={x} y={yCL - 7} textAnchor="middle" className="text-[10px] font-bold fill-pink-500">
-                      {d.cl}
-                    </text>
-                    <circle cx={x} cy={yMT} r={isToday ? 4.5 : 3.5} className="fill-blue-500 stroke-surface stroke-2" />
-                    <text x={x} y={yMT + 13} textAnchor="middle" className="text-[10px] font-bold fill-blue-500">
-                      {d.mt}
-                    </text>
-                    <text x={x} y={chartH - 6} textAnchor="middle" className={`text-[11px] ${isToday ? "font-bold fill-text-primary" : "fill-text-tertiary"}`}>
-                      {d.label}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
+                {dailyTrend.map((d, i) => {
+                  const x = getX(i);
+                  const yCL = getY(d.cl);
+                  const yMT = getY(d.mt);
+                  const isToday = d.iso === todayIso;
+                  return (
+                    <g key={d.iso}>
+                      {/* Puntos y etiquetas de CL */}
+                      <circle cx={x} cy={yCL} r={isToday ? 5.5 : 4} className="fill-pink-500 stroke-surface stroke-2" />
+                      <text x={x} y={yCL - 9} textAnchor="middle" className="text-[11px] font-bold fill-pink-500">
+                        {d.cl}
+                      </text>
+
+                      {/* Puntos y etiquetas de MT */}
+                      <circle cx={x} cy={yMT} r={isToday ? 5.5 : 4} className="fill-blue-500 stroke-surface stroke-2" />
+                      <text x={x} y={yMT + 16} textAnchor="middle" className="text-[11px] font-bold fill-blue-500">
+                        {d.mt}
+                      </text>
+
+                      {/* Etiqueta del día */}
+                      <text
+                        x={x}
+                        y={chartH - 8}
+                        textAnchor="middle"
+                        className={`text-[12px] ${isToday ? "font-bold fill-text-primary" : "fill-text-tertiary"}`}
+                      >
+                        {d.label}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+
+            <div className="pt-3 border-t border-border flex items-center justify-between text-[11.5px] text-text-tertiary shrink-0">
+              <span>Ritmo acumulado: <strong className="text-text-primary">{semanaCL + semanaMT}</strong> publicaciones</span>
+              <span className="text-pink-500 font-semibold">{dailyTrend.find((d) => d.iso === todayIso)?.cl ?? 0} CL hoy · {dailyTrend.find((d) => d.iso === todayIso)?.mt ?? 0} MT hoy</span>
+            </div>
           </div>
 
           {/* Gráfica de Barras por Formato */}
-          <div className="rounded-2xl bg-surface p-6 shadow-sm flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="rounded-2xl bg-surface p-6 shadow-sm flex flex-col justify-between gap-4 h-full">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-indigo-500" />
                 <span className="text-[14px] font-bold text-text-primary">
@@ -709,7 +733,7 @@ export function CommunityDashboardView({
                       : "text-text-tertiary hover:text-text-primary"
                   }`}
                 >
-                  <span>Ambas (Separadas)</span>
+                  <span>Ambas</span>
                 </button>
                 <button
                   type="button"
@@ -738,109 +762,145 @@ export function CommunityDashboardView({
               </div>
             </div>
 
-            {/* Leyenda aclaratoria */}
-            <div className="flex items-center gap-4 text-[11px] text-text-secondary border-b border-border pb-2.5">
+            {/* Leyenda aclaratoria con metas globales */}
+            <div className="flex items-center justify-between text-[11px] text-text-secondary border-b border-border pb-2.5 shrink-0">
               {brandFilter === "all" ? (
                 <>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-pink-500" />
-                    <strong>Casa Luifer (CL)</strong>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
-                    <strong>Montana (MT)</strong>
-                  </span>
-                  <span className="ml-auto text-[10.5px] text-text-tertiary">
-                    Barras separadas por marca
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-sm bg-pink-500" />
+                      <strong>Casa Luifer (CL)</strong>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
+                      <strong>Montana (MT)</strong>
+                    </span>
+                  </div>
+                  <span className="text-[10.5px] text-text-tertiary">
+                    Meta: <strong>56 CL + 44 MT = 100 piezas/sem</strong>
                   </span>
                 </>
               ) : brandFilter === "Casa Luifer" ? (
-                <span className="flex items-center gap-1.5 text-pink-500 font-semibold">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-pink-500" />
-                  Mostrando solo piezas de Casa Luifer
-                </span>
+                <div className="flex items-center justify-between w-full">
+                  <span className="flex items-center gap-1.5 text-pink-500 font-semibold">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-pink-500" />
+                    Mostrando piezas de Casa Luifer
+                  </span>
+                  <span className="text-text-tertiary">Meta global: <strong>56 piezas/semana</strong></span>
+                </div>
               ) : (
-                <span className="flex items-center gap-1.5 text-blue-500 font-semibold">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
-                  Mostrando solo piezas de Montana
-                </span>
+                <div className="flex items-center justify-between w-full">
+                  <span className="flex items-center gap-1.5 text-blue-500 font-semibold">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
+                    Mostrando piezas de Montana
+                  </span>
+                  <span className="text-text-tertiary">Meta global: <strong>44 piezas/semana</strong></span>
+                </div>
               )}
             </div>
 
-            <div className="flex flex-col gap-3.5 pt-1">
+            <div className="flex flex-col gap-3.5 pt-1 overflow-y-auto flex-1">
               {formatBreakdown.map((fmt) => {
                 const clVal = fmt.valueCL;
                 const mtVal = fmt.valueMT;
-                const clPct = Math.round((clVal / maxFormatoVal) * 100);
-                const mtPct = Math.round((mtVal / maxFormatoVal) * 100);
-                const hasAny = brandFilter === "all" ? clVal > 0 || mtVal > 0 : brandFilter === "Casa Luifer" ? clVal > 0 : mtVal > 0;
+                const metaCLFormat = fmt.targetCL;
+                const metaMTFormat = fmt.targetMT;
+                const targetTotal = metaCLFormat + metaMTFormat;
+
+                // Cálculos de porcentaje frente a la meta o al máximo
+                const clPct = Math.min(100, Math.round((clVal / metaCLFormat) * 100));
+                const mtPct = Math.min(100, Math.round((mtVal / metaMTFormat) * 100));
 
                 return (
-                  <div key={fmt.key} className="flex flex-col gap-1">
+                  <div key={fmt.key} className="flex flex-col gap-1.5 p-2 rounded-xl bg-surface-2/30 hover:bg-surface-2/60 transition">
                     <div className="flex items-center justify-between text-[12px]">
                       <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: fmt.color }} />
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: fmt.color }} />
                         <span className="font-semibold text-text-primary">{fmt.label}</span>
                       </div>
                       <div className="text-[11.5px] font-bold text-text-secondary flex items-center gap-2">
                         {brandFilter === "all" ? (
                           <>
-                            <span className="text-pink-500">CL: {clVal}</span>
+                            <span className="text-pink-500">
+                              CL: {clVal} <span className="font-normal text-text-tertiary">/{metaCLFormat}</span>
+                            </span>
                             <span className="text-text-tertiary">·</span>
-                            <span className="text-blue-500">MT: {mtVal}</span>
+                            <span className="text-blue-500">
+                              MT: {mtVal} <span className="font-normal text-text-tertiary">/{metaMTFormat}</span>
+                            </span>
                             <span className="text-text-tertiary">·</span>
-                            <span className="text-text-primary">Total: {fmt.total}</span>
+                            <span className="text-text-primary font-bold">
+                              Total: {fmt.total} <span className="font-normal text-text-tertiary">/{targetTotal}</span>
+                            </span>
                           </>
                         ) : brandFilter === "Casa Luifer" ? (
-                          <span className="text-pink-500 font-bold">{clVal} {clVal === 1 ? "pieza" : "piezas"}</span>
+                          <span className="text-pink-500 font-bold">
+                            {clVal} / {metaCLFormat} piezas ({clPct}%)
+                          </span>
                         ) : (
-                          <span className="text-blue-500 font-bold">{mtVal} {mtVal === 1 ? "pieza" : "piezas"}</span>
+                          <span className="text-blue-500 font-bold">
+                            {mtVal} / {metaMTFormat} piezas ({mtPct}%)
+                          </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Barras visuales */}
+                    {/* Barras visuales con meta visible */}
                     {brandFilter === "all" ? (
-                      /* Dos barras separadas claramente una debajo de otra por marca */
-                      <div className="flex flex-col gap-1 pl-4">
+                      /* Dos barras separadas claramente una debajo de otra por marca con meta */
+                      <div className="flex flex-col gap-1.5 pl-4">
                         {/* Barra Casa Luifer */}
                         <div className="flex items-center gap-2">
-                          <span className="w-5 text-[10px] font-bold text-pink-500 shrink-0">CL</span>
-                          <div className="flex-1 h-2 rounded-full bg-surface-2 overflow-hidden">
+                          <span className="w-6 text-[10px] font-bold text-pink-500 shrink-0">CL</span>
+                          <div className="flex-1 h-2.5 rounded-full bg-surface-2 overflow-hidden relative">
                             <div
                               className="h-full rounded-full bg-pink-500 transition-all duration-700 ease-out"
                               style={{ width: `${Math.max(clVal > 0 ? 5 : 0, clPct)}%` }}
                             />
                           </div>
-                          <span className="w-4 text-right text-[10.5px] font-bold text-pink-500">{clVal}</span>
+                          <span className="w-14 text-right text-[10.5px] font-semibold text-text-secondary">
+                            <strong className="text-pink-500">{clVal}</strong>/{metaCLFormat}
+                          </span>
                         </div>
                         {/* Barra Montana */}
                         <div className="flex items-center gap-2">
-                          <span className="w-5 text-[10px] font-bold text-blue-500 shrink-0">MT</span>
-                          <div className="flex-1 h-2 rounded-full bg-surface-2 overflow-hidden">
+                          <span className="w-6 text-[10px] font-bold text-blue-500 shrink-0">MT</span>
+                          <div className="flex-1 h-2.5 rounded-full bg-surface-2 overflow-hidden relative">
                             <div
                               className="h-full rounded-full bg-blue-500 transition-all duration-700 ease-out"
                               style={{ width: `${Math.max(mtVal > 0 ? 5 : 0, mtPct)}%` }}
                             />
                           </div>
-                          <span className="w-4 text-right text-[10.5px] font-bold text-blue-500">{mtVal}</span>
+                          <span className="w-14 text-right text-[10.5px] font-semibold text-text-secondary">
+                            <strong className="text-blue-500">{mtVal}</strong>/{metaMTFormat}
+                          </span>
                         </div>
                       </div>
                     ) : brandFilter === "Casa Luifer" ? (
                       /* Barra individual Casa Luifer */
-                      <div className="h-2.5 rounded-full bg-surface-2 overflow-hidden ml-4">
-                        <div
-                          className="h-full rounded-full bg-pink-500 transition-all duration-700 ease-out"
-                          style={{ width: `${Math.max(clVal > 0 ? 5 : 0, clPct)}%` }}
-                        />
+                      <div className="flex items-center gap-2 pl-4">
+                        <div className="flex-1 h-3 rounded-full bg-surface-2 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-pink-500 transition-all duration-700 ease-out"
+                            style={{ width: `${Math.max(clVal > 0 ? 5 : 0, clPct)}%` }}
+                          />
+                        </div>
+                        <span className="text-[11px] font-semibold text-text-secondary">
+                          <strong className="text-pink-500">{clVal}</strong> / {metaCLFormat} meta
+                        </span>
                       </div>
                     ) : (
                       /* Barra individual Montana */
-                      <div className="h-2.5 rounded-full bg-surface-2 overflow-hidden ml-4">
-                        <div
-                          className="h-full rounded-full bg-blue-500 transition-all duration-700 ease-out"
-                          style={{ width: `${Math.max(mtVal > 0 ? 5 : 0, mtPct)}%` }}
-                        />
+                      <div className="flex items-center gap-2 pl-4">
+                        <div className="flex-1 h-3 rounded-full bg-surface-2 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-blue-500 transition-all duration-700 ease-out"
+                            style={{ width: `${Math.max(mtVal > 0 ? 5 : 0, mtPct)}%` }}
+                          />
+                        </div>
+                        <span className="text-[11px] font-semibold text-text-secondary">
+                          <strong className="text-blue-500">{mtVal}</strong> / {metaMTFormat} meta
+                        </span>
                       </div>
                     )}
                   </div>
