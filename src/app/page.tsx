@@ -21,6 +21,7 @@ import { CommunityDailyView } from "@/components/views/community-daily-view";
 import { CommunityDashboardView } from "@/components/views/community-dashboard-view";
 import { DesignerDailyView } from "@/components/views/designer-daily-view";
 import { DirectorView } from "@/components/views/director-view";
+import { AdminCommunityCalendarView } from "@/components/views/admin-community-calendar-view";
 import { getPeople, getProjects } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { getCurrentProfile, signOut } from "@/lib/auth";
@@ -244,6 +245,38 @@ export default function Home() {
                 onPersonCreated={handlePersonCreated}
               />
             </div>
+          ) : activeNav === "admin_calendar_lizz" ? (
+            /* Vista Exclusiva Administrador: Calendario Semanal de Lizz con KPIs y evidencias */
+            <AdminCommunityCalendarView />
+          ) : activeNav === "admin_view_lizz" ? (
+            /* Vista de Lizz (Community Manager) para Administrador */
+            <CommunityDailyView
+              initialProjectName={activeProjectName}
+              onProjectChange={(proj) => setActiveProjectName(proj)}
+            />
+          ) : activeNav === "admin_view_samu" ? (
+            /* Vista de Samuel (Diseñador AI) para Administrador */
+            <DesignerDailyView
+              designerName="Samuel Marín"
+              designerEmail="samuel.gaviria@cartuniverse.online"
+              designerId="samuel-marin"
+            />
+          ) : activeNav === "admin_view_miguel" ? (
+            /* Vista de Miguel (Diseñador AI) para Administrador */
+            <DesignerDailyView
+              designerName="Miguel Bolívar"
+              designerEmail="miguel.bolivar@cartuniverse.online"
+              designerId="miguel-bolivar"
+            />
+          ) : activeNav === "admin_view_david" ? (
+            /* Vista de David (Director Operativo) para Administrador */
+            <DirectorView
+              directorName="David Sánchez"
+              directorEmail="david.sanchez@cartuniverse.online"
+            />
+          ) : activeNav === "admin_view_andres" ? (
+            /* Vista de Andrés (Creador Audiovisual) para Administrador */
+            <AudiovisualDailyView currentProjectName={activeProjectName} />
           ) : activeNav === "tareas" ? (
             /* Vista de todas las tareas asignadas agrupadas por persona */
             <AllTasksView onSelectPerson={handleSelectGridPerson} />

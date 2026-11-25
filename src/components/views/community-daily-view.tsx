@@ -228,15 +228,15 @@ export function CommunityDailyView({
   const [otherWeeklyTiktok, setOtherWeeklyTiktok] = useState<number>(0);
   const otherProjectName = currentProjectName === "Casa Luifer" ? "Montana" : "Casa Luifer";
 
-  // Capturas de pantalla para cada una de las 3 historias
+  // Capturas de pantalla múltiples para cada tipo de historia (video, producto, interactiva)
   const [storyCaptures, setStoryCaptures] = useState<{
-    video: string;
-    producto: string;
-    interactiva: string;
+    video: string[];
+    producto: string[];
+    interactiva: string[];
   }>({
-    video: "",
-    producto: "",
-    interactiva: "",
+    video: [],
+    producto: [],
+    interactiva: [],
   });
   const [uploadingCategory, setUploadingCategory] = useState<string | null>(null);
   const [previewModal, setPreviewModal] = useState<{ url: string; title: string } | null>(null);
@@ -300,12 +300,53 @@ export function CommunityDailyView({
       setOtherWeeklyTiktok(sum);
     });
 
-    // Cargar capturas de historias guardadas (video, producto, interactiva)
+    // Cargar capturas de historias guardadas (soporta múltiples por categoría)
     if (typeof window !== "undefined") {
-      const v = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}_video`) ||
-        localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}`) || "";
-      const p = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}_producto`) || "";
-      const i = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}_interactiva`) || "";
+      const parseList = (key: string, fallbackKey?: string): string[] => {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) return parsed;
+            if (typeof parsed === "string" && parsed) return [parsed];
+          } catch {
+            if (raw) return [raw];
+          }
+        }
+        if (fallbackKey) {
+          const fallbackRaw = localStorage.getItem(fallbackKey);
+          if (fallbackRaw) {
+            try {
+              const p = JSON.parse(fallbackRaw);
+              if (Array.isArray(p)) return p;
+              if (typeof p === "string" && p) return [p];
+            } catch {
+              return [fallbackRaw];
+            }
+          }
+        }
+        return [];
+      };
+
+      const v = parseList(
+        `community_story_captures_${currentIso}_${currentProjectName}_video`,
+        `community_story_capture_${currentIso}_${currentProjectName}_video`
+      );
+      const p = parseList(
+        `community_story_captures_${currentIso}_${currentProjectName}_producto`,
+        `community_story_capture_${currentIso}_${currentProjectName}_producto`
+      );
+      const i = parseList(
+        `community_story_captures_${currentIso}_${currentProjectName}_interactiva`,
+        `community_story_capture_${currentIso}_${currentProjectName}_interactiva`
+      );
+
+      // Si no hay video específico, intentar cargar fallback general
+      if (v.length === 0) {
+        const gen = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}`);
+        if (gen) v.push(gen);
+      }
+
       setStoryCaptures({ video: v, producto: p, interactiva: i });
     }
 
@@ -390,17 +431,21 @@ export function CommunityDailyView({
 
   const handleStoryUpload = async (file: File, type: "video" | "producto" | "interactiva") => {
     setUploadingCategory(type);
-    const url = await uploadDesignCapture(file, "lizz", currentIso, `${currentProjectName}_historia_${type}`);
+    const url = await uploadDesignCapture(file, "lizz", currentIso, `${currentProjectName}_historia_${type}_${Date.now()}`);
     const saveUrl = (finalUrl: string) => {
-      setStoryCaptures((prev) => ({ ...prev, [type]: finalUrl }));
-      if (typeof window !== "undefined") {
-        localStorage.setItem(`community_story_capture_${currentIso}_${currentProjectName}_${type}`, finalUrl);
-        // Guardar también en fallback para compatibilidad con el dashboard
-        if (type === "video") {
-          localStorage.setItem(`community_story_capture_${currentIso}_${currentProjectName}`, finalUrl);
+      setStoryCaptures((prev) => {
+        const nextList = [...prev[type], finalUrl];
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`community_story_captures_${currentIso}_${currentProjectName}_${type}`, JSON.stringify(nextList));
+          // Guardar el más reciente en el fallback
+          localStorage.setItem(`community_story_capture_${currentIso}_${currentProjectName}_${type}`, finalUrl);
+          if (type === "video") {
+            localStorage.setItem(`community_story_capture_${currentIso}_${currentProjectName}`, finalUrl);
+          }
+          window.dispatchEvent(new Event("daily_log_updated"));
         }
-        window.dispatchEvent(new Event("daily_log_updated"));
-      }
+        return { ...prev, [type]: nextList };
+      });
     };
 
     if (url) {
@@ -415,15 +460,26 @@ export function CommunityDailyView({
     setUploadingCategory(null);
   };
 
-  const handleRemoveStoryCapture = (type: "video" | "producto" | "interactiva") => {
-    setStoryCaptures((prev) => ({ ...prev, [type]: "" }));
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(`community_story_capture_${currentIso}_${currentProjectName}_${type}`);
-      if (type === "video") {
-        localStorage.removeItem(`community_story_capture_${currentIso}_${currentProjectName}`);
+  const handleRemoveStoryCapture = (type: "video" | "producto" | "interactiva", index: number) => {
+    setStoryCaptures((prev) => {
+      const nextList = prev[type].filter((_, idx) => idx !== index);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`community_story_captures_${currentIso}_${currentProjectName}_${type}`, JSON.stringify(nextList));
+        if (nextList.length > 0) {
+          localStorage.setItem(`community_story_capture_${currentIso}_${currentProjectName}_${type}`, nextList[nextList.length - 1]);
+          if (type === "video") {
+            localStorage.setItem(`community_story_capture_${currentIso}_${currentProjectName}`, nextList[nextList.length - 1]);
+          }
+        } else {
+          localStorage.removeItem(`community_story_capture_${currentIso}_${currentProjectName}_${type}`);
+          if (type === "video") {
+            localStorage.removeItem(`community_story_capture_${currentIso}_${currentProjectName}`);
+          }
+        }
+        window.dispatchEvent(new Event("daily_log_updated"));
       }
-      window.dispatchEvent(new Event("daily_log_updated"));
-    }
+      return { ...prev, [type]: nextList };
+    });
   };
 
   // Totales acumulados de la semana por formato
@@ -807,15 +863,15 @@ export function CommunityDailyView({
                 })}
               </div>
 
-              {/* 3 CAPTURAS DE PANTALLA DE HISTORIAS: VIDEO, PRODUCTO E INTERACTIVA */}
+              {/* CAPTURAS DE PANTALLA DE HISTORIAS MÚLTIPLES: VIDEO, PRODUCTO E INTERACTIVA */}
               <div className="pt-3 border-t border-[var(--border)] flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[12px] font-bold text-text-primary flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4 text-pink-500" />
-                    Capturas de pantalla de Historias (3 capturas)
+                    Capturas de pantalla de Historias (puedes adjuntar varias por formato)
                   </span>
-                  <span className="text-[10.5px] text-text-tertiary">
-                    {[storyCaptures.video, storyCaptures.producto, storyCaptures.interactiva].filter(Boolean).length}/3 adjuntas
+                  <span className="text-[10.5px] font-semibold text-text-tertiary">
+                    {storyCaptures.video.length + storyCaptures.producto.length + storyCaptures.interactiva.length} capturas en total
                   </span>
                 </div>
 
@@ -823,10 +879,13 @@ export function CommunityDailyView({
                   ref={videoInputRef}
                   type="file"
                   accept="image/*"
+                  multiple
                   className="hidden"
                   onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleStoryUpload(file, "video");
+                    const files = e.target.files;
+                    if (files && files.length > 0) {
+                      Array.from(files).forEach((file) => handleStoryUpload(file, "video"));
+                    }
                     e.target.value = "";
                   }}
                 />
@@ -834,10 +893,13 @@ export function CommunityDailyView({
                   ref={productoInputRef}
                   type="file"
                   accept="image/*"
+                  multiple
                   className="hidden"
                   onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleStoryUpload(file, "producto");
+                    const files = e.target.files;
+                    if (files && files.length > 0) {
+                      Array.from(files).forEach((file) => handleStoryUpload(file, "producto"));
+                    }
                     e.target.value = "";
                   }}
                 />
@@ -845,10 +907,13 @@ export function CommunityDailyView({
                   ref={interactivaInputRef}
                   type="file"
                   accept="image/*"
+                  multiple
                   className="hidden"
                   onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleStoryUpload(file, "interactiva");
+                    const files = e.target.files;
+                    if (files && files.length > 0) {
+                      Array.from(files).forEach((file) => handleStoryUpload(file, "interactiva"));
+                    }
                     e.target.value = "";
                   }}
                 />
@@ -857,27 +922,27 @@ export function CommunityDailyView({
                   {[
                     {
                       id: "video" as const,
-                      title: "Historia de video",
+                      title: "Historias de video",
                       hint: "Orgánico",
                       color: "#ec4899",
                       inputRef: videoInputRef,
-                      capture: storyCaptures.video,
+                      captures: storyCaptures.video,
                     },
                     {
                       id: "producto" as const,
-                      title: "Historia de producto",
+                      title: "Historias de producto",
                       hint: "Foto producto",
                       color: "#f59e0b",
                       inputRef: productoInputRef,
-                      capture: storyCaptures.producto,
+                      captures: storyCaptures.producto,
                     },
                     {
                       id: "interactiva" as const,
-                      title: "Historia interactiva",
+                      title: "Historias interactivas",
                       hint: "Encuesta o sticker",
                       color: "#f97316",
                       inputRef: interactivaInputRef,
-                      capture: storyCaptures.interactiva,
+                      captures: storyCaptures.interactiva,
                     },
                   ].map((slot) => (
                     <div
@@ -890,7 +955,7 @@ export function CommunityDailyView({
                             {slot.title}
                           </div>
                           <div className="text-[10px] text-text-tertiary">
-                            {slot.hint}
+                            {slot.hint} · {slot.captures.length} {slot.captures.length === 1 ? "captura" : "capturas"}
                           </div>
                         </div>
                         <span
@@ -899,59 +964,68 @@ export function CommunityDailyView({
                         />
                       </div>
 
-                      {slot.capture ? (
-                        <div className="relative group rounded-lg overflow-hidden bg-surface p-1.5 flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={slot.capture}
-                              alt={slot.title}
-                              className="w-10 h-10 rounded-md object-cover cursor-pointer border border-border shrink-0"
-                              onClick={() => setPreviewModal({ url: slot.capture, title: slot.title })}
-                            />
-                            <div className="min-w-0">
-                              <span className="text-[10.5px] font-semibold text-emerald-600 dark:text-emerald-400 block truncate">
-                                ✓ Adjunta
-                              </span>
+                      {/* Lista de capturas adjuntas para este formato */}
+                      {slot.captures.length > 0 && (
+                        <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto p-1 bg-surface rounded-lg">
+                          {slot.captures.map((url, capIdx) => (
+                            <div
+                              key={capIdx}
+                              className="rounded-lg bg-surface-2/60 p-1.5 flex items-center justify-between gap-2 border border-border/50"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={url}
+                                  alt={`${slot.title} #${capIdx + 1}`}
+                                  className="w-9 h-9 rounded-md object-cover cursor-pointer border border-border shrink-0"
+                                  onClick={() => setPreviewModal({ url, title: `${slot.title} #${capIdx + 1}` })}
+                                />
+                                <div className="min-w-0">
+                                  <span className="text-[10px] font-semibold text-text-primary block truncate">
+                                    Captura #{capIdx + 1}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPreviewModal({ url, title: `${slot.title} #${capIdx + 1}` })}
+                                    className="text-[9.5px] text-pink-500 hover:underline cursor-pointer"
+                                  >
+                                    Ver en grande
+                                  </button>
+                                </div>
+                              </div>
+
                               <button
                                 type="button"
-                                onClick={() => setPreviewModal({ url: slot.capture, title: slot.title })}
-                                className="text-[10px] text-pink-500 hover:underline cursor-pointer"
+                                onClick={() => handleRemoveStoryCapture(slot.id, capIdx)}
+                                title="Eliminar captura"
+                                className="w-6 h-6 rounded-md bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center justify-center transition cursor-pointer shrink-0"
                               >
-                                Ver imagen
+                                <Trash2 className="w-3 h-3" />
                               </button>
                             </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveStoryCapture(slot.id)}
-                            title="Cambiar imagen"
-                            className="w-7 h-7 rounded-md bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center justify-center transition cursor-pointer shrink-0"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          ))}
                         </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => slot.inputRef.current?.click()}
-                          disabled={uploadingCategory === slot.id}
-                          className="w-full h-11 rounded-lg bg-surface hover:bg-surface-2 text-text-secondary hover:text-text-primary flex items-center justify-center gap-2 text-[11px] font-semibold transition cursor-pointer border border-dashed border-border"
-                        >
-                          {uploadingCategory === slot.id ? (
-                            <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin text-pink-500" />
-                              <span>Subiendo...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="w-3.5 h-3.5 text-pink-500" />
-                              <span>Adjuntar captura</span>
-                            </>
-                          )}
-                        </button>
                       )}
+
+                      {/* Botón para subir (permite agregar más capturas) */}
+                      <button
+                        type="button"
+                        onClick={() => slot.inputRef.current?.click()}
+                        disabled={uploadingCategory === slot.id}
+                        className="w-full h-9 rounded-lg bg-surface hover:bg-surface-2 text-text-secondary hover:text-text-primary flex items-center justify-center gap-1.5 text-[11px] font-semibold transition cursor-pointer border border-dashed border-border"
+                      >
+                        {uploadingCategory === slot.id ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-pink-500" />
+                            <span>Subiendo...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-3.5 h-3.5 text-pink-500" />
+                            <span>{slot.captures.length > 0 ? "Adjuntar otra captura" : "Adjuntar captura"}</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   ))}
                 </div>

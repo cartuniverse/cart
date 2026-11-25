@@ -49,6 +49,15 @@ const NAV = [
   { id: "tareas", icon: ListChecks, label: "Tareas" },
 ];
 
+const ADMIN_ROLE_VIEWS = [
+  { id: "admin_calendar_lizz", icon: Calendar, label: "Calendario Lizz", tag: "Exclusivo Cris", color: "#ec4899" },
+  { id: "admin_view_lizz", icon: Sparkles, label: "Vista Lizz (CM)", tag: "Community", color: "#ec4899" },
+  { id: "admin_view_samu", icon: Palette, label: "Vista Samuel", tag: "Diseñador", color: "#8b5cf6" },
+  { id: "admin_view_miguel", icon: Palette, label: "Vista Miguel", tag: "Diseñador", color: "#3b82f6" },
+  { id: "admin_view_david", icon: Activity, label: "Vista David", tag: "Director", color: "#10b981" },
+  { id: "admin_view_andres", icon: Video, label: "Vista Andrés", tag: "Audiovisual", color: "#6366f1" },
+];
+
 const ROLE_LABELS: Record<string, string> = {
   admin: "Administrador",
   director_area: "Director de área",
@@ -351,26 +360,60 @@ export function Sidebar({
         </div>
       ) : (
         /* Navegación estándar de Administrador */
-        <div className="flex flex-col gap-1 flex-1">
-          <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-2">
-            ESPACIO
+        <div className="flex flex-col gap-5 flex-1 overflow-y-auto">
+          {/* Espacio General */}
+          <div className="flex flex-col gap-1">
+            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-1">
+              ESPACIO GENERAL
+            </div>
+            {NAV.map(({ id, icon: Icon, label }) => {
+              const isActive = activeNav === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => onSelectNav?.(id)}
+                  className={`h-9 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${isActive
+                    ? "bg-accent-soft text-text-primary font-bold shadow-xs"
+                    : "text-text-secondary font-medium hover:bg-surface-2"
+                    }`}
+                >
+                  <Icon className="w-[17px] h-[17px]" />
+                  <span className="text-[12.5px] flex-1">{label}</span>
+                </button>
+              );
+            })}
           </div>
-          {NAV.map(({ id, icon: Icon, label }) => {
-            const isActive = activeNav === id;
-            return (
-              <button
-                key={id}
-                onClick={() => onSelectNav?.(id)}
-                className={`h-10 rounded-[10px] flex items-center gap-3 px-3 text-left transition cursor-pointer ${isActive
-                  ? "bg-accent-soft text-text-primary font-bold shadow-xs"
-                  : "text-text-secondary font-medium hover:bg-surface-2"
-                  }`}
-              >
-                <Icon className="w-[18px] h-[18px]" />
-                <span className="text-[13px] flex-1">{label}</span>
-              </button>
-            );
-          })}
+
+          {/* VISTAS DE EQUIPO (SOLO ADMINISTRADOR / CRIS) */}
+          <div className="flex flex-col gap-1">
+            <div className="text-[10px] font-bold text-text-tertiary tracking-widest mb-1 flex items-center justify-between">
+              <span>AUDITORÍA & EQUIPO</span>
+              <span className="text-[9px] font-bold text-pink-500 bg-pink-500/10 px-1.5 py-0.2 rounded">CRIS</span>
+            </div>
+            {ADMIN_ROLE_VIEWS.map(({ id, icon: Icon, label, color }) => {
+              const isActive = activeNav === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => onSelectNav?.(id)}
+                  className={`h-9 rounded-[10px] flex items-center justify-between px-3 text-left transition cursor-pointer ${isActive
+                    ? "bg-surface-2 text-text-primary font-bold shadow-xs"
+                    : "text-text-secondary font-medium hover:bg-surface-2"
+                    }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Icon className="w-4 h-4 shrink-0" style={{ color }} />
+                    <span className="text-[12px] truncate">{label}</span>
+                  </div>
+                  {id === "admin_calendar_lizz" && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-pink-500/10 text-pink-500">
+                      Nuevo
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
