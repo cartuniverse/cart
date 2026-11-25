@@ -145,9 +145,12 @@ export function CommunityDashboardView({
 
   const [weeklyLogsCL, setWeeklyLogsCL] = useState<Record<string, DailyCommunityLog>>({});
   const [weeklyLogsMT, setWeeklyLogsMT] = useState<Record<string, DailyCommunityLog>>({});
-  const [storyCaptures, setStoryCaptures] = useState<{ cl: string | null; mt: string | null }>({
-    cl: null,
-    mt: null,
+  const [storyCaptures, setStoryCaptures] = useState<{
+    cl: { video: string | null; producto: string | null; interactiva: string | null };
+    mt: { video: string | null; producto: string | null; interactiva: string | null };
+  }>({
+    cl: { video: null, producto: null, interactiva: null },
+    mt: { video: null, producto: null, interactiva: null },
   });
   const [previewUrl, setPreviewUrl] = useState<{ url: string; brand: string } | null>(null);
 
@@ -160,8 +163,20 @@ export function CommunityDashboardView({
     });
     if (typeof window !== "undefined") {
       setStoryCaptures({
-        cl: localStorage.getItem(`community_story_capture_${todayIso}_Casa Luifer`),
-        mt: localStorage.getItem(`community_story_capture_${todayIso}_Montana`),
+        cl: {
+          video:
+            localStorage.getItem(`community_story_capture_${todayIso}_Casa Luifer_video`) ||
+            localStorage.getItem(`community_story_capture_${todayIso}_Casa Luifer`),
+          producto: localStorage.getItem(`community_story_capture_${todayIso}_Casa Luifer_producto`),
+          interactiva: localStorage.getItem(`community_story_capture_${todayIso}_Casa Luifer_interactiva`),
+        },
+        mt: {
+          video:
+            localStorage.getItem(`community_story_capture_${todayIso}_Montana_video`) ||
+            localStorage.getItem(`community_story_capture_${todayIso}_Montana`),
+          producto: localStorage.getItem(`community_story_capture_${todayIso}_Montana_producto`),
+          interactiva: localStorage.getItem(`community_story_capture_${todayIso}_Montana_interactiva`),
+        },
       });
     }
   }, [weekISODates, todayIso]);
@@ -390,7 +405,7 @@ export function CommunityDashboardView({
                 color: "#ec4899",
                 log: todayLogCL,
                 total: hoyCL,
-                capture: storyCaptures.cl,
+                captures: storyCaptures.cl,
               },
               {
                 name: "Montana",
@@ -398,13 +413,19 @@ export function CommunityDashboardView({
                 color: "#3b82f6",
                 log: todayLogMT,
                 total: hoyMT,
-                capture: storyCaptures.mt,
+                captures: storyCaptures.mt,
               },
             ].map((brand) => {
               const items = FORMAT_META.map((fm) => ({
                 ...fm,
                 count: brand.log ? (brand.log as any)[fm.key] ?? 0 : 0,
               })).filter((i) => i.count > 0);
+
+              const availableCaptures = [
+                { type: "Video", url: brand.captures.video },
+                { type: "Producto", url: brand.captures.producto },
+                { type: "Interactiva", url: brand.captures.interactiva },
+              ].filter((c): c is { type: string; url: string } => Boolean(c.url));
 
               return (
                 <div
@@ -450,28 +471,31 @@ export function CommunityDashboardView({
                     </p>
                   )}
 
-                  {/* Captura de Historia de hoy si existe */}
-                  {brand.capture && (
-                    <div className="mt-1 flex items-center gap-3 bg-surface rounded-xl p-2 shadow-2xs">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={brand.capture}
-                        alt={`Historia ${brand.name}`}
-                        className="w-12 h-12 rounded-lg object-cover shrink-0 cursor-pointer"
-                        onClick={() => setPreviewUrl({ url: brand.capture!, brand: brand.name })}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[11.5px] font-semibold text-text-primary flex items-center gap-1">
-                          <ImageIcon className="w-3.5 h-3.5 text-pink-500" />
-                          Captura de Historias adjunta
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setPreviewUrl({ url: brand.capture!, brand: brand.name })}
-                          className="text-[11px] text-pink-500 hover:underline flex items-center gap-1 mt-0.5 cursor-pointer"
-                        >
-                          <Eye className="w-3 h-3" /> Ver en grande
-                        </button>
+                  {/* Capturas de Historias (hasta 3 capturas: video, producto, interactiva) */}
+                  {availableCaptures.length > 0 && (
+                    <div className="mt-1 flex flex-col gap-1.5 bg-surface rounded-xl p-2.5 shadow-2xs">
+                      <div className="text-[11px] font-bold text-text-primary flex items-center gap-1.5">
+                        <ImageIcon className="w-3.5 h-3.5 text-pink-500" />
+                        <span>Capturas de Historias ({availableCaptures.length}/3)</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 mt-1">
+                        {availableCaptures.map((cap) => (
+                          <div
+                            key={cap.type}
+                            className="flex flex-col gap-1 cursor-pointer group"
+                            onClick={() => setPreviewUrl({ url: cap.url, brand: `${brand.name} - ${cap.type}` })}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={cap.url}
+                              alt={`${brand.name} ${cap.type}`}
+                              className="w-full h-14 rounded-lg object-cover border border-border group-hover:opacity-90 transition"
+                            />
+                            <span className="text-[9.5px] font-semibold text-text-tertiary text-center truncate">
+                              {cap.type}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}

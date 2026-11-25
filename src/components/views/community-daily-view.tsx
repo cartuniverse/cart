@@ -228,11 +228,21 @@ export function CommunityDailyView({
   const [otherWeeklyTiktok, setOtherWeeklyTiktok] = useState<number>(0);
   const otherProjectName = currentProjectName === "Casa Luifer" ? "Montana" : "Casa Luifer";
 
-  // Captura de pantalla de historias (SOLAMENTE historias)
-  const [storyCaptureUrl, setStoryCaptureUrl] = useState<string>("");
-  const [uploadingStory, setUploadingStory] = useState(false);
-  const [previewModal, setPreviewModal] = useState<string | null>(null);
-  const storyInputRef = useRef<HTMLInputElement>(null);
+  // Capturas de pantalla para cada una de las 3 historias
+  const [storyCaptures, setStoryCaptures] = useState<{
+    video: string;
+    producto: string;
+    interactiva: string;
+  }>({
+    video: "",
+    producto: "",
+    interactiva: "",
+  });
+  const [uploadingCategory, setUploadingCategory] = useState<string | null>(null);
+  const [previewModal, setPreviewModal] = useState<{ url: string; title: string } | null>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const productoInputRef = useRef<HTMLInputElement>(null);
+  const interactivaInputRef = useRef<HTMLInputElement>(null);
 
   const weekDays = useMemo(() => getMondayToFriday(selectedDate), [selectedDate]);
   const weekISOStrings = useMemo(() => weekDays.map((d) => toISODate(d)), [weekDays]);
@@ -290,10 +300,13 @@ export function CommunityDailyView({
       setOtherWeeklyTiktok(sum);
     });
 
-    // Cargar captura de historia guardada
+    // Cargar capturas de historias guardadas (video, producto, interactiva)
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}`) || "";
-      setStoryCaptureUrl(stored);
+      const v = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}_video`) ||
+        localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}`) || "";
+      const p = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}_producto`) || "";
+      const i = localStorage.getItem(`community_story_capture_${currentIso}_${currentProjectName}_interactiva`) || "";
+      setStoryCaptures({ video: v, producto: p, interactiva: i });
     }
 
     return () => {
@@ -375,13 +388,17 @@ export function CommunityDailyView({
     }
   };
 
-  const handleStoryUpload = async (file: File) => {
-    setUploadingStory(true);
-    const url = await uploadDesignCapture(file, "lizz", currentIso, `${currentProjectName}_historias`);
+  const handleStoryUpload = async (file: File, type: "video" | "producto" | "interactiva") => {
+    setUploadingCategory(type);
+    const url = await uploadDesignCapture(file, "lizz", currentIso, `${currentProjectName}_historia_${type}`);
     const saveUrl = (finalUrl: string) => {
-      setStoryCaptureUrl(finalUrl);
+      setStoryCaptures((prev) => ({ ...prev, [type]: finalUrl }));
       if (typeof window !== "undefined") {
-        localStorage.setItem(`community_story_capture_${currentIso}_${currentProjectName}`, finalUrl);
+        localStorage.setItem(`community_story_capture_${currentIso}_${currentProjectName}_${type}`, finalUrl);
+        // Guardar también en fallback para compatibilidad con el dashboard
+        if (type === "video") {
+          localStorage.setItem(`community_story_capture_${currentIso}_${currentProjectName}`, finalUrl);
+        }
         window.dispatchEvent(new Event("daily_log_updated"));
       }
     };
@@ -395,13 +412,16 @@ export function CommunityDailyView({
       };
       reader.readAsDataURL(file);
     }
-    setUploadingStory(false);
+    setUploadingCategory(null);
   };
 
-  const handleRemoveStoryCapture = () => {
-    setStoryCaptureUrl("");
+  const handleRemoveStoryCapture = (type: "video" | "producto" | "interactiva") => {
+    setStoryCaptures((prev) => ({ ...prev, [type]: "" }));
     if (typeof window !== "undefined") {
-      localStorage.removeItem(`community_story_capture_${currentIso}_${currentProjectName}`);
+      localStorage.removeItem(`community_story_capture_${currentIso}_${currentProjectName}_${type}`);
+      if (type === "video") {
+        localStorage.removeItem(`community_story_capture_${currentIso}_${currentProjectName}`);
+      }
       window.dispatchEvent(new Event("daily_log_updated"));
     }
   };
@@ -787,74 +807,154 @@ export function CommunityDailyView({
                 })}
               </div>
 
-              {/* CAPTURA DE PANTALLA EXCLUSIVA DE HISTORIAS */}
-              <div className="pt-3 border-t border-[var(--border)]">
+              {/* 3 CAPTURAS DE PANTALLA DE HISTORIAS: VIDEO, PRODUCTO E INTERACTIVA */}
+              <div className="pt-3 border-t border-[var(--border)] flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] font-bold text-text-primary flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-pink-500" />
+                    Capturas de pantalla de Historias (3 capturas)
+                  </span>
+                  <span className="text-[10.5px] text-text-tertiary">
+                    {[storyCaptures.video, storyCaptures.producto, storyCaptures.interactiva].filter(Boolean).length}/3 adjuntas
+                  </span>
+                </div>
+
                 <input
-                  ref={storyInputRef}
+                  ref={videoInputRef}
                   type="file"
                   accept="image/*"
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) handleStoryUpload(file);
+                    if (file) handleStoryUpload(file, "video");
+                    e.target.value = "";
+                  }}
+                />
+                <input
+                  ref={productoInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleStoryUpload(file, "producto");
+                    e.target.value = "";
+                  }}
+                />
+                <input
+                  ref={interactivaInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleStoryUpload(file, "interactiva");
                     e.target.value = "";
                   }}
                 />
 
-                {storyCaptureUrl ? (
-                  <div className="rounded-xl bg-surface-2/70 p-3 flex items-center justify-between gap-3 shadow-2xs">
-                    <div className="flex items-center gap-3 min-w-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={storyCaptureUrl}
-                        alt="Captura Historias"
-                        className="w-14 h-14 rounded-lg object-cover shrink-0 cursor-pointer border border-border"
-                        onClick={() => setPreviewModal(storyCaptureUrl)}
-                      />
-                      <div className="min-w-0">
-                        <div className="text-[12.5px] font-bold text-text-primary flex items-center gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-emerald-500" />
-                          Captura de Historias ({currentProjectName})
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    {
+                      id: "video" as const,
+                      title: "Historia de video",
+                      hint: "Orgánico",
+                      color: "#ec4899",
+                      inputRef: videoInputRef,
+                      capture: storyCaptures.video,
+                    },
+                    {
+                      id: "producto" as const,
+                      title: "Historia de producto",
+                      hint: "Foto producto",
+                      color: "#f59e0b",
+                      inputRef: productoInputRef,
+                      capture: storyCaptures.producto,
+                    },
+                    {
+                      id: "interactiva" as const,
+                      title: "Historia interactiva",
+                      hint: "Encuesta o sticker",
+                      color: "#f97316",
+                      inputRef: interactivaInputRef,
+                      capture: storyCaptures.interactiva,
+                    },
+                  ].map((slot) => (
+                    <div
+                      key={slot.id}
+                      className="rounded-xl bg-surface-2/60 p-3 flex flex-col justify-between gap-2.5 shadow-2xs border border-[var(--border)]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-[12px] font-bold text-text-primary leading-tight">
+                            {slot.title}
+                          </div>
+                          <div className="text-[10px] text-text-tertiary">
+                            {slot.hint}
+                          </div>
                         </div>
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: slot.color }}
+                        />
+                      </div>
+
+                      {slot.capture ? (
+                        <div className="relative group rounded-lg overflow-hidden bg-surface p-1.5 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={slot.capture}
+                              alt={slot.title}
+                              className="w-10 h-10 rounded-md object-cover cursor-pointer border border-border shrink-0"
+                              onClick={() => setPreviewModal({ url: slot.capture, title: slot.title })}
+                            />
+                            <div className="min-w-0">
+                              <span className="text-[10.5px] font-semibold text-emerald-600 dark:text-emerald-400 block truncate">
+                                ✓ Adjunta
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewModal({ url: slot.capture, title: slot.title })}
+                                className="text-[10px] text-pink-500 hover:underline cursor-pointer"
+                              >
+                                Ver imagen
+                              </button>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveStoryCapture(slot.id)}
+                            title="Cambiar imagen"
+                            className="w-7 h-7 rounded-md bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center justify-center transition cursor-pointer shrink-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
                         <button
                           type="button"
-                          onClick={() => setPreviewModal(storyCaptureUrl)}
-                          className="text-[11px] text-pink-500 hover:underline flex items-center gap-1 mt-0.5 cursor-pointer"
+                          onClick={() => slot.inputRef.current?.click()}
+                          disabled={uploadingCategory === slot.id}
+                          className="w-full h-11 rounded-lg bg-surface hover:bg-surface-2 text-text-secondary hover:text-text-primary flex items-center justify-center gap-2 text-[11px] font-semibold transition cursor-pointer border border-dashed border-border"
                         >
-                          <Eye className="w-3 h-3" /> Ver en grande
+                          {uploadingCategory === slot.id ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-pink-500" />
+                              <span>Subiendo...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-3.5 h-3.5 text-pink-500" />
+                              <span>Adjuntar captura</span>
+                            </>
+                          )}
                         </button>
-                      </div>
+                      )}
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={handleRemoveStoryCapture}
-                      className="h-8 px-2.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center gap-1.5 text-[11px] font-semibold transition cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Cambiar</span>
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => storyInputRef.current?.click()}
-                    disabled={uploadingStory}
-                    className="w-full py-3.5 px-4 rounded-xl bg-surface-2/60 hover:bg-surface-2 text-text-secondary hover:text-text-primary flex items-center justify-center gap-2 text-[12px] font-semibold transition cursor-pointer border border-dashed border-border"
-                  >
-                    {uploadingStory ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin text-pink-500" />
-                        <span>Subiendo captura de historias...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-4 h-4 text-pink-500" />
-                        <span>Adjuntar captura de pantalla de las Historias publicadas hoy</span>
-                      </>
-                    )}
-                  </button>
-                )}
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -1227,7 +1327,7 @@ export function CommunityDailyView({
           >
             <div className="flex items-center justify-between mb-3 px-1">
               <span className="text-sm font-bold text-text-primary">
-                Captura de Historias · {currentProjectName}
+                {previewModal.title} · {currentProjectName}
               </span>
               <button
                 type="button"
@@ -1239,8 +1339,8 @@ export function CommunityDailyView({
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={previewModal}
-              alt="Preview Historias"
+              src={previewModal.url}
+              alt={previewModal.title}
               className="w-full max-h-[75vh] object-contain rounded-2xl bg-black/5"
             />
           </div>
