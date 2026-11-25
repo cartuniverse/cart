@@ -722,21 +722,32 @@ export async function getAllVideoLogs(
 // REGISTROS DIARIOS DE COMMUNITY MANAGER
 // ==========================================
 
+const KNOWN_CM_IDS = ["valentina-c", "lizz", "f52aec50-d3ac-41c5-900d-e82bae796f71"];
+
+function resolveCmIds(cmId: string): string[] {
+  const ids = new Set<string>([cmId, ...KNOWN_CM_IDS]);
+  return Array.from(ids);
+}
+
 export async function getDailyCommunityLog(
   date: string,
   projectName = "Casa Luifer",
-  cmId = "valentina-c"
+  cmId = "lizz"
 ): Promise<DailyCommunityLog | null> {
-  const localKey = `daily_community_log_${date}_${projectName}_${cmId}`;
+  const possibleIds = resolveCmIds(cmId);
 
-  // Intentar cargar de localStorage primero como fallback rápido
+  // Intentar cargar de localStorage primero (revisar para cada posible id)
   let fallbackLog: DailyCommunityLog | null = null;
   if (typeof window !== "undefined") {
-    const stored = localStorage.getItem(localKey);
-    if (stored) {
-      try {
-        fallbackLog = JSON.parse(stored);
-      } catch (e) {}
+    for (const id of possibleIds) {
+      const localKey = `daily_community_log_${date}_${projectName}_${id}`;
+      const stored = localStorage.getItem(localKey);
+      if (stored) {
+        try {
+          fallbackLog = JSON.parse(stored);
+          break;
+        } catch (e) {}
+      }
     }
   }
 
@@ -748,11 +759,10 @@ export async function getDailyCommunityLog(
       .select("*")
       .eq("date", date)
       .eq("project_name", projectName)
-      .eq("cm_id", cmId)
+      .in("cm_id", possibleIds)
       .maybeSingle();
 
     if (error) {
-      // Si la tabla no existe en supabase o falla el select, silenciar el console.error ruidoso y retornar fallback
       if (error?.message) {
         console.warn("Notice: daily_community_logs fallback to local storage:", error.message);
       }
@@ -779,7 +789,8 @@ export async function getDailyCommunityLog(
       };
 
       if (typeof window !== "undefined") {
-        localStorage.setItem(localKey, JSON.stringify(log));
+        localStorage.setItem(`daily_community_log_${date}_${projectName}_${cmId}`, JSON.stringify(log));
+        localStorage.setItem(`daily_community_log_${date}_${projectName}_lizz`, JSON.stringify(log));
       }
       return log;
     }
@@ -793,22 +804,27 @@ export async function getDailyCommunityLog(
 export async function saveDailyCommunityLog(
   log: Omit<DailyCommunityLog, "id" | "updatedAt"> & { id?: string }
 ): Promise<DailyCommunityLog> {
+  const finalCmId = log.cmId || "lizz";
   const id =
-    log.id || `cm_log_${log.date}_${log.projectName}_${log.cmId}`.toLowerCase().replace(/[^a-z0-9_]/g, "_");
+    log.id || `cm_log_${log.date}_${log.projectName}_${finalCmId}`.toLowerCase().replace(/[^a-z0-9_]/g, "_");
 
   const finalLog: DailyCommunityLog = {
     ...log,
+    cmId: finalCmId,
     id,
     updatedAt: new Date().toISOString(),
   };
 
-  const localKey = `daily_community_log_${log.date}_${log.projectName}_${log.cmId}`;
+  const localKey = `daily_community_log_${log.date}_${log.projectName}_${finalCmId}`;
 
   // Guardar en localStorage inmediatamente
   if (typeof window !== "undefined") {
     localStorage.setItem(localKey, JSON.stringify(finalLog));
+    localStorage.setItem(`daily_community_log_${log.date}_${log.projectName}_lizz`, JSON.stringify(finalLog));
+    localStorage.setItem(`daily_community_log_${log.date}_${log.projectName}_valentina-c`, JSON.stringify(finalLog));
+
     // Guardar en un índice de logs para recuperación
-    const indexKey = `daily_community_logs_index_${log.projectName}_${log.cmId}`;
+    const indexKey = `daily_community_logs_index_${log.projectName}_${finalCmId}`;
     const keys: string[] = JSON.parse(localStorage.getItem(indexKey) || "[]");
     if (!keys.includes(localKey)) {
       keys.push(localKey);
@@ -825,7 +841,7 @@ export async function saveDailyCommunityLog(
         {
           id,
           date: log.date,
-          cm_id: log.cmId,
+          cm_id: finalCmId,
           cm_name: log.cmName,
           project_name: log.projectName,
           format_historia_organica: log.formatHistoriaOrganica,
@@ -836,6 +852,7 @@ export async function saveDailyCommunityLog(
           format_video_testimonio: log.formatVideoTestimonio,
           format_carrusel: log.formatCarrusel,
           format_post: log.formatPost,
+          format_tiktok: log.formatTiktok ?? 0,
           updated_at: finalLog.updatedAt,
         },
         { onConflict: "date,cm_id,project_name" }
@@ -863,6 +880,7 @@ export async function saveDailyCommunityLog(
         formatVideoTestimonio: data.format_video_testimonio ?? 0,
         formatCarrusel: data.format_carrusel ?? 0,
         formatPost: data.format_post ?? 0,
+        formatTiktok: data.format_tiktok ?? 0,
         updatedAt: data.updated_at,
       };
     }
@@ -876,19 +894,23 @@ export async function saveDailyCommunityLog(
 export async function getWeeklyCommunityLogs(
   weekDates: string[],
   projectName = "Casa Luifer",
-  cmId = "valentina-c"
+  cmId = "lizz"
 ): Promise<Record<string, DailyCommunityLog>> {
   const result: Record<string, DailyCommunityLog> = {};
+  const possibleIds = resolveCmIds(cmId);
 
   // Primero poblar desde localStorage
   if (typeof window !== "undefined") {
     weekDates.forEach((d) => {
-      const localKey = `daily_community_log_${d}_${projectName}_${cmId}`;
-      const stored = localStorage.getItem(localKey);
-      if (stored) {
-        try {
-          result[d] = JSON.parse(stored);
-        } catch (e) {}
+      for (const id of possibleIds) {
+        const localKey = `daily_community_log_${d}_${projectName}_${id}`;
+        const stored = localStorage.getItem(localKey);
+        if (stored) {
+          try {
+            result[d] = JSON.parse(stored);
+            break;
+          } catch (e) {}
+        }
       }
     });
   }
@@ -901,7 +923,7 @@ export async function getWeeklyCommunityLogs(
       .select("*")
       .in("date", weekDates)
       .eq("project_name", projectName)
-      .eq("cm_id", cmId);
+      .in("cm_id", possibleIds);
 
     if (error) {
       if (error?.message) {
@@ -948,21 +970,24 @@ export async function getWeeklyCommunityLogs(
 
 export async function getAllCommunityLogs(
   projectName = "Casa Luifer",
-  cmId = "valentina-c"
+  cmId = "lizz"
 ): Promise<DailyCommunityLog[]> {
   const localList: DailyCommunityLog[] = [];
+  const possibleIds = resolveCmIds(cmId);
 
   if (typeof window !== "undefined") {
-    const indexKey = `daily_community_logs_index_${projectName}_${cmId}`;
-    const keys: string[] = JSON.parse(localStorage.getItem(indexKey) || "[]");
-    keys.forEach((k) => {
-      const stored = localStorage.getItem(k);
-      if (stored) {
-        try {
-          localList.push(JSON.parse(stored));
-        } catch (e) {}
-      }
-    });
+    for (const id of possibleIds) {
+      const indexKey = `daily_community_logs_index_${projectName}_${id}`;
+      const keys: string[] = JSON.parse(localStorage.getItem(indexKey) || "[]");
+      keys.forEach((k) => {
+        const stored = localStorage.getItem(k);
+        if (stored) {
+          try {
+            localList.push(JSON.parse(stored));
+          } catch (e) {}
+        }
+      });
+    }
   }
 
   if (!supabase) return localList;
@@ -972,7 +997,7 @@ export async function getAllCommunityLogs(
       .from("daily_community_logs")
       .select("*")
       .eq("project_name", projectName)
-      .eq("cm_id", cmId)
+      .in("cm_id", possibleIds)
       .order("date", { ascending: false });
 
     if (error) {
@@ -995,6 +1020,7 @@ export async function getAllCommunityLogs(
         formatVideoTestimonio: d.format_video_testimonio ?? 0,
         formatCarrusel: d.format_carrusel ?? 0,
         formatPost: d.format_post ?? 0,
+        formatTiktok: d.format_tiktok ?? 0,
         updatedAt: d.updated_at,
       }));
     }
@@ -1012,26 +1038,60 @@ export async function getAllCommunityLogs(
 // Clave de conflicto: (date, designer_id)
 // ==========================================
 
+export const SAMUEL_UUID = "25e540fa-8e36-4dad-a547-4184c305578d";
+export const MIGUEL_UUID = "7ac48bdf-277f-4324-b9e0-934756830dff";
+
+export function resolveDesignerAliases(designerId: string): string[] {
+  const lower = (designerId || "").toLowerCase();
+  if (lower.includes("samuel") || lower.includes("gaviria") || lower === SAMUEL_UUID) {
+    return [SAMUEL_UUID, "samuel-marin", "samuel-gaviria", "samuel", designerId].filter(Boolean);
+  }
+  if (lower.includes("miguel") || lower.includes("bolivar") || lower === MIGUEL_UUID) {
+    return [MIGUEL_UUID, "miguel-bolivar", "miguel", designerId].filter(Boolean);
+  }
+  return [designerId];
+}
+
+export function getCanonicalDesignerId(designerId: string): string {
+  const lower = (designerId || "").toLowerCase();
+  if (lower.includes("samuel") || lower.includes("gaviria") || lower === SAMUEL_UUID) {
+    return SAMUEL_UUID;
+  }
+  if (lower.includes("miguel") || lower.includes("bolivar") || lower === MIGUEL_UUID) {
+    return MIGUEL_UUID;
+  }
+  return designerId;
+}
+
 export async function getDailyDesignLog(
   date: string,
   designerId = "daniela-s"
 ): Promise<DailyDesignLog | null> {
-  const localKey = `cart_designlog_${date}_${designerId}`;
+  const aliases = resolveDesignerAliases(designerId);
 
-  if (!supabase) {
-    if (typeof window !== "undefined") {
+  // Fallback local: revisar para cualquiera de los alias conocidos
+  let fallbackLog: DailyDesignLog | null = null;
+  if (typeof window !== "undefined") {
+    for (const alias of aliases) {
+      const localKey = `cart_designlog_${date}_${alias}`;
       const stored = localStorage.getItem(localKey);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        try {
+          fallbackLog = JSON.parse(stored);
+          break;
+        } catch (e) {}
+      }
     }
-    return null;
   }
+
+  if (!supabase) return fallbackLog;
 
   try {
     const { data, error } = await supabase
       .from("daily_design_logs")
       .select("*")
       .eq("date", date)
-      .eq("designer_id", designerId)
+      .in("designer_id", aliases)
       .maybeSingle();
 
     if (error) {
@@ -1061,7 +1121,9 @@ export async function getDailyDesignLog(
         updatedAt: data.updated_at,
       };
       if (typeof window !== "undefined") {
-        localStorage.setItem(localKey, JSON.stringify(log));
+        for (const alias of aliases) {
+          localStorage.setItem(`cart_designlog_${date}_${alias}`, JSON.stringify(log));
+        }
       }
       return log;
     }
@@ -1069,24 +1131,20 @@ export async function getDailyDesignLog(
     console.error("Error in getDailyDesignLog:", err);
   }
 
-  if (typeof window !== "undefined") {
-    const stored = localStorage.getItem(localKey);
-    if (stored) return JSON.parse(stored);
-  }
-
-  return null;
+  return fallbackLog;
 }
 
 export async function saveDailyDesignLog(
   log: Omit<DailyDesignLog, "id" | "updatedAt"> & { id?: string }
 ): Promise<DailyDesignLog> {
-  const finalId = log.id || `dlog-${log.date}-${log.designerId}`;
+  const canonicalId = getCanonicalDesignerId(log.designerId);
+  const finalId = log.id || `dlog-${log.date}-${canonicalId}`;
   const now = new Date().toISOString();
 
   const finalLog: DailyDesignLog = {
     id: finalId,
     date: log.date,
-    designerId: log.designerId,
+    designerId: canonicalId,
     designerName: log.designerName,
     formatClHistorias: log.formatClHistorias,
     formatClMovimiento: log.formatClMovimiento,
@@ -1105,12 +1163,15 @@ export async function saveDailyDesignLog(
     updatedAt: now,
   };
 
-  const localKey = `cart_designlog_${log.date}_${log.designerId}`;
+  const aliases = resolveDesignerAliases(log.designerId);
   if (typeof window !== "undefined") {
-    localStorage.setItem(localKey, JSON.stringify(finalLog));
+    for (const alias of aliases) {
+      localStorage.setItem(`cart_designlog_${log.date}_${alias}`, JSON.stringify(finalLog));
+    }
 
     const indexKey = "cart_designlog_index";
     const existingIndex: string[] = JSON.parse(localStorage.getItem(indexKey) || "[]");
+    const localKey = `cart_designlog_${log.date}_${canonicalId}`;
     if (!existingIndex.includes(localKey)) {
       existingIndex.push(localKey);
       localStorage.setItem(indexKey, JSON.stringify(existingIndex));
@@ -1123,7 +1184,7 @@ export async function saveDailyDesignLog(
         {
           id: finalId,
           date: log.date,
-          designer_id: log.designerId,
+          designer_id: canonicalId,
           designer_name: log.designerName,
           format_cl_historias: log.formatClHistorias,
           format_cl_movimiento: log.formatClMovimiento,
@@ -1162,9 +1223,10 @@ export async function uploadDesignCapture(
 ): Promise<string | null> {
   if (!supabase) return null;
   try {
+    const canonicalId = getCanonicalDesignerId(designerId);
     const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
     const fileName = `${formatKey}-${Date.now()}.${ext}`;
-    const filePath = `${designerId}/${date}/${fileName}`;
+    const filePath = `${canonicalId}/${date}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from("design-captures")
@@ -1256,6 +1318,7 @@ export async function getMonthlyDesignLogs(
   const startIso = `${year}-${monthStr}-01`;
   const lastDay = new Date(year, month, 0).getDate();
   const endIso = `${year}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
+  const aliases = resolveDesignerAliases(designerId);
 
   if (supabase) {
     try {
@@ -1264,7 +1327,7 @@ export async function getMonthlyDesignLogs(
         .select("*")
         .gte("date", startIso)
         .lte("date", endIso)
-        .eq("designer_id", designerId);
+        .in("designer_id", aliases);
 
       if (error) {
         console.error("Error fetching monthly design logs:", error);
@@ -1303,12 +1366,15 @@ export async function getMonthlyDesignLogs(
     for (let day = 1; day <= lastDay; day++) {
       const dateIso = `${year}-${monthStr}-${String(day).padStart(2, "0")}`;
       if (!result[dateIso]) {
-        const localKey = `cart_designlog_${dateIso}_${designerId}`;
-        const stored = localStorage.getItem(localKey);
-        if (stored) {
-          try {
-            result[dateIso] = JSON.parse(stored);
-          } catch {}
+        for (const alias of aliases) {
+          const localKey = `cart_designlog_${dateIso}_${alias}`;
+          const stored = localStorage.getItem(localKey);
+          if (stored) {
+            try {
+              result[dateIso] = JSON.parse(stored);
+              break;
+            } catch {}
+          }
         }
       }
     }
@@ -1322,13 +1388,19 @@ export async function getWeeklyDesignLogs(
   designerId = "daniela-s"
 ): Promise<Record<string, DailyDesignLog>> {
   const result: Record<string, DailyDesignLog> = {};
+  const aliases = resolveDesignerAliases(designerId);
 
   if (!supabase) {
     if (typeof window !== "undefined") {
       weekDates.forEach((d) => {
-        const localKey = `cart_designlog_${d}_${designerId}`;
-        const stored = localStorage.getItem(localKey);
-        if (stored) result[d] = JSON.parse(stored);
+        for (const alias of aliases) {
+          const localKey = `cart_designlog_${d}_${alias}`;
+          const stored = localStorage.getItem(localKey);
+          if (stored) {
+            result[d] = JSON.parse(stored);
+            break;
+          }
+        }
       });
     }
     return result;
@@ -1339,7 +1411,7 @@ export async function getWeeklyDesignLogs(
       .from("daily_design_logs")
       .select("*")
       .in("date", weekDates)
-      .eq("designer_id", designerId);
+      .in("designer_id", aliases);
 
     if (error) {
       console.error("Error fetching weekly design logs:", error);
@@ -1375,9 +1447,14 @@ export async function getWeeklyDesignLogs(
   if (typeof window !== "undefined") {
     weekDates.forEach((d) => {
       if (!result[d]) {
-        const localKey = `cart_designlog_${d}_${designerId}`;
-        const stored = localStorage.getItem(localKey);
-        if (stored) result[d] = JSON.parse(stored);
+        for (const alias of aliases) {
+          const localKey = `cart_designlog_${d}_${alias}`;
+          const stored = localStorage.getItem(localKey);
+          if (stored) {
+            result[d] = JSON.parse(stored);
+            break;
+          }
+        }
       }
     });
   }

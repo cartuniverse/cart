@@ -259,14 +259,14 @@ export default function Home() {
             <DesignerDailyView
               designerName="Samuel Marín"
               designerEmail="samuel.gaviria@cartuniverse.online"
-              designerId="samuel-marin"
+              designerId="25e540fa-8e36-4dad-a547-4184c305578d"
             />
           ) : activeNav === "admin_view_miguel" ? (
             /* Vista de Miguel (Diseñador AI) para Administrador */
             <DesignerDailyView
               designerName="Miguel Bolívar"
               designerEmail="miguel.bolivar@cartuniverse.online"
-              designerId="miguel-bolivar"
+              designerId="7ac48bdf-277f-4324-b9e0-934756830dff"
             />
           ) : activeNav === "admin_view_david" ? (
             /* Vista de David (Director Operativo) para Administrador */
