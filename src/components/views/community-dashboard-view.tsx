@@ -225,16 +225,22 @@ export function CommunityDashboardView({
     });
   }, [weekDays, weekISODates, weeklyLogsCL, weeklyLogsMT]);
 
-  // Desglose por formato esta semana (sumando ambas marcas)
+  // Desglose por formato esta semana (separando Casa Luifer y Montana)
+  const [brandFilter, setBrandFilter] = useState<"all" | "Casa Luifer" | "Montana">("all");
+
   const formatBreakdown = useMemo(() => {
-    const allWeekly = [...Object.values(weeklyLogsCL), ...Object.values(weeklyLogsMT)];
     return FORMAT_META.map((fm) => {
-      const value = allWeekly.reduce((acc, l) => acc + (l[fm.key] ?? 0), 0);
-      return { ...fm, value };
+      const valueCL = Object.values(weeklyLogsCL).reduce((acc, l) => acc + (l[fm.key] ?? 0), 0);
+      const valueMT = Object.values(weeklyLogsMT).reduce((acc, l) => acc + (l[fm.key] ?? 0), 0);
+      const total = valueCL + valueMT;
+      return { ...fm, valueCL, valueMT, total };
     });
   }, [weeklyLogsCL, weeklyLogsMT]);
 
-  const maxFormatoVal = Math.max(...formatBreakdown.map((f) => f.value), 5);
+  const maxFormatoVal = Math.max(
+    ...formatBreakdown.map((f) => (brandFilter === "all" ? Math.max(f.valueCL, f.valueMT, f.total) : brandFilter === "Casa Luifer" ? f.valueCL : f.valueMT)),
+    5
+  );
 
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
@@ -684,38 +690,159 @@ export function CommunityDashboardView({
 
           {/* Gráfica de Barras por Formato */}
           <div className="rounded-2xl bg-surface p-6 shadow-sm flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-indigo-500" />
                 <span className="text-[14px] font-bold text-text-primary">
                   Piezas por formato (esta semana)
                 </span>
               </div>
-              <span className="text-[11px] text-text-tertiary font-medium">
-                Casa Luifer + Montana
-              </span>
+
+              {/* Filtro por marca: Todas (diferenciadas) / Casa Luifer / Montana */}
+              <div className="flex items-center gap-1 bg-surface-2 p-1 rounded-xl text-[11px] font-semibold self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setBrandFilter("all")}
+                  className={`px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                    brandFilter === "all"
+                      ? "bg-surface text-text-primary shadow-xs font-bold"
+                      : "text-text-tertiary hover:text-text-primary"
+                  }`}
+                >
+                  <span>Ambas (Separadas)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBrandFilter("Casa Luifer")}
+                  className={`px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                    brandFilter === "Casa Luifer"
+                      ? "bg-pink-500 text-white shadow-xs font-bold"
+                      : "text-text-tertiary hover:text-text-primary"
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-pink-300" />
+                  <span>Casa Luifer</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBrandFilter("Montana")}
+                  className={`px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                    brandFilter === "Montana"
+                      ? "bg-blue-500 text-white shadow-xs font-bold"
+                      : "text-text-tertiary hover:text-text-primary"
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-300" />
+                  <span>Montana</span>
+                </button>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-3">
+            {/* Leyenda aclaratoria */}
+            <div className="flex items-center gap-4 text-[11px] text-text-secondary border-b border-border pb-2.5">
+              {brandFilter === "all" ? (
+                <>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-pink-500" />
+                    <strong>Casa Luifer (CL)</strong>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
+                    <strong>Montana (MT)</strong>
+                  </span>
+                  <span className="ml-auto text-[10.5px] text-text-tertiary">
+                    Barras separadas por marca
+                  </span>
+                </>
+              ) : brandFilter === "Casa Luifer" ? (
+                <span className="flex items-center gap-1.5 text-pink-500 font-semibold">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-pink-500" />
+                  Mostrando solo piezas de Casa Luifer
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 text-blue-500 font-semibold">
+                  <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
+                  Mostrando solo piezas de Montana
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3.5 pt-1">
               {formatBreakdown.map((fmt) => {
-                const widthPct = Math.round((fmt.value / maxFormatoVal) * 100);
+                const clVal = fmt.valueCL;
+                const mtVal = fmt.valueMT;
+                const clPct = Math.round((clVal / maxFormatoVal) * 100);
+                const mtPct = Math.round((mtVal / maxFormatoVal) * 100);
+                const hasAny = brandFilter === "all" ? clVal > 0 || mtVal > 0 : brandFilter === "Casa Luifer" ? clVal > 0 : mtVal > 0;
+
                 return (
-                  <div key={fmt.key} className="grid grid-cols-12 items-center gap-3">
-                    <div className="col-span-5 text-[12px] font-medium text-text-secondary truncate">
-                      {fmt.label}
+                  <div key={fmt.key} className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between text-[12px]">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: fmt.color }} />
+                        <span className="font-semibold text-text-primary">{fmt.label}</span>
+                      </div>
+                      <div className="text-[11.5px] font-bold text-text-secondary flex items-center gap-2">
+                        {brandFilter === "all" ? (
+                          <>
+                            <span className="text-pink-500">CL: {clVal}</span>
+                            <span className="text-text-tertiary">·</span>
+                            <span className="text-blue-500">MT: {mtVal}</span>
+                            <span className="text-text-tertiary">·</span>
+                            <span className="text-text-primary">Total: {fmt.total}</span>
+                          </>
+                        ) : brandFilter === "Casa Luifer" ? (
+                          <span className="text-pink-500 font-bold">{clVal} {clVal === 1 ? "pieza" : "piezas"}</span>
+                        ) : (
+                          <span className="text-blue-500 font-bold">{mtVal} {mtVal === 1 ? "pieza" : "piezas"}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="col-span-6 h-2.5 rounded-full bg-surface-2 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700 ease-out"
-                        style={{
-                          width: `${Math.max(fmt.value > 0 ? 4 : 0, widthPct)}%`,
-                          backgroundColor: fmt.color,
-                        }}
-                      />
-                    </div>
-                    <div className="col-span-1 text-right text-[12px] font-bold text-text-primary">
-                      {fmt.value}
-                    </div>
+
+                    {/* Barras visuales */}
+                    {brandFilter === "all" ? (
+                      /* Dos barras separadas claramente una debajo de otra por marca */
+                      <div className="flex flex-col gap-1 pl-4">
+                        {/* Barra Casa Luifer */}
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 text-[10px] font-bold text-pink-500 shrink-0">CL</span>
+                          <div className="flex-1 h-2 rounded-full bg-surface-2 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-pink-500 transition-all duration-700 ease-out"
+                              style={{ width: `${Math.max(clVal > 0 ? 5 : 0, clPct)}%` }}
+                            />
+                          </div>
+                          <span className="w-4 text-right text-[10.5px] font-bold text-pink-500">{clVal}</span>
+                        </div>
+                        {/* Barra Montana */}
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 text-[10px] font-bold text-blue-500 shrink-0">MT</span>
+                          <div className="flex-1 h-2 rounded-full bg-surface-2 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-blue-500 transition-all duration-700 ease-out"
+                              style={{ width: `${Math.max(mtVal > 0 ? 5 : 0, mtPct)}%` }}
+                            />
+                          </div>
+                          <span className="w-4 text-right text-[10.5px] font-bold text-blue-500">{mtVal}</span>
+                        </div>
+                      </div>
+                    ) : brandFilter === "Casa Luifer" ? (
+                      /* Barra individual Casa Luifer */
+                      <div className="h-2.5 rounded-full bg-surface-2 overflow-hidden ml-4">
+                        <div
+                          className="h-full rounded-full bg-pink-500 transition-all duration-700 ease-out"
+                          style={{ width: `${Math.max(clVal > 0 ? 5 : 0, clPct)}%` }}
+                        />
+                      </div>
+                    ) : (
+                      /* Barra individual Montana */
+                      <div className="h-2.5 rounded-full bg-surface-2 overflow-hidden ml-4">
+                        <div
+                          className="h-full rounded-full bg-blue-500 transition-all duration-700 ease-out"
+                          style={{ width: `${Math.max(mtVal > 0 ? 5 : 0, mtPct)}%` }}
+                        />
+                      </div>
+                    )}
                   </div>
                 );
               })}

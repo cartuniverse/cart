@@ -50,8 +50,9 @@ const NAV = [
 ];
 
 const ADMIN_ROLE_VIEWS = [
+  { id: "admin_dashboard_lizz", icon: LayoutDashboard, label: "Dashboard Lizz", tag: "Métricas CM", color: "#ec4899" },
   { id: "admin_calendar_lizz", icon: Calendar, label: "Calendario Lizz", tag: "Exclusivo Cris", color: "#ec4899" },
-  { id: "admin_view_lizz", icon: Sparkles, label: "Vista Lizz (CM)", tag: "Community", color: "#ec4899" },
+  { id: "admin_view_lizz", icon: Sparkles, label: "Diario Lizz (CM)", tag: "Community", color: "#ec4899" },
   { id: "admin_view_samu", icon: Palette, label: "Vista Samuel", tag: "Diseñador", color: "#8b5cf6" },
   { id: "admin_view_miguel", icon: Palette, label: "Vista Miguel", tag: "Diseñador", color: "#3b82f6" },
   { id: "admin_view_david", icon: Activity, label: "Vista David", tag: "Director", color: "#10b981" },

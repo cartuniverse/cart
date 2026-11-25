@@ -245,6 +245,12 @@ export default function Home() {
                 onPersonCreated={handlePersonCreated}
               />
             </div>
+          ) : activeNav === "admin_dashboard_lizz" ? (
+            /* Dashboard de la Community Manager para Administrador */
+            <CommunityDashboardView
+              cmName="Lizz"
+              onGoToDailyView={() => setActiveNav("admin_view_lizz")}
+            />
           ) : activeNav === "admin_calendar_lizz" ? (
             /* Vista Exclusiva Administrador: Calendario Semanal de Lizz con KPIs y evidencias */
             <AdminCommunityCalendarView />
